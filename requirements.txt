@@ -1,0 +1,2 @@
+# Planning placeholder. Runtime and test dependencies will be pinned
+# after instructor approval and team agreement on implementation.
