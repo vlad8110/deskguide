@@ -35,3 +35,10 @@ All current assignment files, decisions, task updates, and reviews belong in thi
 - [Collins: AI integration #13](https://github.com/vlad8110/deskguide/issues/13)
 - [David: verification #14](https://github.com/vlad8110/deskguide/issues/14)
 - [Planning documents review PR #9](https://github.com/vlad8110/deskguide/pull/9)
+
+## Backlog and first architecture session
+
+- [Original and refined backlog hub](../backlog/README.md)
+- [Refined four-week sprint](../backlog/refined-four-week-sprint-backlog.md)
+- [Backlog implementation/design map](../backlog/implementation-map.md)
+- [Vlad’s first architecture session: workload options and components](architect-first-session.md)

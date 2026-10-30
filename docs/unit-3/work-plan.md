@@ -24,3 +24,7 @@ The [Week 3 delivery schedule](week-3-delivery-schedule.md) is the shared schedu
 5. Vlad assembles the reviewed final specification. Record all four approvals and the exact final commit/file. Check individual submission obligations before upload; retain actual confirmation afterward.
 
 No member acceptance, completed work, review, or submission is implied by this plan. Use fictional examples and keep secrets/private data out of this public repository.
+
+## Backlog execution
+
+Use [the implementation/design map](../backlog/implementation-map.md) to link B01–B24 to section owners and acceptance evidence. [Vlad’s first working session](architect-first-session.md) prepares workload and component decisions. A documented task is not an implemented feature; attach code, reviewed artifacts and actual test results before marking it complete.

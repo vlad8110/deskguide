@@ -17,3 +17,7 @@
 - Major architecture tradeoff, supporting source and final design agreement.
 
 Add decisions with alternatives, reasons, author/reviewer and linked issue/PR. Do not mark a pending choice as agreed or tested.
+
+## Backlog migration — October 29
+
+Imported the original and refined Revision 2 backlog text to GitHub. The four-week sprint file is explicitly extracted from Revision 2 B01–B12; no separate final LEO version was verified. Preserve historical wording and integrate production changes through P01–P04 in the implementation map. Workload scenarios in architect-first-session.md are proposals awaiting review. No implementation/test result is inferred.

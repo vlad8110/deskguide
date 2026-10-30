@@ -58,3 +58,7 @@ sample_documents/   Fictional source material only
 ```
 
 Keep API keys, `.env` files, real workplace records, personal information, and live databases out of Git. Use `.env.example` only for placeholders.
+
+## Backlog and implementation tracking
+
+Use the [backlog hub](docs/backlog/README.md), [refined four-week sprint](docs/backlog/refined-four-week-sprint-backlog.md) and [implementation map](docs/backlog/implementation-map.md) to connect the original/refined tasks to current design work. Start Vlad’s architecture work with the [first working session](docs/unit-3/architect-first-session.md).

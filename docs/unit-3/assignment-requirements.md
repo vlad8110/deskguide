@@ -35,3 +35,7 @@ Use [the original instructions](https://leocontent.umgc.edu/content/umuc/tus/cms
 ## Scope boundaries
 
 Use fictional/synthetic customers and documents in examples. Describe required customer-database integration without connecting real systems. Review the earlier Flask/SQLite prototype choices against the production requirement; do not present a local demo as proof of capacity. Identify assumptions and unresolved decisions explicitly.
+
+## Backlog continuity
+
+The [refined B01–B12 sprint](../backlog/refined-four-week-sprint-backlog.md) supplies the implementation baseline. [The traceability map](../backlog/implementation-map.md) preserves its acceptance criteria and identifies P01–P04 production design additions. Earlier prototype scope/estimates do not establish production capacity.

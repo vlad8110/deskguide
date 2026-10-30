@@ -36,3 +36,7 @@ Concurrent customers are not automatically 10,000 simultaneous model requests. D
 - [ ] Compare the bounded Flask/SQLite prototype with proposed production choices; justify changes.
 
 Use verification-plan.md for planned load validation. No capacity result has been measured.
+
+## Backlog traceability and first decisions
+
+Start with [Vlad’s first architecture session](architect-first-session.md). Preserve B03 component boundaries, B04 contracts, B06 storage, B07 source resolution, B09 authorization and B11 duplicate-safe escalation/provider failures. Carry B13 feedback and B14 document/source versioning into the production design. [The integration map](../backlog/implementation-map.md) separates the prototype criteria from P01–P04 production additions. Proposed workload figures need review before they become design assumptions.
