@@ -20,7 +20,7 @@ The [Week 3 delivery schedule](week-3-delivery-schedule.md) is the shared schedu
 1. Use your Unit 3 issue for status, acceptance criteria, blockers and links.
 2. Branch from current main. Edit only related files and submit a pull request linked to the issue.
 3. Ask the named peer to review; resolve comments before merge. Record actual decisions and contributions.
-4. Keep all active assignment source files and final exports in GitHub; do not create competing email/Drive versions.
+4. Keep source copies, links and approved final exports in GitHub. Use the [shared Google Doc and draw.io file](architecture-first-draft/README.md) for architecture review edits; reconcile them before refreshing repository snapshots. Do not maintain competing review documents or distribute draft PDFs.
 5. Vlad assembles the reviewed final specification. Record all four approvals and the exact final commit/file. Check individual submission obligations before upload; retain actual confirmation afterward.
 
 No member acceptance, completed work, review, or submission is implied by this plan. Use fictional examples and keep secrets/private data out of this public repository.
