@@ -10,6 +10,8 @@ Follow the [Week 3 delivery schedule](week-3-delivery-schedule.md) for section d
 
 ## Start here
 
+The [architecture first draft](architecture-first-draft/README.md) includes the shared Google Doc and draw.io editing links, PNG preview and Markdown snapshots for team review. Use these shared files for architecture recommendations; PDFs are reserved for final submission.
+
 1. Read [requirements](assignment-requirements.md) and [the kickoff](team-kickoff.md).
 2. Confirm your assigned issue, availability, and blockers in GitHub.
 3. Follow [the work plan](work-plan.md), edit your section on a branch, and open a pull request for review.
@@ -23,7 +25,7 @@ Follow the [Week 3 delivery schedule](week-3-delivery-schedule.md) for section d
 | [Design rationale](design-rationale.md) | Vlad assembles; everyone contributes | Whole team |
 | [Verification and review](verification-plan.md) | David | Whole team |
 
-All current assignment files, decisions, task updates, and reviews belong in this repository. Existing course documents and issues remain historical context. The prior SQLite/local-prototype scope does not establish compliance with this production design. No deployment, paid service, real customer data, or performance result is authorized or claimed by these planning files.
+GitHub is the coordination hub for current assignment files, decisions, task updates and review records. The shared Google Doc and draw.io file are the editable architecture review sources; keep their links and refreshed copies in this repository. Existing course documents and issues remain historical context. The prior SQLite/local-prototype scope does not establish compliance with this production design. No deployment, paid service, real customer data, or performance result is authorized or claimed by these planning files.
 
 [Assignment instructions](https://leocontent.umgc.edu/content/umuc/tus/cmsc/cmsc495/2268/unit-3/unit-3-assignment-1-instructions.html?ou=1541050) · [LEO submission and rubric](https://learn.umgc.edu/d2l/le/lessons/1541050/topics/37352126)
 
