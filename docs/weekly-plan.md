@@ -1,3 +1,5 @@
+> **October 29 update:** Vlad is the continuing coordinator. Temporary delegation will be announced explicitly in GitHub. The rotation below is historical and is superseded. See [the current Unit 3 plan](unit-3/work-plan.md).
+
 # Proposed weekly coordination
 
 | Weeks | Coordinator |

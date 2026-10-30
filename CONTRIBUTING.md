@@ -2,7 +2,7 @@
 
 ## Access
 
-This repository is private. Send Vlad your GitHub username so the correct account can be invited. Accept the invitation while signed into that account, then use **Code → Open with GitHub Desktop** or clone the repository from GitHub Desktop. An invitation has not been sent merely because this guide exists.
+This repository is currently public. All current teammates have accepted collaborator write access as of October 29, 2026. Send Vlad your GitHub username so the correct account can be invited. Accept the invitation while signed into that account, then use **Code → Open with GitHub Desktop** or clone the repository from GitHub Desktop. An invitation has not been sent merely because this guide exists.
 
 ## Small reviewed changes
 
@@ -17,10 +17,10 @@ One peer review is our workflow agreement. Whether GitHub can enforce it depends
 
 ## Weekly updates
 
-Use email and Google Docs. The proposed Sunday update is due at 6 p.m. Eastern / 3 p.m. Pacific, subject to team agreement. Report completed work, blockers, and next steps. Record final technical decisions in `docs/decisions.md`.
+Use GitHub Issues, Markdown documents and pull requests as the single coordination location. Report completed work, blockers and next steps in the relevant issue. See [Unit 3](docs/unit-3/README.md) for current owners and milestones. Vlad remains coordinator unless he explicitly delegates a temporary handoff in GitHub. Record current assignment decisions in `docs/unit-3/decisions.md`; preserve earlier decisions as history.
 
 The coordinator reviews the weekly requirements early, helps divide tasks, collects updates, organizes the final review, and confirms who submits agreed-upon team work. Individual quizzes and critiques remain each member’s responsibility.
 
 ## Development approval
 
-Planning can proceed now. Application development begins only after instructor approval of the pitch. Do not add a paid service without team agreement. Do not commit working credentials, even to this private repository.
+Planning can proceed now. Application development begins only after instructor approval of the pitch. Do not add a paid service without team agreement. Do not commit working credentials, in this public repository.
