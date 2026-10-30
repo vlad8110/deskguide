@@ -22,3 +22,12 @@ Design DeskGuide as a customer-service platform for **10,000 concurrent customer
 All current assignment files, decisions, task updates, and reviews belong in this repository. Existing course documents and issues remain historical context. The prior SQLite/local-prototype scope does not establish compliance with this production design. No deployment, paid service, real customer data, or performance result is authorized or claimed by these planning files.
 
 [Assignment instructions](https://leocontent.umgc.edu/content/umuc/tus/cmsc/cmsc495/2268/unit-3/unit-3-assignment-1-instructions.html?ou=1541050) · [LEO submission and rubric](https://learn.umgc.edu/d2l/le/lessons/1541050/topics/37352126)
+
+## Published coordination
+
+- [Kickoff issue #10](https://github.com/vlad8110/deskguide/issues/10)
+- [Vlad: architecture and coordination #11](https://github.com/vlad8110/deskguide/issues/11)
+- [Hanlin: interfaces #12](https://github.com/vlad8110/deskguide/issues/12)
+- [Collins: AI integration #13](https://github.com/vlad8110/deskguide/issues/13)
+- [David: verification #14](https://github.com/vlad8110/deskguide/issues/14)
+- [Planning documents review PR #9](https://github.com/vlad8110/deskguide/pull/9)
