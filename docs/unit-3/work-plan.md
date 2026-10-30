@@ -11,15 +11,9 @@ Vlad is the continuing coordinator. Any temporary delegation must be recorded in
 
 Owners coordinate their sections; everyone contributes and reviews. Vlad assembles the 500-word rationale from the team's design reasoning. David reviews architecture, Collins reviews interfaces, Hanlin reviews AI flows, and the whole team reviews the rationale.
 
-## Internal milestones — Eastern time
+## Delivery schedule
 
-| Date | Milestone |
-| --- | --- |
-| Friday, October 30 | Confirm owners, availability, component boundaries and workload assumptions in kickoff issue |
-| Saturday, October 31, 6 p.m. | First diagram, contract, AI-flow and verification drafts via pull requests |
-| Sunday, November 1 | Combine and cross-review; resolve mismatched names, fields, paths and dependencies |
-| Monday, November 2 | Correct findings; verify rationale word count/citations; record final member agreement |
-| Tuesday, November 3 | Final package checks and required LEO submission before 11:59 p.m. |
+The [Week 3 delivery schedule](week-3-delivery-schedule.md) is the shared schedule for drafts, review, final agreement and Tuesday submission.
 
 ## GitHub workflow
 

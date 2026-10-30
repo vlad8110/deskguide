@@ -4,6 +4,10 @@
 
 Design DeskGuide as a customer-service platform for **10,000 concurrent customers**. This is a design requirement, not a measured capacity claim. Vlad remains Lead Architect and continuing coordinator; temporary handoffs will be announced explicitly in GitHub.
 
+## Delivery schedule
+
+Follow the [Week 3 delivery schedule](week-3-delivery-schedule.md) for section drafts, peer review, final agreement and Tuesday submission.
+
 ## Start here
 
 1. Read [requirements](assignment-requirements.md) and [the kickoff](team-kickoff.md).
