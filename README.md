@@ -26,11 +26,15 @@ Real company integrations, password resets, autonomous actions, and custom model
 
 Python and Flask; HTML, CSS, and JavaScript; SQLite; local document retrieval; one AI answer-generation provider selected after evaluation. No AI provider or paid service has been activated.
 
+## Current Unit 3 work
+
+Read the [Unit 3 hub](docs/unit-3/README.md) for the current 10,000-customer design assignment, Tuesday deadline, owners and GitHub coordination workflow. Vlad remains the coordinator unless he explicitly delegates a temporary handoff. Earlier prototype planning below remains historical context.
+
 ## Start here
 
 1. Read [the collaboration guide](CONTRIBUTING.md).
 2. Review [requirements](docs/requirements.md), [the weekly plan](docs/weekly-plan.md), and [free resource options](docs/resources.md).
-3. Use Issues to agree on work and acceptance criteria. Weekly coordinators organize tasks; technical roles remain in place throughout the course.
+3. Use Issues to agree on work and acceptance criteria. Vlad coordinates tasks; technical roles remain in place throughout the course.
 4. After instructor approval, implement small changes on branches and open pull requests for peer review.
 
 Setup commands and test instructions will be added when implementation dependencies and the first runnable increment are agreed. `requirements.txt` is intentionally a planning placeholder.
@@ -40,8 +44,8 @@ Setup commands and test instructions will be added when implementation dependenc
 | Location | Contents |
 | --- | --- |
 | GitHub | Code, tests, interface definitions, diagrams, technical notes, and tasks |
-| Google Docs and Drive | Team editing, study guides, references, and final course documents |
-| Email | Weekly updates, decisions, and submission confirmation |
+| Google Docs and Drive | Earlier course artifacts; active assignment sources and final exports now belong in GitHub |
+| Email | Optional notification only; decisions and coordination are recorded in GitHub |
 
 ## Folder layout
 
