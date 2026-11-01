@@ -75,17 +75,17 @@ Use stable, typed error responses carrying a correlation ID but no internal stac
 
 ### 4.1 Workload definition and illustrative sizing
 
-Working interpretation (**not yet team-approved**): **10,000 concurrent connected/authenticated customer sessions**, not 10,000 simultaneous active AI completions. The load depends on inquiry frequency, retrieval volume, customer-data lookups, feedback and escalation. Vlad's first-session scenarios use five seconds solely as an **illustrative mean response-time assumption**, not a tested result or acceptance threshold.
+**Vlad's selected design workload (still untested): 10,000 concurrent active customer sessions averaging one inquiry per minute, or about 166.67 new inquiries/second.** This is not 10,000 simultaneous model calls, nor measured capacity. Retrieval volume, per-session request timing, customer-data lookups, feedback, escalation and model-call fraction remain to be specified. Vlad's first-session scenarios use five seconds solely as an **illustrative mean response-time assumption**, not a tested result or acceptance threshold.
 
 | Scenario | Inquiry per customer | Inquiry rate at 10,000 customers | In-flight work at illustrative 5-second mean |
 | --- | --- | --- | --- |
 | Light | 1 / 600 seconds | 16.7 inquiries/s | about 84 |
-| Proposed baseline | 1 / 300 seconds | 33.3 inquiries/s | about 167 |
-| Busy | 1 / 60 seconds | 166.7 inquiries/s | about 834 |
+| Lighter sensitivity | 1 / 300 seconds | 33.3 inquiries/s | about 167 |
+| **Selected design workload** | **1 / 60 seconds** | **166.67 inquiries/s** | **about 834** |
 
-Illustrative in-flight estimate = arrival rate × mean service/response time (Little's Law; valid for stable steady-state conditions). **33.3 inquiries/s is about 2,000 incoming inquiries/minute**. If every inquiry invokes an external model, the provider must accommodate that order of demand, or the architecture must explicitly limit/reject/route overload. Do **not** assume third-party quotas, caching, agent capacity or response time suffice. A separate 10,000-**simultaneous-requests** scenario remains open for clarification.
+Illustrative in-flight estimate = arrival rate × mean service/response time (Little's Law; valid for stable steady-state conditions). **166.67 inquiries/s is about 10,000 incoming inquiries/minute (600,000/hour)**. If every inquiry invokes an external model, the provider must accommodate that order of demand, or the architecture must explicitly limit/reject/route overload. Do **not** assume third-party quotas, caching, agent capacity or response time suffice. A separate 10,000-**simultaneous-requests** scenario remains open for clarification.
 
-**Design decisions needed from Vlad/team:** choose session meaning, accepted baseline/busy request mix, inquiry interval distribution, payload/document sizes, model-call fraction, customer-data lookup frequency, escalation/feedback rates, burst multiplier and duration, provider quota and budget, login/session design, environment and resource bounds. Establish measurable p95/p99, throughput, error, queue-wait, availability and recovery gates **before** executing a test; no invented passing thresholds here.
+**Remaining design decisions from Vlad/team:** specify the selected-session workload's arrival distribution, payload/document sizes, model-call fraction, customer-data lookup frequency, escalation/feedback rates, provider quota and budget, login/session design, deployment and resource bounds. Vlad proposes 333.33/s for two minutes and a separate 10,000-arrivals-in-one-second **synthetic overload** scenario; these require test-environment and stop-condition approval. Establish measurable p95/p99, throughput, error, queue-wait, availability and recovery gates **before** executing a test; no invented passing thresholds here.
 
 ### 4.2 Architecture constraints to review
 
@@ -97,8 +97,9 @@ The local Flask+SQLite prototype remains a valid educational demo but is not pro
 | --- | --- | --- | --- |
 | A: smoke | 1–10 clients; answer, unsupported, retries, roles | Mock provider + synthetic DB | Validate C1–C7, source IDs, denial and single-save |
 | B: baseline | 100 then 1,000 sessions; ~5 minutes each | Mock provider + synthetic DB | p50/p95/p99, throughput, CPU/RAM, rate and errors |
-| C: capacity | Ramp to 5,000 then 10,000 sessions; 10–15 minutes at agreed workload | Mock provider + synthetic DB | Stable throughput, session count, queue trends and correctness |
-| D: burst | Up to 2× chosen arrival rate for 2 minutes, within agreed limit | Mock provider + synthetic DB | 429/503/backpressure, no resource runaway or duplicate saves |
+| C: capacity | Ramp to 5,000 then 10,000 sessions; proposed 10-minute hold near 166.67 inquiries/s after ramp | Mock provider + synthetic DB | Offered vs admitted/answered/fallback rates, session count, queues and correctness |
+| D: burst | Proposed 333.33 inquiries/s for two minutes; bounded, preapproved test | Mock provider + synthetic DB | 429/503/backpressure, no resource runaway or duplicate saves |
+| D2: synchronous overload | Separate synthetic **10,000 arrivals in one second** only if environment/stop conditions approved | Mock provider + synthetic DB | Safe admission and recovery; never route this volume to a live AI service |
 | E: recovery | Simulate provider 429/timeout, customer DB delay and node restart | Mock failures | Recover safely; never acknowledge unsaved escalation |
 | F: external API smoke | Small sample only **after** team/provider approval and quota/cost check | Selected live provider, fictional data only | Compatibility, citation checks, observed timeouts; **not full 10k capacity evidence** |
 
@@ -114,7 +115,7 @@ The current published architecture, interface and AI files are **working framewo
 
 | Finding | Severity | Scope / risk if absent | Responsible owner | Proposed verification / resolution | Status |
 | --- | --- | --- | --- | --- | --- |
-| F01 | High | Session definition, resource/storage model and 10k performance thresholds remain unchosen | Vlad + David | Approve workload mix, deployment/DB alternatives, test boundaries in decisions.md | **Open — team decision** |
+| F01 | High | **Vlad selected 10,000 sessions at 166.67 inquiries/s**; provider feasibility, mix, deployment/storage model and capacity targets remain unproven | Vlad + David + Collins | Approve model-call fraction, provider quotas, production resource/DB sizing and test gates in decisions.md | **Open — feasibility and targets; workload selected** |
 | F02 | High | Cross-customer leakage through C1/C2/C5/C7 or direct object references | Vlad + Hanlin; David verifies | Server-side tenant scope and per-record access at every boundary; V10/V14 | Open — design review |
 | F03 | High | Double escalation or false acknowledgement after network retry | Hanlin + Collins; David verifies | Stable submission ID, durable unique scoped key, conflict and outcome-unknown handling; V06–V09 | Open — design review |
 | F04 | High | AI quota/price cannot sustain chosen workload | Collins + Vlad | Document actual selected provider quotas and safe degradation; V16/V22 | Open — provider choice |
@@ -132,16 +133,29 @@ The current published architecture, interface and AI files are **working framewo
 | X03 | C7 customer adapter shows trusted customer identity, minimal fields, denied access and outage path | Pending |
 | X04 | C6 feedback identifies answer/version, reviewer gate, regression and rollback | Pending |
 | X05 | 400/401/403/404/409/429/503/timeout labels and response structures agree across diagram/flows/contracts | Pending |
-| X06 | R4 session/rate and deploy/storage plan are selected and prototype/production clearly distinguished | Pending decision |
+| X06 | R4 rate is now selected (166.67/s); production deploy/storage design, provider feasibility and numeric acceptance targets still require agreement | **Partially clarified; not verified** |
 | X07 | Rationale defends actual module boundaries, coupling/cohesion and major tradeoff with authoritative citation | Pending Vlad's final 500 words |
 | X08 | Correlation ID, source ID/version, escalation ID and idempotency key are distinct and scoped | Pending |
 
 **Reviewer rule:** mark an item “verified” only after reviewing the exact PR/commit and linking the evidence. If a finding remains open, record an owner, impact, mitigation and team acceptance rather than pretending it disappeared.
 
+
+### 5.2 October 31 response to Vlad's D01–D21 working proposals (not final sign-off)
+
+Reviewed [Vlad's proposed decision log](https://github.com/vlad8110/deskguide/blob/docs/unit-3-architecture-review/docs/unit-3/design-decisions-and-review-log.md), [500-word rationale draft](https://github.com/vlad8110/deskguide/blob/docs/unit-3-architecture-review/docs/unit-3/design-rationale.md), and the in-review contract/AI drafts. This is a **design review of proposals**, not a full implementation test or team approval. Detailed feedback is posted to architecture PR #15 and linked from Issue #14.
+
+- **D01/D11/D13/D20 — acceptance denominators:** Select 166.67/s as offered traffic, while reporting distinct admitted, answered-with-evidence, supported fallback, throttled, failed and timed-out rates. The suggested 95% of *successful AI answers* within 15s may appear passing even if most customers receive no AI answer; define a separate answer-availability/admission gate at the offered workload. Using Vlad's cited 500 calls/min provider example and one call/inquiry, only 5% of 10,000 incoming inquiries/min can make the call, independent of application replication. Provider/model/account quotas and realistic model-call fraction remain blocking evidence.
+- **D09/D17 — retry lifetime:** A raw, client-generated UUID that has disappeared after retention cannot be distinguished from a valid first-time UUID. Propose durable scoped idempotency receipt/tombstone with minimal data and explicit finite recognition period, or server-issued/verifiable expiry tokens. Reused key+same payload returns prior request; reused key+different payload conflicts; old/unknown key never silently creates a second ticket. Specify the privacy/backup deletion tradeoff. Apply equivalent semantics to customer replies.
+- **D07/D16/D18 — access and sessions:** Scope each object by verified server identity. Distinguish customer record ownership from agent assignment, and document admin-only rights. For proposed server-side sessions, set and test *idle* and *absolute* expiry separately, session rotation, logout invalidation, CSRF enforcement and cookie flags. Define whether logout cancels other active sessions and how session cleanup propagates across replicas.
+- **D12 — agent race checks:** Atomically claim queued work once; reject stale version/non-owner transitions; a customer reply racing with resolution must not reopen a resolved ticket; duplicate customer reply with same ID must not create two messages. Confirm release-to-queue from waiting/in-review and preserve an auditable reason.
+- **D14 — circuit breaker:** Verify one global half-open trial with a leased/versioned state, recover expiry after worker crash, and ignore late trials. Reevaluate three consecutive failures in a high-volume system and measure how often shared PostgreSQL breaker-state writes contend; do not hold a DB lock across provider calls. Quota exhaustion should respect quota reset instead of reopening every 30 seconds.
+- **D03/D04/D05 — evidence, outage and feedback:** Test structural citation checks separately from semantic support. Check that 200/temporarily_unavailable is counted as fallback, **not** successful AI answer. Accept feedback tied to inquiry_id without answer_id for unsuccessful inquiries, but require ownership, valid outcome, and retention/expiry consistency.
+- **D19/D21 — rationale/final review:** The rationale draft contains **500 whitespace-delimited words** excluding heading/references (local count); it remains a proposal tied to unapproved choices. Before approval, update the diagram and contracts to the same reviewed revision and record actual reviewer approval and final submission evidence.
+
 ## 6. Team milestones, contribution evidence and final-release gate
 
 - **October 31 by 6 p.m. ET:** submit this drafted section from a focused branch and PR referencing Issue #14; ask Vlad for review. Report capacity and contract assumptions needing cross-team decisions.
-- **November 1:** compare Vlad's diagram and Hanlin's C1–C7 with Collins's detailed flows; log X01–X08 outcomes and specific corrective PR comments. Avoid approval without completed review.
+- **November 1:** compare Vlad's diagram (M1–M9) and Hanlin's proposed C1–C10 with Collins's detailed flows; log X01–X08 outcomes and specific corrective PR comments. Avoid approval without completed review.
 - **November 2:** resolve findings or document explicit acceptance; contribute concise reliability/coupling text to Vlad's ~500-word rationale; confirm exact reviewed commit and record actual contribution/reviewer evidence.
 - **November 3 by 11:59 p.m. ET:** verify the integrated diagram, interface tables, 500-word rationale/reference and legible export; ensure LEO submission instructions and individual obligations are confirmed. Vlad coordinates final submission; no submission is claimed here.
 
