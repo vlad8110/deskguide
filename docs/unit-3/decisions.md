@@ -13,15 +13,13 @@
 
 ## Open technical decisions
 
-The [Design Decisions and Review Log](design-decisions-and-review-log.md) now supplies proposed resolutions D01–D21, provenance, owners, evidence requests and explicit differences from the current teammate drafts. Its approval register distinguishes Vlad's publication authorization from technical/final approval. The [rationale draft](design-rationale.md) reflects those proposals and remains subject to replies.
+The [Design Decisions and Review Log](design-decisions-and-review-log.md) supplies proposed resolutions D01–D21, sources, owners, evidence requests and differences from teammate drafts. The [rationale draft](design-rationale.md) reflects those proposals. Team review is pending.
 
 - Payloads, inquiry mix, burst profile and performance targets for the selected workload.
 - Logical module/deployment boundaries; production storage and customer-data adapter.
 - AI provider evaluation, quotas, permitted data and failure behavior.
 - Escalation state model, authorization, retention and feedback governance.
 - Major architecture tradeoff, supporting source and final design agreement.
-
-Add decisions with alternatives, reasons, author/reviewer and linked issue/PR. Do not mark a pending choice as agreed or tested.
 
 ## Backlog migration — October 29
 
@@ -31,4 +29,4 @@ The later workload selection above supersedes the pending status of the scenario
 
 ## October 31 proposal publication
 
-Vlad authorized publishing the consolidated recommendations and a 500-word rationale draft for review. The log records the established scope/workload/workflow and planned review of PRs #16–#18. Provider/model, capacity evidence, runtime semantic-support policy, authentication/retention details and final agreement remain pending. No teammate approval, software test result, merge or submission is implied. Record later accepted decisions with exact revision and reviewer rather than treating all published proposals as approved.
+Published D01–D21 and the rationale draft for team review. Vlad plans to review PRs #16–#18. Provider/model, capacity evidence, runtime semantic-support policy, authentication/retention details and final agreement remain pending.

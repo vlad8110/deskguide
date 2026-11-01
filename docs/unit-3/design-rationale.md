@@ -2,7 +2,7 @@
 
 Coordinator: Vladimyr Merci. Revision 1, October 31, 2026.
 
-This draft reflects proposals in the [Design Decisions and Review Log](design-decisions-and-review-log.md). It awaits team review, evidence and alignment with the final shared diagram/contracts. Collins's integration reasoning, Hanlin's contracts and David's verification/rationale input inform this draft; their approval is not inferred. It is not an approved final submission.
+Working draft based on the [Design Decisions and Review Log](design-decisions-and-review-log.md).
 
 ## Rationale body
 
@@ -27,5 +27,3 @@ Our planning assumption is 10,000 active customers averaging one inquiry per min
 Parnas, D. L. (1972). On the criteria to be used in decomposing systems into modules. *Communications of the ACM, 15*(12), 1053–1058. https://doi.org/10.1145/361598.361623
 
 Microsoft. (n.d.). *Common web application architectures*. https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures
-
-Reference metadata checked against the ACM publication record and Microsoft documentation on October 31, 2026. These sources support decomposition and deployment tradeoffs; our proposed DeskGuide limits are not findings from them.

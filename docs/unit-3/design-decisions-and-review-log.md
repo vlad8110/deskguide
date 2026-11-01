@@ -1,10 +1,10 @@
 # Unit 3 Design Decisions and Review Log
 
-Coordinator: Vladimyr Merci, Lead Architect. Updated: October 31, 2026. Revision 1.
+Coordinator: Vladimyr Merci, Lead Architect. Updated: October 31, 2026. Revision 2.
 
 I have worked through the open architecture questions and collected my proposed solutions here. Please review the items assigned to your role, flag concerns, and provide the requested clarification or evidence. I will reconcile the replies before assembling the final specification.
 
-**Published working proposals for team review.** Publication does not establish technical approval, implementation, successful tests, or final submission. The [500-word rationale draft](design-rationale.md) reflects these proposals and will change when the team responds.
+**Status: Working proposals for team review.** The [500-word rationale draft](design-rationale.md) reflects these proposals.
 
 ## 1. Sources and inspected revisions
 
@@ -19,25 +19,18 @@ I have worked through the open architecture questions and collected my proposed 
 
 The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. GitHub holds this coordination log, section drafts and snapshots. The existing diagram is the first-draft snapshot and does not yet depict every proposal below.
 
-Reconciliation on October 31: read the current shared document and diagram; both comment lists were empty at inspection. All 43 checked plain paragraphs across the five written snapshots matched shared text after whitespace/Markdown normalization. The diagram matched the repository source byte-for-byte, including all 30 diagram cells. These checks establish the inspected baseline, not team approval. This update does not edit shared sources or refresh their snapshots. Reconcile accepted changes into those sources before the next snapshot refresh.
-
 ## 2. Established direction and approval boundaries
 
 | Item | Authority and current status |
 | --- | --- |
 | Scope | Vlad directed applying the customer-service scenario to DeskGuide, including 10,000 users and existing customer-data integration. Instructor clarification remains separate. |
 | Workload | Vlad selected 10,000 active sessions averaging one inquiry/customer/minute. Selected assumption; capacity untested. |
-| Roles and coordination | Vlad coordinates; Hanlin interfaces, Collins integration, David verification. Existing issues #11–#14; no new member acceptance inferred. |
+| Roles and coordination | Vlad coordinates; Hanlin interfaces, Collins integration, David verification. Existing issues #11–#14. |
 | Review format | Shared Doc/draw.io are editable architecture sources; GitHub coordinates; PNG for review, PDF for final submission. |
-| First-draft review | Vlad reviewed the first architecture draft and authorized preparing it for team review. This is not final design approval. |
-| This publication | Vlad authorized publishing recommendations, this log and the rationale draft. This does not approve every technical proposal. |
-| Teammate draft reviews | Vlad plans to review PRs #16–#18 and consolidate findings. No approval is submitted by this log. |
-
-Use **Proposed**, **Awaiting evidence**, **Ready for review**, **Approved**, or **Deferred**. Approval needs a named reviewer, exact revision, date and evidence link. A draft, assignment, comment or silence does not establish approval.
+| First-draft review | Vlad reviewed the first architecture draft; team review remains pending. |
+| Teammate draft reviews | Vlad plans to review PRs #16–#18 and consolidate findings. |
 
 ## 3. Recommendations and clarification
-
-Unless noted otherwise, solution wording and numerical defaults are Vlad's proposals following the review. Attribution identifies who raised the concern or supplied the original draft, not who proposed every solution or value.
 
 ### D01 — Workload
 
@@ -53,7 +46,7 @@ Use the selected 10,000 active sessions × one inquiry/minute = 10,000/minute = 
 
 Make C7 read-only, derive identity/scope server-side, authorize before lookup and return allowlisted fields. Keep the existing database separate from DeskGuide support/feedback storage; AI gets no direct database access. Account changes go to a human. D16 supplies a concrete minimum-data use case.
 
-**Evidence/status:** Proposed. Hanlin provides authorized, denied and unavailable examples; no real database connection is needed for this design assignment.
+**Evidence/status:** Proposed. Hanlin provides authorized, denied and unavailable examples.
 
 ### D03 — Evidence sufficiency and semantic support
 
@@ -61,7 +54,7 @@ Make C7 read-only, derive identity/scope server-side, authorize before lookup an
 
 Retrieve only permitted relevant passages. Clarify or offer support when evidence is missing, conflicting or inadequate. Require substantive claims to reference supporting passages. Check reference membership, version, permission, resolvability and quoted text against actual retrieved content; reject malformed or unsupported candidates. Valid IDs or matching quotations alone do not prove entailment.
 
-**Evidence/status:** Proposed; the implementable pre-generation sufficiency and runtime semantic-support rules remain awaiting Collins's examples and policy. Use positive/negative cases and manual evaluation. Do not label this an accuracy guarantee.
+**Evidence/status:** Proposed; the implementable pre-generation sufficiency and runtime semantic-support rules await Collins's examples and policy, with positive/negative cases and manual evaluation.
 
 ### D04 — Failures and acknowledgements
 
@@ -87,7 +80,7 @@ Require `inquiry_id`, rating and optional comment; verify inquiry ownership. Der
 
 Protected application operations receive verified `AccessContext`. Keep `generate(request)` limited to sanitized generation data and a safe correlation ID; never serialize credentials, session tokens, roles or the internal authorization object to the provider. Revise “every internal method” instead of adding unused authority parameters to pure helpers.
 
-**Evidence/status:** Proposed; reconcile signatures and show an allowed outbound payload and a forged-context denial example. Supersedes the earlier blanket-context alternative discussed during review.
+**Evidence/status:** Proposed; reconcile signatures and show an allowed outbound payload and a forged-context denial example.
 
 ### D07 — Company/customer isolation
 
@@ -103,7 +96,7 @@ Use one company initially without mandatory multi-company tenancy. Customers see
 
 A contributor proposes a bounded source/retrieval/prompt/configuration change; a different qualified member reviews it; evaluation precedes release. Vlad coordinates authorization. Record versions, evaluation and rollback reference. Use the existing review workflow rather than build a separate approval application. No automatic retraining or release from ratings.
 
-**Evidence/status:** Proposed; supply one complete improvement/rollback example. Final assignment approval remains all four members' review of an identified version.
+**Evidence/status:** Proposed; supply one complete improvement/rollback example.
 
 ### D09 — Retention and duplicate-protection lifetime
 
@@ -123,7 +116,7 @@ Propose one modular Flask codebase, replicated behind HTTPS ingress/load balanci
 
 This reduces separately deployed parts for junior developers while preserving interfaces. Replicas scale the whole application, not each logical module independently. Provider quotas, database connections and agent capacity remain constraints. [Flask deployment](https://flask.palletsprojects.com/en/stable/deploying/), [SQLite usage guidance](https://www.sqlite.org/whentouse.html) and [PostgreSQL concurrency documentation](https://www.postgresql.org/docs/current/mvcc.html) support evaluating these choices, not a capacity guarantee.
 
-**Evidence/status:** Proposed. Vlad supplies deployment/state ownership and sizing reasoning. Hosting vendor, database version/size, replica count, availability topology and cost remain unselected. This log supplements the first diagram; it does not claim that shared diagram has been refreshed.
+**Evidence/status:** Proposed. Vlad supplies deployment/state ownership and sizing reasoning. Hosting vendor, database version/size, replica count, availability topology and cost remain unselected.
 
 ### D11 — Performance and admission
 
@@ -165,7 +158,7 @@ Keep Cohere as the first prototype candidate; compare Groq using the same B05/B1
 
 Official evidence inspected October 31: [Cohere](https://docs.cohere.com/v2/docs/rate-limits) lists free limited evaluation access, including 1,000 calls/month and 20 chat requests/minute for listed models. Several listed production models allow 500/minute; other variants require contact. At one model call/inquiry, 10,000/minute demand is 20 times 500/minute. [Groq](https://console.groq.com/docs/rate-limits) documents request/token limits and organization scope; verify the actual account tier instead of treating a generic table as a free allowance.
 
-**Evidence/status:** Final provider/model and production capacity awaiting evidence. Collins supplies a sourced comparison, actual tier/model limits, permitted data and a production quota/cost feasibility proposal. Any smaller model-call fraction needs justification. Custom quota/dedicated capacity is an unverified option, not arranged service. Separate mocked load from small live compatibility checks. No account creation, purchase or traffic test occurs in this publication.
+**Evidence/status:** Final provider/model and production capacity awaiting evidence. Collins supplies a sourced comparison, actual tier/model limits, permitted data and a production quota/cost feasibility proposal. Any smaller model-call fraction needs justification. Custom quota/dedicated capacity remains an option to investigate. Separate mocked load from small live compatibility checks.
 
 ### D14 — Shared circuit breaker
 
@@ -195,7 +188,7 @@ Support content: 1–1,000 characters; optional note: 0–2,000; customer reply:
 
 General knowledge questions need no customer lookup. An explicit account-status operation reads only `customer_id` and `account_status`, returning an authorized deterministic template without AI. Initially omit `display_name` and `tier`; do not automatically send database fields to the provider. Explain unavailable required context without guessing, and offer support. Account changes remain human work. A customer-data outage must not block confirmed request saving using trusted identity.
 
-**Evidence/status:** Proposed narrowing of Hanlin's four-field allowlist, not a request attributed to him. Provide an account-status example, denied lookup and unavailable lookup. This supplements the required AI knowledge-answering feature.
+**Evidence/status:** Proposed narrowing of Hanlin's four-field allowlist. Provide an account-status example, denied lookup and unavailable lookup. This supplements the required AI knowledge-answering feature.
 
 ### D17 — Customer reply endpoint
 
@@ -203,7 +196,7 @@ General knowledge questions need no customer lookup. An explicit account-status 
 
 Keep text-only replies for the customer's own request in `waiting_for_customer`, 1–2,000 characters. Save durably with stable reply identity for duplicate-safe retries, then move to `in_review` retaining the agent. Apply request retention, version and ownership checks. Customers return to the application for updates. Initially exclude attachments, live chat, email notifications and reopening.
 
-**Evidence/status:** Proposed; supply saved/lost-acknowledgement/state-conflict examples. Replaces the earlier idea of leaving customer follow-up outside the application.
+**Evidence/status:** Proposed; supply saved/lost-acknowledgement/state-conflict examples.
 
 ### D18 — Authentication and sessions
 
@@ -213,7 +206,7 @@ For a same-origin browser application, use an established server-side session li
 
 [Flask security guidance](https://flask.palletsprojects.com/en/stable/web-security/) and [Flask-Session configuration](https://flask-session.readthedocs.io/en/latest/config.html) support reviewing these controls. Default Flask client-side sessions are not the proposed shared server-side store.
 
-**Evidence/status:** Proposed change. David recommends idle/absolute lifetimes, invalidation/cleanup checks; Hanlin supplies cookie/CSRF request examples; Vlad clarifies production identity provisioning. Exact expiry values and provisioning remain open. No authentication code or dependency changes are included.
+**Evidence/status:** Proposed change. David recommends idle/absolute lifetimes, invalidation/cleanup checks; Hanlin supplies cookie/CSRF request examples; Vlad clarifies production identity provisioning. Exact expiry values and provisioning remain open.
 
 ### D19 — Rationale and principal tradeoff
 
@@ -221,7 +214,7 @@ For a same-origin browser application, use an established server-side session li
 
 Use the [500-word draft](design-rationale.md) to explain focused modules, typed boundaries, external AI isolation, durable support and governed learning. Analyze one principal tradeoff: a modular application simplifies small-team development/operations, while separate services offer finer independent scaling/releases at greater operational cost. Whole-application replication does not establish capacity.
 
-**Evidence/status:** Draft ready for review; source, count and final diagram/contract alignment must be checked. Revise after provider, evidence-policy and capacity clarifications. Not approved for submission.
+**Evidence/status:** Draft ready for review; provider, evidence-policy and capacity clarifications pending.
 
 ### D20 — Planned quality and capacity validation
 
@@ -231,7 +224,7 @@ With mocked dependencies/synthetic data, start at 1–10 clients, then 100/1,000
 
 Record offered/accepted/answered rates, p50/p95/p99 by outcome, fallbacks/errors, concurrency, resource/connection use, support-save integrity, rejection and recovery. Preserve B12's fixed 20 questions: 12 supported, 4 unsupported, 4 ambiguous; proposed gate 10/12 supported correct and all 4 unsupported fallback, with ambiguous cases reviewed individually. Ten sequential prototype timings are separate from load evidence.
 
-**Evidence/status:** Planned only; none executed here. Small separately approved live-provider smoke checks establish compatibility, not 10,000-user capacity. Current assignment evidence is design inspection, calculations and a plan; deployment, implementation, external traffic and measured results require later work/authorization.
+**Evidence/status:** Planned; no executed results. Small live-provider smoke checks establish compatibility, not 10,000-user capacity.
 
 ### D21 — Review and final agreement
 
@@ -239,13 +232,13 @@ Record offered/accepted/answered rates, p50/p95/p99 by outcome, fallbacks/errors
 
 David reviews architecture, Collins contracts, Hanlin AI flows, and Vlad verification. Vlad also plans to inspect PRs #16–#18. Reconcile M1–M9/C1–C10, fields, permissions, states, bounds, errors, retention and provider constraints. Distinguish Hanlin's V-prefixed validation values from David's V-prefixed test cases; their numbers refer to different things.
 
-Resolve or explicitly accept remaining findings. Record reviewer/date/exact revision. Reconcile shared sources, then refresh snapshots and PNG before final export. Confirm all three required deliverables, exact rationale count, citations and diagram readability.
+Consolidate responses into the shared architecture sources, contracts and rationale, then refresh repository snapshots. Each member reviews the same identified final version.
 
-**Evidence/status:** Review planned; team approvals and final submission pending. This publication records no teammate approval, issue completion, merge or LEO submission.
+**Evidence/status:** Review planned; team approvals and final submission pending.
 
 ## 4. Responsibility and evidence queue
 
-These follow existing assigned issues. Owners coordinate replies; this request does not imply acceptance or completion. Reply in the existing issue/PR review with the D-number, evidence/example, concern and proposed wording. Keep shared architecture sources as the editable review documents.
+Reply in your existing issue or PR review with the D-number, clarification, supporting evidence and suggested wording.
 
 | Person / existing issue | Clarify or provide | Evidence for current design | Review support |
 | --- | --- | --- | --- |
@@ -273,15 +266,16 @@ These follow existing assigned issues. Owners coordinate replies; this request d
 
 | Member | Review evidence/status | Final approval |
 | --- | --- | --- |
-| Vlad | First draft reviewed for publication; this proposal/rationale publication authorized; further technical review planned | Pending for combined final version |
+| Vlad | First draft reviewed; reviews of PRs #16–#18 planned | Pending for combined final version |
 | Hanlin | Draft PR #17; response to this log pending | Pending |
 | Collins | Draft PR #16 and COMMENTED review on PR #17; response pending | Pending |
 | David | Draft/findings PR #18; response pending | Pending |
 
-When replies arrive, append dated resolutions to the affected D-items: source, accepted/rejected wording, reason, owner and reviewed revision. Revise affected rationale text, reconcile shared architecture sources and refresh snapshots after review. Preserve proposal history. Existing Sunday combined-review/Monday-corrections planning remains in the [delivery schedule](week-3-delivery-schedule.md); no new deadline or teammate commitment is created here.
+I will update the affected recommendations and rationale after the team replies. Follow the existing [delivery schedule](week-3-delivery-schedule.md) for combined review and corrections.
 
 ## 6. Revision record
 
 | Revision | Date | Change | Review state |
 | --- | --- | --- | --- |
 | 1 | 2026-10-31 | D01–D21, source revisions, proposals, role-based evidence queue, approval register and rationale draft | Published for team review; technical/final approvals pending |
+| 2 | 2026-10-31 | Editorial cleanup | Team review pending |

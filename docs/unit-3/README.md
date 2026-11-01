@@ -10,7 +10,7 @@ Follow the [Week 3 delivery schedule](week-3-delivery-schedule.md) for section d
 
 ## Start here
 
-The [Design Decisions and Review Log](design-decisions-and-review-log.md) consolidates D01–D21, the source of each concern, Vlad's proposed solutions, responsible members, evidence requests and approval status. Review your assigned items there and the [500-word rationale draft](design-rationale.md). These are working proposals pending replies and final agreement, not approved changes to every teammate's draft.
+The [Design Decisions and Review Log](design-decisions-and-review-log.md) consolidates D01–D21, the source of each concern, proposed solutions, owners, evidence requests and approval status. Review your assigned items and the [500-word rationale draft](design-rationale.md). Team agreement is pending.
 
 The [architecture first draft](architecture-first-draft/README.md) includes the shared Google Doc and draw.io editing links, PNG preview and Markdown snapshots for team review. Use these shared files for architecture recommendations; PDFs are reserved for final submission.
 
@@ -28,7 +28,7 @@ The [architecture first draft](architecture-first-draft/README.md) includes the 
 | [Design Decisions and Review Log](design-decisions-and-review-log.md) | Vlad coordinates; named item owners respond | Whole team |
 | [Verification and review](verification-plan.md) | David | Whole team |
 
-GitHub is the coordination hub for current assignment files, decisions, task updates and review records. The shared Google Doc and draw.io file are the editable architecture review sources; keep their links and refreshed copies in this repository. Existing course documents and issues remain historical context. The prior SQLite/local-prototype scope does not establish compliance with this production design. No deployment, paid service, real customer data, or performance result is authorized or claimed by these planning files.
+GitHub is the coordination hub for assignment files, decisions, task updates and review records. The shared Google Doc and draw.io file remain the editable architecture sources. Repository copies are snapshots. The Flask/SQLite prototype and the production capacity design remain separate.
 
 [Assignment instructions](https://leocontent.umgc.edu/content/umuc/tus/cmsc/cmsc495/2268/unit-3/unit-3-assignment-1-instructions.html?ou=1541050) · [LEO submission and rubric](https://learn.umgc.edu/d2l/le/lessons/1541050/topics/37352126)
 

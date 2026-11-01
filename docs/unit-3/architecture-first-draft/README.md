@@ -1,8 +1,8 @@
 # Unit 3 architecture first draft
 
-Author: Vladimyr Merci. Status: Vlad reviewed the first draft and authorized team review; peer review and final approval are pending.
+Author: Vladimyr Merci. Status: first draft reviewed by Vlad; team approval pending.
 
-For the October 31 proposed resolutions and member-specific evidence requests, use the [Design Decisions and Review Log](../design-decisions-and-review-log.md) and [500-word rationale draft](../design-rationale.md). These supplement this first draft; the shared sources and diagram snapshots have not yet been revised to adopt those proposals.
+See the [Design Decisions and Review Log](../design-decisions-and-review-log.md) for proposed resolutions and evidence requests, and the [rationale draft](../design-rationale.md). The diagram and written snapshots below remain the first draft.
 
 ## Shared editing sources
 

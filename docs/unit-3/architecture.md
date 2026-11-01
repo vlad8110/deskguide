@@ -1,9 +1,9 @@
 # Architecture — working design
 
 Lead: Vlad. Reviewer: David; Hanlin and Collins validate interfaces and AI boundaries.
-Status: [first architecture draft available for team review](architecture-first-draft/README.md), not an approved or tested implementation. The shared Google Doc and draw.io file are the editable review sources; this repository includes their Markdown, diagram and PNG snapshots.
+Status: [first architecture draft available for team review](architecture-first-draft/README.md). The shared Google Doc and draw.io file are the editable review sources; this repository includes their Markdown, diagram and PNG snapshots.
 
-October 31 proposal supplement: [D01–D21 in the Design Decisions and Review Log](design-decisions-and-review-log.md) include modular Flask deployment, shared PostgreSQL/session state, read-only customer context, bounded AI admission and other proposed resolutions. The [500-word rationale draft](design-rationale.md) follows those proposals. The first-draft diagram/snapshots below have not yet been refreshed to incorporate them; reconcile team replies into the shared editing sources before refreshing the snapshots.
+The [Design Decisions and Review Log](design-decisions-and-review-log.md) proposes modular Flask deployment, shared PostgreSQL/session state, read-only customer context, bounded AI admission and other resolutions. The [rationale draft](design-rationale.md) follows those proposals. The shared diagram and repository snapshots still show the first draft; accepted changes will be reconciled there after review.
 
 ## Component inventory
 
