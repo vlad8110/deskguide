@@ -1,6 +1,6 @@
 # Unit 3 Design Decisions and Review Log
 
-Coordinator: Vladimyr Merci, Lead Architect. Updated: November 1, 2026. Revision 3.
+Coordinator: Vladimyr Merci, Lead Architect. Updated: November 1, 2026. Revision 4.
 
 I have worked through the open architecture questions and collected my proposed solutions here. Please review the items assigned to your role, flag concerns, and provide the requested clarification or evidence. I will reconcile the replies before assembling the final specification.
 
@@ -18,7 +18,7 @@ I have worked through the open architecture questions and collected my proposed 
 | [David's review of the proposals](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5725784156) | Review of `13b635fc743ef4f3cc9b1318adcfa0bdcb3a1405`, October 31 | Workload interpretation accepted; capacity, expiry, session, ownership, grounding and breaker details remain open |
 | [Assignment requirements](assignment-requirements.md) | Course instructions linked there | Diagram, typed contracts, 500-word rationale; 10,000 concurrent users without a specified inquiry frequency or latency target |
 
-The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. GitHub holds this coordination log, section drafts and snapshots. The existing diagram is the first-draft snapshot and does not yet depict every proposal below.
+The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. The [complete architecture review document](architecture-first-draft/architecture-review.md), written sections and two-page diagram copies reflect the November 1 proposals. Owner evidence and final team agreement remain pending.
 
 ## 2. Established direction and approval boundaries
 
@@ -32,6 +32,7 @@ The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6on
 | Teammate draft reviews | Vlad plans to review PRs #16–#18 and consolidate findings. |
 | David's response | Review received. David accepts the selected workload interpretation; final approval remains pending. |
 | November 1 follow-up | I propose the D11 timely-AI-service target and D09/D17 server-issued submission IDs. Section owners provide the remaining rules and evidence. |
+| Revised architecture | Shared document and component/deployment diagrams reflect the current proposals; all four reviews of the combined final version remain pending. |
 
 ## 3. Recommendations and clarification
 
@@ -302,3 +303,4 @@ I will update the affected recommendations and rationale after the team replies.
 | 1 | 2026-10-31 | D01–D21, source revisions, proposals, role-based evidence queue, approval register and rationale draft | Published for team review; technical/final approvals pending |
 | 2 | 2026-10-31 | Editorial cleanup | Team review pending |
 | 3 | 2026-11-01 | David's review recorded; service target, registered submission IDs and focused owner requests | Proposals pending responses and final agreement |
+| 4 | 2026-11-01 | Revised shared architecture document and component/deployment diagram copies aligned with the current proposals | Owner evidence and final team approval pending |

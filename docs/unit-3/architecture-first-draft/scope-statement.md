@@ -1,6 +1,6 @@
 # Unit 3 — DeskGuide scope statement
 
-Author: Vladimyr Merci. Working snapshot of the [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit). Make team edits there; refresh this repository copy before publishing a new revision. Team approval is pending.
+Author: Vladimyr Merci. Status: proposed; team approval pending.
 
 ## Scope statement
 
@@ -25,13 +25,13 @@ My architecture draft will show the system’s responsibilities, component bound
 
 This is a system design specification. The first draft does not include application implementation, a live deployment, actual customer-database access, or measured proof of 10,000-customer capacity. Examples and any later local demonstrations will use fictional documents and synthetic customer data.
 
-The design includes a reviewed improvement process rather than assuming the model automatically retrains itself on customer conversations. Automatic second-provider failover remains deferred, as recorded in the refined backlog. Production database, model provider, deployment pattern, and server quantities will be selected and justified in later architecture work.
+Proposed production design: one modular Flask application replicated behind HTTPS ingress, with shared PostgreSQL state. Improvements require review, evaluation, versioning and an approved release. Automatic second-provider failover remains deferred. Provider capacity, hosting and deployment sizing remain pending.
 
 The original employee-support prototype remains the backlog baseline. This Unit 3 draft extends that baseline to the customer-service requirements without claiming the earlier Flask/SQLite prototype already satisfies production capacity.
 
 ## Working dates
 
-My first architecture draft is planned for Saturday, October 31, 2026, at 6 p.m. Eastern. The assignment working deadline is Tuesday, November 3, 2026, at 11:59 p.m. Eastern.
+Internal combined review: November 1; corrections and agreement: November 2. Working submission deadline: November 3, 2026, at 11:59 p.m. Eastern.
 
 ## Source basis
 

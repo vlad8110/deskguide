@@ -1,8 +1,8 @@
-# First draft review notes
+# Team review
 
-Author: Vladimyr Merci. Working snapshot of the [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit). Make team edits there; refresh this repository copy before publishing a new revision. Team approval is pending.
+Author: Vladimyr Merci. Status: proposed; team approval pending.
 
-I reviewed the first architecture draft and approved preparing it for team review. This working copy brings the four written drafts together with the reviewed diagram. Team approval and final LEO submission are still pending.
+This architecture combines the current proposals for team review. Final agreement and LEO submission remain pending.
 
 ## What this review copy covers
 
@@ -18,24 +18,24 @@ I reviewed the first architecture draft and approved preparing it for team revie
 
 ## Remaining architecture work
 
-The workload is a design assumption, not a measured capacity result. Server/replica quantities, production storage, deployment pattern, provider quotas/costs, payloads, service targets, queue bounds and burst validation remain open. The selected workload is not a claim that 10,000 simultaneous requests can receive immediate answers.
+Production storage, deployment pattern, bounded admission and service targets are proposed above. Exact provider/model quotas, replica/database sizing, session lifetimes, unused submission-ID validity, payload/in-flight/support limits and capacity results remain pending.
 
-B12 retains manual scoring of answer support and response time. Structural citation checks do not guarantee semantic correctness. The diagram's M5 label includes manual quality review as a verification responsibility; it must not be read as requiring a human to approve every live answer. Runtime evidence-sufficiency routing remains to be agreed with the team.
+M5 performs runtime evidence and source validation under C10. B12 manual scoring is separate offline verification. The executable runtime evidence-support rule remains with Collins; valid source IDs alone do not establish correctness.
 
-The architecture-pattern tradeoff and authoritative supporting citation still need to be selected and verified. This draft does not supply the team's final 500-word rationale or finished interface contracts.
+The design rationale is available with the review log. Align its final wording with the agreed diagram and C1–C10 contracts.
 
 ## Requested team review
 
-- Hanlin: align C1-C7 schemas, permissions, safe error behavior and retry identity with the component boundaries; identify missing contracts.
+- Hanlin: finalize C1–C10, session/identity details, submission-ID registration/expiry and ownership/version conflicts.
 
-- Collins: review permitted model input/output, source checks, provider-failure routing, explicit human handoff and reviewed improvement flow.
+- Collins: supply provider/model capacity evidence, runtime evidence-support policy and shared-breaker counter/reset/write details.
 
-- David: review requirement coverage, customer isolation, duplicate-save/uncertain-save behavior, workload assumptions and the planned capacity validation.
+- David: verify the service-level denominator, expired-ID/duplicate races, session/ownership isolation and shared-breaker recovery.
 
-- Vlad: resolve cross-component findings, finish the deployment/capacity explanation and architectural tradeoff, then assemble the reviewed team specification.
+- Vlad: reconcile the architecture, contracts and rationale, resolve cross-component findings and coordinate final team review.
 
 B13/B14 are later full-backlog items rather than commitments in the first four-week extract. Customer-database integration, detailed agent workflow and governed improvement are Unit 3 design additions. Automatic second-provider failover remains deferred and B17 remains consolidated into B11.
 
 ## Dates
 
-First draft target: Saturday, October 31, 2026, at 6 p.m. Eastern. Internal combined review: Sunday, November 1; corrections and agreement: Monday, November 2. Working submission deadline: Tuesday, November 3, at 11:59 p.m. Eastern.
+Internal combined review: Sunday, November 1; corrections and agreement: Monday, November 2. Working submission deadline: Tuesday, November 3, 2026, at 11:59 p.m. Eastern.

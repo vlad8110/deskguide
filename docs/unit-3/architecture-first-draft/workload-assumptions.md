@@ -1,10 +1,10 @@
 # Unit 3 — Selected workload assumptions
 
-Author: Vladimyr Merci. Working snapshot of the [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit). Make team edits there; refresh this repository copy before publishing a new revision. Team approval is pending.
+Author: Vladimyr Merci. Status: proposed; team approval pending.
 
 ## Selected scenario
 
-I will use the busiest of our three proposed workloads: 10,000 concurrent customer sessions, with every customer submitting one new inquiry per minute on average. This is the working design assumption selected for my draft. It is not a measured usage pattern or a demonstrated capacity result.
+Planning assumption: 10,000 active customer sessions, each submitting one new inquiry per minute on average. This implies approximately 166.67 inquiries per second. The assignment specifies concurrency; this arrival rate is our proposed workload assumption, not measured usage or demonstrated capacity.
 
 A concurrent session means a customer is using the service during the same period as the other customers. It does not by itself specify a persistent network connection or mean all 10,000 customers submit at the same instant. This baseline assumes inquiries are distributed over the minute; synchronized demand is considered separately below.
 
@@ -34,15 +34,15 @@ These averages do not size a queue, predict peak concurrency, or establish a saf
 
 ## AI-service demand assumption
 
-For initial capacity planning, assume every new inquiry requires one model-generation call and do not count on caching to reduce that demand. This produces approximately 167 generation calls per second, or 10,000 per minute, before retries or additional model calls. This is a planning case, not a promise that an existing provider permits that volume.
+For the worst-case planning scenario, every new inquiry requires one generation call: approximately 166.67 calls per second, 10,000 per minute or 600,000 per hour. Caching is not credited toward capacity. Additional model calls would increase demand.
 
-Collins will need to verify the chosen provider’s request, token, and in-flight limits and permitted use. Prompt/response sizes, extra calls, timeouts, and retries must be included before estimating cost or capacity. No provider, account, purchase, or service is activated by this document.
+Collins will identify the exact provider/model, account request and token quotas, concurrent-call limits, permitted use and prompt/response sizes. Cohere remains the first prototype candidate, with Groq as a comparison; production capacity requires separate evidence.
 
 ## Separate synchronized stress scenario
 
-Also consider all 10,000 customers submitting an inquiry at once. This is a burst of 10,000 arrivals, not 10,000 requests per second sustained indefinitely. The eventual validation plan must define how closely spaced the arrivals are and how long the exercise runs.
+Proposed simulated load scenarios: approximately 166.67 inquiries/second steady state; 333.33 inquiries/second for two minutes; and a separate burst of 10,000 arrivals within one second. These scenarios use controlled substitutes before any permitted live-provider test.
 
-The architecture must specify how it limits admitted work and waiting time, communicates overload, preserves the customer’s question, and permits a safe support request without duplicate saves. It must also account for capacity in the human-support workflow; escalation cannot be treated as an unlimited escape path. Do not claim every burst request receives an immediate AI answer.
+Use bounded admission without an AI waiting queue. When capacity is unavailable, return a safe busy response and preserve the question. Keep support-request admission separate and bounded; agent work is not unlimited. Replica counts, in-flight limits and support capacity require measured sizing.
 
 ## Decisions still needed before sizing or validation
 
@@ -55,4 +55,4 @@ The architecture must specify how it limits admitted work and waiting time, comm
 | Production storage, replication, and deployment choices | Vlad; David reviews assumptions | Must follow measured capacity or justified estimates, not a guessed server count |
 | Burst profile, test duration, environment, and provider allowances | David + Vlad + Collins | Makes the validation reproducible and distinguishes mocked from real dependencies |
 
-B05/B12 require agreeing on latency targets and configured timeouts after provider evaluation. The earlier sequential demo checks remain useful for the prototype, but do not establish capacity for this workload. No performance test has been run for this draft.
+Proposed production service level: at least 95% of all eligible inquiries receive a supported AI answer within 15 seconds. Eligibility means a valid, authorized, in-scope inquiry with supporting evidence assigned to the AI route before admission. Busy responses, timeouts, invalid answers and unnecessary fallback count as misses. Explicit human requests and genuinely unsupported questions are reported separately. Apply a 20-second end-to-end deadline and a provider timeout no longer than 12 seconds or the remaining budget, whichever is shorter. These are targets awaiting capacity evidence.

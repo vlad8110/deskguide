@@ -1,128 +1,203 @@
-<mxfile host="app.diagrams.net">
-  <diagram name="Page-1" id="wWP11JurJD5BluBIdK9H">
-    <mxGraphModel dx="1137" dy="983" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+<mxfile host="app.diagrams.net" pages="2">
+  <diagram name="Component architecture" id="wWP11JurJD5BluBIdK9H">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1180" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fillColor=none;" value="" vertex="1">
-          <mxGeometry height="570" width="860" x="40" y="210" as="geometry" />
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fillColor=none;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="" vertex="1">
+          <mxGeometry height="590" width="910" x="10" y="210" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="M2 | Application + access&lt;br/&gt;Validate, authorize, coordinate" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M2 | Application + access&lt;br&gt;Validate / authorize / coordinate&lt;br&gt;C9 | Verified access context" vertex="1">
           <mxGeometry height="80" width="230" x="350" y="240" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="M1 | Browser interfaces&lt;div&gt;Customer / agent / administrator&lt;/div&gt;" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M1 | Browser interfaces&lt;div&gt;Customer / agent / administrator&lt;/div&gt;" vertex="1">
           <mxGeometry height="65" width="230" x="350" y="100" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="M3 | Knowledge + retrieval&lt;div&gt;Approved passages / stable source IDs&lt;/div&gt;" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M3 | Knowledge + retrieval&lt;br&gt;Approved sources / document admin" vertex="1">
           <mxGeometry height="80" width="230" x="60" y="390" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="M4 | AI provider adapter&lt;br/&gt;Bounded calls / controlled failures" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M4 | AI provider adapter&lt;br&gt;Bounded calls / shared breaker" vertex="1">
           <mxGeometry height="80" width="230" x="640" y="390" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="M5 | Answer + source checks&lt;br/&gt;ID / access checks; manual quality review" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M5 | Evidence + source validation&lt;br&gt;C10 | Runtime validation policy" vertex="1">
           <mxGeometry height="80" width="230" x="350" y="390" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="M6 | Support + agent workflow&lt;br/&gt;Confirm / save once / review" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M6 | Support + agent workflow&lt;br&gt;Issue ID / confirm / save once&lt;br&gt;Agent ownership + states" vertex="1">
           <mxGeometry height="80" width="230" x="60" y="570" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="M7 | Customer-data adapter [U3]&lt;br/&gt;Authorized minimum customer fields" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M7 | Customer-data adapter&lt;br&gt;Read-only authorized lookup" vertex="1">
           <mxGeometry height="80" width="230" x="640" y="570" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="M9 | Persistence interfaces&lt;br/&gt;Knowledge / support / permitted feedback" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M9 | Shared persistence interfaces&lt;br&gt;Knowledge / support / feedback&lt;br&gt;Sessions / receipts / breaker state" vertex="1">
           <mxGeometry height="80" width="230" x="350" y="570" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="M8 | Feedback + improvement [U3]&lt;br/&gt;Human review / evaluate / version" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M8 | Feedback + improvement&lt;br&gt;Review / evaluate / approved release" vertex="1">
           <mxGeometry height="65" width="230" x="350" y="710" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="External AI&lt;br/&gt;provider" vertex="1">
-          <mxGeometry height="80" width="130" x="940" y="390" as="geometry" />
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="External AI&lt;br&gt;provider" vertex="1">
+          <mxGeometry height="80" width="140" x="1010" y="390" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="Existing customer&lt;br/&gt;database [U3]" vertex="1">
-          <mxGeometry height="80" width="130" x="940" y="570" as="geometry" />
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="Existing customer&lt;br&gt;database" vertex="1">
+          <mxGeometry height="80" width="140" x="1010" y="570" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="DeskGuide | Unit 3 System Architecture&lt;br/&gt;Vladimyr Merci • First draft • October 29, 2026" vertex="1">
-          <mxGeometry height="50" width="1030" x="40" y="15" as="geometry" />
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="DeskGuide | Component Architecture&lt;br&gt;Vladimyr Merci · Proposed design · November 1, 2026" vertex="1">
+          <mxGeometry height="50" width="1140" x="10" y="15" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="DESIGN ASSUMPTION: 10,000 concurrent customers × 1 inquiry/minute ≈ 167 inquiries/second; capacity untested." vertex="1">
-          <mxGeometry height="30" width="1030" x="40" y="70" as="geometry" />
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="PLANNING ASSUMPTION: 10,000 active customers × 1 inquiry/minute ≈ 167 inquiries/second; capacity untested." vertex="1">
+          <mxGeometry height="30" width="1140" x="10" y="70" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="Legend: M1–M9 = logical components, not separate servers. [U3] = added/extended Unit 3 design.&lt;br/&gt;Source checks do not prove answer quality; B12 retains manual evaluation. Agent states and production sizing remain proposed." vertex="1">
-          <mxGeometry height="45" width="1030" x="40" y="795" as="geometry" />
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M1–M9 are logical modules in one application.&lt;br&gt;Solid lines: requests/data. Dashed lines: approved improvements." vertex="1">
+          <mxGeometry height="45" width="1140" x="10" y="825" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-17" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-2" style="endArrow=classic;startArrow=classic;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;" target="hwXAEPP3mjso2QIhsSkL-1" value="C1 | inquiry / result">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-17" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-2" style="endArrow=classic;startArrow=classic;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-1" value="C1 inquiry · C4/C5 support&lt;br&gt;C6 feedback · C8 document admin">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="620" y="230" as="sourcePoint" />
             <mxPoint x="670" y="180" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-18" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" target="hwXAEPP3mjso2QIhsSkL-3" value="C2 | passages / sources">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-18" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-3" value="C2 / C8&lt;br&gt;Sources / admin">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="-30" y="-10" as="offset" />
             <mxPoint x="620" y="230" as="sourcePoint" />
             <mxPoint x="670" y="180" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-22" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" target="hwXAEPP3mjso2QIhsSkL-5" value="C3 | candidate / failure">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-22" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-5" value="C3 | candidate / failure">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="910" y="240" as="sourcePoint" />
             <mxPoint x="960" y="190" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-23" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" target="hwXAEPP3mjso2QIhsSkL-6" value="Candidate / citation checks">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-23" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-6" value="C10 | Evidence&lt;br&gt;Validation result">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint as="offset" />
             <mxPoint x="910" y="240" as="sourcePoint" />
             <mxPoint x="960" y="190" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-26" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="hwXAEPP3mjso2QIhsSkL-7" value="C4/C5&lt;div&gt;support&lt;/div&gt;">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-26" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-7" value="C4 / C5&lt;br&gt;Support">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="890" y="340" as="sourcePoint" />
+            <mxPoint x="940" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-27" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-5" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-11" value="Permitted input&lt;br&gt;Candidate / failure">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="890" y="340" as="sourcePoint" />
             <mxPoint x="940" y="290" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-27" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-5" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" target="hwXAEPP3mjso2QIhsSkL-11" value="Context /&lt;div&gt;result&lt;/div&gt;">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-28" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-8" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-12" value="C7 | Read-only&lt;br&gt;Allowed fields">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="890" y="340" as="sourcePoint" />
             <mxPoint x="940" y="290" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-28" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-8" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" target="hwXAEPP3mjso2QIhsSkL-12" value="C7&lt;div&gt;scoped data&lt;/div&gt;">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-29" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-7" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-9" value="Registered ID&lt;br&gt;Save / replay">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint y="-60" as="offset" />
+            <mxPoint x="890" y="340" as="sourcePoint" />
+            <mxPoint x="940" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-30" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-10" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-9" value="Feedback / versions">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="890" y="340" as="sourcePoint" />
             <mxPoint x="940" y="290" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-29" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-7" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" target="hwXAEPP3mjso2QIhsSkL-9" value="Save once&lt;div&gt;read back&lt;/div&gt;">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-31" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-3" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-9" value="Knowledge / source versions">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="890" y="340" as="sourcePoint" />
             <mxPoint x="940" y="290" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-30" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-10" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" target="hwXAEPP3mjso2QIhsSkL-9" value="Feedback / reviewed versions">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-32" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-8" value="C7&lt;br/&gt;lookup">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="890" y="340" as="sourcePoint" />
             <mxPoint x="940" y="290" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-31" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-3" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" target="hwXAEPP3mjso2QIhsSkL-9" value="Source metadata / versions">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-33" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-10" value="C6&lt;br/&gt;feedback">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="890" y="340" as="sourcePoint" />
             <mxPoint x="940" y="290" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-32" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;" target="hwXAEPP3mjso2QIhsSkL-8" value="C7&lt;br/&gt;lookup">
-          <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <mxPoint x="890" y="340" as="sourcePoint" />
-            <mxPoint x="940" y="290" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-33" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;" target="hwXAEPP3mjso2QIhsSkL-10" value="C6&lt;br/&gt;feedback">
-          <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <mxPoint x="890" y="340" as="sourcePoint" />
-            <mxPoint x="940" y="290" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-34" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;" value="DeskGuide application boundary" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-34" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="DeskGuide application boundary" vertex="1">
           <mxGeometry height="20" width="230" x="50" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="approved-sources" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-10" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;dashed=1;exitX=0.5;exitY=1;entryX=0;entryY=0.5;" target="hwXAEPP3mjso2QIhsSkL-3" value="Approved sources">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="465" y="790" />
+              <mxPoint x="30" y="790" />
+              <mxPoint x="30" y="430" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="approved-configuration" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-10" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;dashed=1;exitX=1;exitY=0.8;entryX=0.5;entryY=1;" target="hwXAEPP3mjso2QIhsSkL-5" value="Approved configuration">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="890" y="760" />
+              <mxPoint x="890" y="500" />
+              <mxPoint x="755" y="500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="EKfMThlVabrlaAyRmL1L" name="Production deployment">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="deploy-title" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;fontSize=20;" value="DeskGuide | Proposed Production Deployment&lt;br&gt;Vladimyr Merci · November 1, 2026" vertex="1">
+          <mxGeometry height="60" width="1140" x="10" y="15" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-browser" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;" value="Customer / agent / administrator browsers" vertex="1">
+          <mxGeometry height="70" width="340" x="420" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-ingress" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;" value="HTTPS ingress + load balancer" vertex="1">
+          <mxGeometry height="70" width="340" x="420" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="replica-back-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;fillColor=#F5F5F5;" value="" vertex="1">
+          <mxGeometry height="180" width="480" x="374" y="366" as="geometry" />
+        </mxCell>
+        <mxCell id="replica-back-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;fillColor=#FAFAFA;" value="" vertex="1">
+          <mxGeometry height="180" width="480" x="362" y="378" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-app" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;" value="Replicated modular Flask application&lt;br&gt;Production WSGI · logical modules M2–M9&lt;br&gt;M2: access / sessions · M4: bounded AI / breaker&lt;br&gt;M6: support workflow · M9: state adapters" vertex="1">
+          <mxGeometry height="180" width="480" x="350" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-ai" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;" value="External AI provider&lt;br&gt;Quota / token capacity pending" vertex="1">
+          <mxGeometry height="100" width="220" x="930" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-customer-db" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;" value="Existing customer database&lt;br&gt;Read-only through M7" vertex="1">
+          <mxGeometry height="100" width="220" x="30" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-postgres" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;shape=cylinder3;size=15;" value="Shared PostgreSQL&lt;br&gt;Sessions · requests / receipts&lt;br&gt;Knowledge / feedback · breaker leases" vertex="1">
+          <mxGeometry height="115" width="480" x="350" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-status" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;fontSize=12;strokeColor=none;" value="Replica count, database sizing, provider capacity and hosting remain subject to review." vertex="1">
+          <mxGeometry height="35" width="820" x="180" y="835" as="geometry" />
+        </mxCell>
+        <mxCell id="browser-ingress" edge="1" parent="1" source="deploy-browser" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;fontSize=13;" target="deploy-ingress" value="HTTPS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ingress-app" edge="1" parent="1" source="deploy-ingress" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;fontSize=13;" target="deploy-app" value="Admitted requests">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="app-provider" edge="1" parent="1" source="deploy-app" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;startArrow=classic;fontSize=13;" target="deploy-ai" value="M4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="app-customer" edge="1" parent="1" source="deploy-app" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;startArrow=classic;fontSize=13;" target="deploy-customer-db" value="M7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="app-state" edge="1" parent="1" source="deploy-app" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;startArrow=classic;fontSize=13;" target="deploy-postgres" value="M9 | Shared durable state">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

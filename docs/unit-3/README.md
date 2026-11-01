@@ -12,7 +12,7 @@ Follow the [Week 3 delivery schedule](week-3-delivery-schedule.md) for section d
 
 The [Design Decisions and Review Log](design-decisions-and-review-log.md) consolidates D01–D21, the source of each concern, proposed solutions, owners, evidence requests and approval status. Review your assigned items and the [500-word rationale draft](design-rationale.md). Team agreement is pending.
 
-The [architecture first draft](architecture-first-draft/README.md) includes the shared Google Doc and draw.io editing links, PNG preview and Markdown snapshots for team review. Use these shared files for architecture recommendations; PDFs are reserved for final submission.
+The [revised architecture](architecture-first-draft/README.md) includes the [complete review document](architecture-first-draft/architecture-review.md), written sections, component/deployment PNGs and editable two-page draw.io source. The shared Google Doc and draw.io file remain the editable review sources.
 
 1. Read [requirements](assignment-requirements.md) and [the kickoff](team-kickoff.md).
 2. Confirm your assigned issue, availability, and blockers in GitHub.

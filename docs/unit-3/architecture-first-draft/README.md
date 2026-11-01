@@ -1,33 +1,39 @@
-# Unit 3 architecture first draft
+# Unit 3 architecture review
 
-Author: Vladimyr Merci. Status: first draft reviewed by Vlad; team approval pending.
+Author: Vladimyr Merci. Updated: November 1, 2026. Status: proposed; team approval pending.
 
-See the [Design Decisions and Review Log](../design-decisions-and-review-log.md) for proposed resolutions and evidence requests, and the [rationale draft](../design-rationale.md). The diagram and written snapshots below remain the first draft.
+Read the [complete architecture review document](architecture-review.md), the [Design Decisions and Review Log](../design-decisions-and-review-log.md), and the [rationale draft](../design-rationale.md).
+
+## Written sections
+
+| Material | Document |
+| --- | --- |
+| Scope and backlog boundaries | [Scope statement](scope-statement.md) |
+| Workload, service target and open sizing decisions | [Workload assumptions](workload-assumptions.md) |
+| M1–M9 and C1–C10 responsibilities | [Component responsibilities](component-responsibilities.md) |
+| Supported answers and durable human handoff | [Customer question walkthroughs](customer-question-walkthroughs.md) |
+| Remaining decisions, owners and dates | [Team review](review-notes.md) |
+
+## Diagrams
+
+The [editable draw.io source](deskguide-unit-3-architecture.drawio) contains two pages: **Component architecture** and **Production deployment**.
+
+### Component architecture
+
+![DeskGuide component architecture](deskguide-unit-3-architecture.png)
+
+### Proposed production deployment
+
+![DeskGuide proposed production deployment](deskguide-unit-3-production-deployment.png)
+
+M1–M9 are logical modules. The production proposal replicates one modular Flask application behind HTTPS ingress/load balancing with shared PostgreSQL state. The workload assumption is 10,000 active customer sessions averaging one inquiry per minute, approximately 167 inquiries per second. Capacity remains untested.
+
+Provider/model capacity, resource sizing, session and unused-ID lifetimes, runtime evidence-support rules, and breaker update details remain assigned for review. See the [review log](../design-decisions-and-review-log.md) for owners and evidence requests.
 
 ## Shared editing sources
 
-- [Edit the written draft in Google Docs](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit).
-- [Edit the shared architecture diagram in draw.io](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO).
-- [Open the same diagram file in Google Drive](https://drive.google.com/file/d/1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO/view?usp=sharing).
+- [Architecture Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit)
+- [Shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO)
+- [Same diagram in Google Drive](https://drive.google.com/file/d/1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO/view)
 
-Both shared files allow anyone with the link to edit. Use the Google Doc for written recommendations and the shared draw.io file for diagram edits. Keep task status and agreed decisions in the [Unit 3 GitHub hub](../README.md) and [responsibility issue #11](https://github.com/vlad8110/deskguide/issues/11).
-
-## Repository copies
-
-| Material | Copy for review |
-| --- | --- |
-| Scope and backlog boundaries | [Scope statement](scope-statement.md) |
-| Selected workload and open sizing decisions | [Workload assumptions](workload-assumptions.md) |
-| Nine logical components | [Component responsibilities](component-responsibilities.md) |
-| Supported answer and failure-to-human handoff | [Customer question walkthroughs](customer-question-walkthroughs.md) |
-| Remaining work, owners and dates | [Review notes](review-notes.md) |
-| Editable diagram snapshot | [Download the draw.io source](deskguide-unit-3-architecture.drawio) |
-| Image preview | [Open the PNG](deskguide-unit-3-architecture.png) |
-
-These files are snapshots of the shared review sources. Google Drive edits do not automatically update GitHub. Before publishing a revision, reconcile the current Google Doc and shared diagram, refresh the local copies and PNG, then commit and push when requested. PDFs are reserved for final submission.
-
-![DeskGuide Unit 3 architecture first draft](deskguide-unit-3-architecture.png)
-
-The nine components are logical responsibilities rather than nine deployed servers. The selected design assumption is 10,000 concurrent customer sessions, each submitting one new inquiry per minute on average: approximately 167 new inquiries per second. Capacity is untested. M5 structural citation checks do not establish answer quality; B12 manual evaluation remains separate from live request processing.
-
-The draft preserves the approved backlog boundary and identifies Unit 3 additions. Production sizing, service targets, provider allowances, detailed contracts and the final architecture rationale still require team work. Follow the [Week 3 schedule](../week-3-delivery-schedule.md) for review and Tuesday delivery.
+The shared files remain the editable architecture sources; these repository copies reflect the November 1 review draft. Follow the [Week 3 schedule](../week-3-delivery-schedule.md) for team agreement and submission.

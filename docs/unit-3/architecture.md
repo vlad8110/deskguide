@@ -1,49 +1,50 @@
 # Architecture — working design
 
 Lead: Vlad. Reviewer: David; Hanlin and Collins validate interfaces and AI boundaries.
-Status: [first architecture draft available for team review](architecture-first-draft/README.md). The shared Google Doc and draw.io file are the editable review sources; this repository includes their Markdown, diagram and PNG snapshots.
 
-The [Design Decisions and Review Log](design-decisions-and-review-log.md) proposes modular Flask deployment, shared PostgreSQL/session state, read-only customer context, bounded AI admission and other resolutions. The [rationale draft](design-rationale.md) follows those proposals. The shared diagram and repository snapshots still show the first draft; accepted changes will be reconciled there after review.
+Status: [revised architecture available for team review](architecture-first-draft/README.md). Read the [complete architecture document](architecture-first-draft/architecture-review.md), [review log](design-decisions-and-review-log.md) and [rationale draft](design-rationale.md). Team agreement remains pending.
 
 ## Component inventory
 
-| Component | Responsibility | Boundary to specify |
+| Component | Responsibility | Contract or boundary |
 | --- | --- | --- |
-| M1 Browser interfaces | Customer inquiry/citation display; authorized agent and administrator work | Public API and server-side role enforcement |
-| M2 Application/access control | Validation, authorization, admission and orchestration | Trusted access scope and component contracts |
-| M3 Knowledge/retrieval | Retrieve permitted passages with resolvable source IDs | Ingestion, approved versions, retrieval and source access |
-| M4 AI adapter | Provider-neutral generation with bounded failure handling | Permitted input, output, deadlines and quota behavior |
-| M5 Answer/source checks | Validate output structure, source IDs, versions and access | Structural checks; manual B12 answer-quality evaluation remains separate |
-| M6 Escalation/agent workflow | Save/acknowledge one confirmed handoff and expose authorized agent work | Safe retries, ownership and state changes |
-| M7 Customer-data adapter | Authorized minimum data from the existing database | Scoped fields, permitted operations and availability |
-| M8 Feedback/improvement | Review interaction patterns and evaluate controlled changes | Retention, access, versioned releases and rollback |
-| M9 Persistence interfaces | Durable component-owned support, knowledge and permitted feedback storage | Transactions, identifiers and retention |
+| M1 Browser interfaces | Customer inquiries, source display, agent and administrator actions | C1/C4/C5/C6/C8; server-side authorization |
+| M2 Application/access control | Validation, permissions, bounded admission and orchestration | C9 verified access context; cookie sessions and CSRF |
+| M3 Knowledge/retrieval | Approved source versions, retrieval and document administration | C2 retrieval/sources; C8 administration |
+| M4 AI adapter | Permitted model input, bounded generation and shared breaker | C3 generation; no internal access context or customer-database fields sent to the provider |
+| M5 Evidence/source validation | Candidate structure, source identity/version/access and evidence policy | C10 runtime validation; B12 manual evaluation remains offline |
+| M6 Support/agent workflow | Registered IDs, atomic save/replay, ownership and state transitions | C4/C5; acknowledgement only after durable commit |
+| M7 Customer-data adapter | Read-only authorized customer_id/account_status lookup | C7; deterministic account-status response without AI |
+| M8 Feedback/improvement | Inquiry-linked feedback, independent review, evaluated releases and rollback | C6; approved source changes through M3/C8 and configuration changes through M4 |
+| M9 Persistence interfaces | Component-owned durable knowledge, support, feedback, sessions and breaker state | Shared PostgreSQL transactions, receipts and leases |
 
-See the [detailed responsibilities](architecture-first-draft/component-responsibilities.md) and [customer walkthroughs](architecture-first-draft/customer-question-walkthroughs.md). These are nine logical responsibilities, not nine servers or an automatic commitment to nine separately deployed services.
+See the [detailed responsibilities](architecture-first-draft/component-responsibilities.md) and [customer walkthroughs](architecture-first-draft/customer-question-walkthroughs.md). These are logical responsibilities, not nine separately deployed services.
 
-## Diagram work
+## Architecture diagrams
 
-- [x] Create an editable component diagram and readable [PNG preview](architecture-first-draft/deskguide-unit-3-architecture.png).
-- [x] Label the application boundary and external AI/database services in the first draft.
-- [ ] Trace normal answering, uncertain/unsupported answering, provider failure, escalation and feedback.
-- [ ] Give each interaction a matching contract ID from interface-contracts.md.
-- [x] Add a legend and distinguish logical modules from separately deployed services.
+- [Component architecture PNG](architecture-first-draft/deskguide-unit-3-architecture.png)
+- [Proposed production deployment PNG](architecture-first-draft/deskguide-unit-3-production-deployment.png)
+- [Editable two-page draw.io source](architecture-first-draft/deskguide-unit-3-architecture.drawio)
 
-## 10,000-concurrent-customer capacity design
+The component view includes C1–C10 boundaries, registered submission receipts, runtime validation, customer-data isolation and approved improvement routes. The production view shows HTTPS ingress/load balancing, replicated modular Flask applications using production WSGI, shared PostgreSQL state and separate external AI/customer-database dependencies.
 
-Concurrent customers are not automatically 10,000 simultaneous model requests. Define active sessions, request frequency, peak arrival rate, response time, and simultaneous in-flight work before sizing. Show the calculation and sensitivity to assumptions.
+## Workload and service proposal
 
-Selected assumption: 10,000 concurrent customer sessions, each generating one inquiry per minute on average, approximately 167 new inquiries per second. The [workload draft](architecture-first-draft/workload-assumptions.md) includes calculations, response-time sensitivity and a separate 10,000-arrival burst scenario. Payloads, service targets, queue bounds, deployment and capacity validation remain open.
+Selected assumption: 10,000 active customer sessions, each generating one inquiry per minute on average, approximately 166.67 new inquiries per second. The worst-case AI planning scenario requires 10,000 model calls per minute. This assumption is separate from the assignment's concurrency requirement.
 
-- [ ] Define workload mix, payload sizes, sustained and burst rates, latency/error targets and test duration.
-- [ ] Decide application replication, session/state strategy and storage design.
-- [ ] Address AI provider quotas, queue bounds, backpressure, rate limits and controlled overload behavior.
-- [ ] Address connection limits, retrieval/index capacity, database contention and external dependencies.
-- [ ] Document recovery, observability and maintenance implications for junior developers.
-- [ ] Compare the bounded Flask/SQLite prototype with proposed production choices; justify changes.
+Proposed service level: at least 95% of all eligible inquiries receive a supported AI answer within 15 seconds. Eligible busy, timeout, invalid-answer and unnecessary-fallback outcomes count as misses. Apply a 20-second end-to-end deadline, with the provider limited to 12 seconds or the remaining budget, whichever is shorter. Use bounded admission without an AI waiting queue and separately bounded support admission.
 
-Use verification-plan.md for planned load validation. No capacity result has been measured.
+The [workload document](architecture-first-draft/workload-assumptions.md) details the denominator, calculations, two-minute 2× load and separate 10,000-arrival/one-second burst. Provider capacity, resource sizing, payload/in-flight/support limits and executed load evidence remain pending. No production-capacity result has been measured.
 
-## Backlog traceability and first decisions
+## Remaining review
 
-The [first architecture session](architect-first-session.md) records the earlier workload alternatives. Preserve B03 component boundaries, B04 contracts, B06 storage, B07 source resolution, B09 authorization and B11 duplicate-safe escalation/provider failures. Carry B13 feedback and B14 document/source versioning into the production design without treating them as first-four-week commitments. [The integration map](../backlog/implementation-map.md) separates the prototype criteria from P01–P04 production additions. The selected workload is now a documented assumption; it still needs team review and capacity evidence.
+- Hanlin: C1–C10 schemas, session/identity details, submission-ID registration/expiry and ownership/version conflicts.
+- Collins: provider/model quota evidence, runtime evidence-support rules and shared-breaker counter/reset/write policy.
+- David: denominator-aware service-level tests, expired-ID/duplicate races, session/ownership isolation and breaker recovery across replicas.
+- Vlad: reconcile the architecture, contracts and rationale and coordinate all four reviews of one final version.
+
+The shared Google Doc and draw.io file remain the editable architecture sources. Repository copies reflect the November 1 review draft. Final agreement and submission remain pending.
+
+## Backlog traceability
+
+Preserve B03 component boundaries, B04 contracts, B06 storage, B07 source resolution, B09 authorization and B11 durable duplicate-safe escalation. B13 feedback and B14 document versioning remain later full-backlog work. Customer-data integration, detailed agent workflow and governed improvement are Unit 3 design additions. The [implementation map](../backlog/implementation-map.md) distinguishes prototype criteria from P01–P04 production additions. Automatic second-provider failover remains deferred; B17 remains consolidated into B11.
