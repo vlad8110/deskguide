@@ -1,27 +1,37 @@
-# Design rationale — drafting workspace
+# Design rationale — draft for team review
 
-Coordinator: Vlad. Contributors/reviewers: all four members.
-Status: outline only. Final rationale must be **500 words**, with at least one authoritative architecture-pattern source.
+Coordinator: Vladimyr Merci. Revision 1, October 31, 2026.
 
-## Drafting prompts
+This draft reflects proposals in the [Design Decisions and Review Log](design-decisions-and-review-log.md). It awaits team review, evidence and alignment with the final shared diagram/contracts. Collins's integration reasoning, Hanlin's contracts and David's verification/rationale input inform this draft; their approval is not inferred. It is not an approved final submission.
 
-- Explain separation of concerns using the actual modules in architecture.md.
-- Give specific high-cohesion/low-coupling examples tied to contracts and dependency direction.
-- Analyze one major tradeoff (for example, modular application versus independently deployed services) against team skills, time, 10,000-customer workload and operating complexity. Decide after comparing alternatives; no pattern is selected by this outline.
-- Explain AI isolation, evidence handling, escalation, failure behavior and the reviewed improvement loop.
-- Cite an authoritative source supporting the selected architecture pattern and connect it to the actual decision.
+## Rationale body
 
-## Final 500-word rationale
+I propose a modular architecture for DeskGuide that separates customer interaction, application coordination, retrieval, AI generation, evidence validation, human support, customer data, feedback, and persistence. Each module has a focused responsibility. Retrieval owns approved knowledge and source versions; support owns request ownership and state changes. This cohesion helps junior developers understand individual features without learning every implementation detail.
 
-_To be written after the team agrees on the architecture and tradeoff. Do not submit this placeholder._
+Typed contracts reduce coupling by specifying inputs, outputs, permissions, limits, and failure outcomes. The application coordinates requests through these contracts instead of editing another module's tables or interpreting provider responses directly. Parnas (1972) explains how decomposition supports flexibility and comprehensibility. I apply that principle by hiding provider and storage details behind adapters. These implementations can change while callers retain a stable interface.
+
+The principal tradeoff is choosing one modular application instead of independently deployed microservices. One codebase reduces deployment, troubleshooting, and coordination work for our four-person team. Microsoft (n.d.) describes how a single application can retain internal layers while being replicated for scale. Separate services could support independent releases and scaling, but would add network failures and operational responsibilities. Our proposal accepts scaling the application together initially, while preserving boundaries that could support later separation.
+
+For production design, application instances would sit behind HTTPS ingress and a load balancer, using a production WSGI server. Shared PostgreSQL storage would hold durable support records, permitted feedback, and server-side sessions. SQLite remains appropriate for our local prototype. This deployment proposal does not establish production capacity; resource sizing, database constraints, hosting costs, and provider allowances still require evidence.
+
+Authentication and authorization remain deterministic application responsibilities. I propose secure cookie sessions with CSRF protection and server-side scope checks. Customers access their own records; agents access authorized support work. A read-only adapter limits customer-database access to necessary fields. General knowledge questions avoid customer lookups, while account-status responses use an authorized deterministic template rather than sending database fields to AI.
+
+The AI adapter receives permitted passages and returns a candidate, never authority to change accounts or save requests. Evidence validation checks source identity, version, access, and response structure. Valid citations alone do not prove semantic support, so Collins's runtime evidence policy and manual evaluation remain necessary. Insufficient evidence, provider failure, or admission overload produces an honest limitation and a support option. Generation has bounded deadlines and no automatic retry initially.
+
+Customers confirm support content before submission. Shared transactions and stable submission identities prevent duplicate requests, and acknowledgement follows durable saving. Five explicit states govern agent ownership and customer replies. Feedback links to inquiries even when generation fails. Improvements require independent review, evaluation, versioning, release approval, and a rollback reference, rather than automatic retraining.
+
+Our planning assumption is 10,000 active customers averaging one inquiry per minute, approximately 167 inquiries per second. Free API access cannot demonstrate that capacity. David's staged validation plan separates mocked application load from limited live-provider checks. We will distinguish proposed targets, inspected design evidence, and executed results before claiming readiness. Every test record will identify the environment, configuration, workload, observed results, and any limitations affecting interpretation.
 
 ## References
 
-_To be verified and added with accurate title, author/organization, date and direct URL. Earlier project references are context, not automatic evidence for an unselected production architecture._
+Parnas, D. L. (1972). On the criteria to be used in decomposing systems into modules. *Communications of the ACM, 15*(12), 1053–1058. https://doi.org/10.1145/361598.361623
 
-## Review
+Microsoft. (n.d.). *Common web application architectures*. https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures
 
-- [ ] Exact final word count recorded, with the counting convention stated.
-- [ ] At least one authoritative pattern source verified and cited.
-- [ ] Examples match the final diagram and contracts.
-- [ ] All four contributors review the final rationale.
+Reference metadata checked against the ACM publication record and Microsoft documentation on October 31, 2026. These sources support decomposition and deployment tradeoffs; our proposed DeskGuide limits are not findings from them.
+
+## Word count and pending review
+
+**Verified body count: 500 words.** Count only the body between **Rationale body** and **References**, splitting on whitespace. Count in-text citations, numbers and hyphenated terms as they appear. Exclude headings, references and these review notes. Recheck after any revision.
+
+Before final submission, reconcile the exact provider/model and quotas, runtime evidence-support rule, session/identity details, capacity assumptions and accepted contract changes. Confirm that the shared diagram/contracts show this design, verify the final count, and record all four reviews of one final version.

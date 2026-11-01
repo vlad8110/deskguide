@@ -13,6 +13,8 @@
 
 ## Open technical decisions
 
+The [Design Decisions and Review Log](design-decisions-and-review-log.md) now supplies proposed resolutions D01–D21, provenance, owners, evidence requests and explicit differences from the current teammate drafts. Its approval register distinguishes Vlad's publication authorization from technical/final approval. The [rationale draft](design-rationale.md) reflects those proposals and remains subject to replies.
+
 - Payloads, inquiry mix, burst profile and performance targets for the selected workload.
 - Logical module/deployment boundaries; production storage and customer-data adapter.
 - AI provider evaluation, quotas, permitted data and failure behavior.
@@ -26,3 +28,7 @@ Add decisions with alternatives, reasons, author/reviewer and linked issue/PR. D
 Imported the original and refined Revision 2 backlog text to GitHub. The four-week sprint file is explicitly extracted from Revision 2 B01–B12; no separate final LEO version was verified. Preserve historical wording and integrate production changes through P01–P04 in the implementation map. Workload scenarios in architect-first-session.md are proposals awaiting review. No implementation/test result is inferred.
 
 The later workload selection above supersedes the pending status of the scenario choice. Earlier alternatives remain planning history; the selected assumption is recorded in the [first draft](architecture-first-draft/workload-assumptions.md).
+
+## October 31 proposal publication
+
+Vlad authorized publishing the consolidated recommendations and a 500-word rationale draft for review. The log records the established scope/workload/workflow and planned review of PRs #16–#18. Provider/model, capacity evidence, runtime semantic-support policy, authentication/retention details and final agreement remain pending. No teammate approval, software test result, merge or submission is implied. Record later accepted decisions with exact revision and reviewer rather than treating all published proposals as approved.

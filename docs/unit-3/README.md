@@ -10,6 +10,8 @@ Follow the [Week 3 delivery schedule](week-3-delivery-schedule.md) for section d
 
 ## Start here
 
+The [Design Decisions and Review Log](design-decisions-and-review-log.md) consolidates D01–D21, the source of each concern, Vlad's proposed solutions, responsible members, evidence requests and approval status. Review your assigned items there and the [500-word rationale draft](design-rationale.md). These are working proposals pending replies and final agreement, not approved changes to every teammate's draft.
+
 The [architecture first draft](architecture-first-draft/README.md) includes the shared Google Doc and draw.io editing links, PNG preview and Markdown snapshots for team review. Use these shared files for architecture recommendations; PDFs are reserved for final submission.
 
 1. Read [requirements](assignment-requirements.md) and [the kickoff](team-kickoff.md).
@@ -23,6 +25,7 @@ The [architecture first draft](architecture-first-draft/README.md) includes the 
 | [Interface contracts](interface-contracts.md) | Hanlin | Collins and David |
 | [AI integration](ai-integration.md) | Collins | Hanlin and David |
 | [Design rationale](design-rationale.md) | Vlad assembles; everyone contributes | Whole team |
+| [Design Decisions and Review Log](design-decisions-and-review-log.md) | Vlad coordinates; named item owners respond | Whole team |
 | [Verification and review](verification-plan.md) | David | Whole team |
 
 GitHub is the coordination hub for current assignment files, decisions, task updates and review records. The shared Google Doc and draw.io file are the editable architecture review sources; keep their links and refreshed copies in this repository. Existing course documents and issues remain historical context. The prior SQLite/local-prototype scope does not establish compliance with this production design. No deployment, paid service, real customer data, or performance result is authorized or claimed by these planning files.
