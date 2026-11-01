@@ -29,9 +29,3 @@ Parnas, D. L. (1972). On the criteria to be used in decomposing systems into mod
 Microsoft. (n.d.). *Common web application architectures*. https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures
 
 Reference metadata checked against the ACM publication record and Microsoft documentation on October 31, 2026. These sources support decomposition and deployment tradeoffs; our proposed DeskGuide limits are not findings from them.
-
-## Word count and pending review
-
-**Verified body count: 500 words.** Count only the body between **Rationale body** and **References**, splitting on whitespace. Count in-text citations, numbers and hyphenated terms as they appear. Exclude headings, references and these review notes. Recheck after any revision.
-
-Before final submission, reconcile the exact provider/model and quotas, runtime evidence-support rule, session/identity details, capacity assumptions and accepted contract changes. Confirm that the shared diagram/contracts show this design, verify the final count, and record all four reviews of one final version.
