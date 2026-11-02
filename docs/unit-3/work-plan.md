@@ -13,7 +13,13 @@ Owners coordinate their sections; everyone contributes and reviews. Vlad assembl
 
 ## Delivery schedule
 
+Respond to the [November 2 proposed decisions](proposed-decisions.md) by **Tuesday, November 3, 2026, at 10:00 a.m. Eastern** in your existing issue or section PR. Vlad prepares the final revision afterward. Final team agreement remains pending.
+
 The [Week 3 delivery schedule](week-3-delivery-schedule.md) is the shared schedule for drafts, review, final agreement and Tuesday submission.
+
+## Application improvement release authority
+
+Proposed: Vlad is the primary release authorizer and David the backup. A non-author authorizes release after independent review, passed evaluation and a rollback reference. A qualified independent reviewer may also authorize. Assign explicit release permission to designated staff accounts; retain the existing project coordination roles.
 
 ## GitHub workflow
 

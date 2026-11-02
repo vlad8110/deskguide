@@ -1,5 +1,7 @@
 # Unit 3 — Component responsibilities
 
+*November 1 shared-source snapshot. Current direction: [November 2 proposed decisions](../proposed-decisions.md).*
+
 Author: Vladimyr Merci. Status: proposed; team approval pending.
 
 Production proposal: HTTPS ingress/load balancing distributes requests across modular Flask replicas using production WSGI. Shared PostgreSQL holds durable application state through M9. The existing customer database remains a separate read-only dependency. Hosting, replica counts, database sizing and provider capacity remain pending.

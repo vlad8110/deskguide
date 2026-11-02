@@ -1,5 +1,7 @@
 # DeskGuide Unit 3 — Architecture Review Draft
 
+*November 1 shared-source snapshot. Current direction: [November 2 proposed decisions](../proposed-decisions.md).*
+
 Vladimyr Merci | CMSC 495 Team 4 | November 1, 2026
 
 Proposed architecture for team review. The design, interface contracts and rationale remain pending final team agreement.

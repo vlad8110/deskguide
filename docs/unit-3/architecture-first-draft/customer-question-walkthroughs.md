@@ -1,5 +1,7 @@
 # Unit 3 — Customer question walkthroughs
 
+*November 1 shared-source snapshot. Current direction: [November 2 proposed decisions](../proposed-decisions.md).*
+
 Author: Vladimyr Merci. Status: proposed; team approval pending.
 
 These two walkthroughs turn the component responsibilities into interactions for the architecture diagram. They describe intended behavior, not implemented or tested results. The workload remains 10,000 concurrent customer sessions at about 167 new inquiries per second.

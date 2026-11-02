@@ -1,5 +1,7 @@
 # Team review
 
+*November 1 shared-source snapshot. Current direction: [November 2 proposed decisions](../proposed-decisions.md).*
+
 Author: Vladimyr Merci. Status: proposed; team approval pending.
 
 This architecture combines the current proposals for team review. Final agreement and LEO submission remain pending.

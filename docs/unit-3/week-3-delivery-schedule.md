@@ -1,6 +1,6 @@
 # Week 3 delivery schedule
 
-All times are **Eastern**. Our working submission deadline is **Tuesday, November 3, 2026, at 11:59 p.m.** Internal milestones below organize the team’s work; report conflicts in your assigned issue promptly.
+All times are **Eastern**. Our working submission deadline is **Tuesday, November 3, 2026, at 11:59 p.m.** **Team responses are due Tuesday, November 3, 2026, at 10:00 a.m. Eastern** so I can prepare the final revision afterward. Report conflicts in your assigned issue promptly.
 
 | When | Deliverable and action | Lead / contributors | Where to deliver |
 | --- | --- | --- | --- |
@@ -10,7 +10,9 @@ All times are **Eastern**. Our working submission deadline is **Tuesday, Novembe
 | Saturday, October 31, by 6 p.m. | Normal answering, failure, human escalation and reviewed-feedback flows | Collins | [AI integration](ai-integration.md), PR linked to [#13](https://github.com/vlad8110/deskguide/issues/13) |
 | Saturday, October 31, by 6 p.m. | Requirements coverage, security/failure review and proposed capacity-validation plan | David | [Verification plan](verification-plan.md), PR linked to [#14](https://github.com/vlad8110/deskguide/issues/14) |
 | Sunday, November 1 | Combine sections and cross-review: David reviews architecture, Collins reviews interfaces, Hanlin reviews AI flows; resolve inconsistencies and draft rationale | Everyone; Vlad combines | Relevant PR comments and [design rationale](design-rationale.md) |
-| Monday, November 2 | Resolve review findings; finish the 500-word rationale and authoritative citation; check diagrams/contracts; record approval of the exact final version | Everyone; Vlad coordinates | PRs, [decisions](decisions.md) and [contributions/approvals](contributions.md) |
+| Monday, November 2 | Review the [revised proposed decisions](proposed-decisions.md); prepare remaining corrections, confirmations and supporting evidence | Everyone; assigned leads | Existing issues #11–#14 and section PRs |
+| Tuesday, November 3, by 10:00 a.m. | Team response cutoff: provide remaining feedback/evidence and identify unresolved items | Everyone | Existing issues #11–#14 or section PRs, using the D-number |
+| Tuesday, November 3, after 10:00 a.m. | Consolidate replies, align the final specification and obtain reviews of the same identified version | Vlad coordinates; everyone reviews | Final document/diagram/contracts/rationale and [contributions/approvals](contributions.md) |
 | Tuesday, November 3, before 11:59 p.m. | Verify the final export, required submission procedure and final file; complete required LEO submission(s) and record confirmation | Vlad coordinates; each member meets individual submission obligations | Final export in this directory; confirmation linked from assigned issue |
 
 ## How to deliver your section

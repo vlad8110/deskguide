@@ -1,24 +1,26 @@
 # Unit 3 Design Decisions and Review Log
 
-Coordinator: Vladimyr Merci, Lead Architect. Updated: November 1, 2026. Revision 4.
+Coordinator: Vladimyr Merci, Lead Architect. Updated: November 2, 2026. Revision 5.
 
 I have worked through the open architecture questions and collected my proposed solutions here. Please review the items assigned to your role, flag concerns, and provide the requested clarification or evidence. I will reconcile the replies before assembling the final specification.
 
-**Status: Working proposals for team review.** The [500-word rationale draft](design-rationale.md) reflects these proposals.
+**Status: Working proposals for team review.** Read the [complete revised proposed decisions](proposed-decisions.md). **Responses are due Tuesday, November 3, 2026, at 10:00 a.m. Eastern** in your existing issue or section PR so I can prepare the final revision. The [rationale draft](design-rationale.md) remains pending final alignment.
 
 ## 1. Sources and inspected revisions
 
 | Source | Revision inspected | Evidence supplied |
 | --- | --- | --- |
-| [Vlad's architecture, PR #15](https://github.com/vlad8110/deskguide/pull/15) | `eae4e92948df9bdbca36879bd111046bc35ce746`, before this update | Scope, selected workload, nine logical components, walkthroughs and shared sources |
+| [Vlad's architecture, PR #15](https://github.com/vlad8110/deskguide/pull/15) | `ff5c281f2db236a1f2846b5a53a340d709af2ec3`, November 1 baseline | Scope, selected workload, nine logical components, walkthroughs and shared sources |
 | [Collins's integration flows, PR #16](https://github.com/vlad8110/deskguide/pull/16) | `bcf86e01b779436325c4956773cd91cffa7e8276` | Answering, failure, escalation, improvement and bounded-queue proposals |
-| [Hanlin's contracts, PR #17](https://github.com/vlad8110/deskguide/pull/17) | `95875135e8940f4ec44e7b431c1c9c0504fccf55` | C1–C10, schemas, proposed values and open policies |
-| [Collins's review of Hanlin's draft](https://github.com/vlad8110/deskguide/pull/17#pullrequestreview-5725100910) | PR #17 revision above | Specific authorization-context, semantic-support, feedback and timeout questions; COMMENTED review, not approval |
+| [Hanlin's contracts, PR #17](https://github.com/vlad8110/deskguide/pull/17) | Draft 3.1, `0e7f85585c5887999d78337084185538822a9096` | Registered IDs/receipts, C1–C10, cookie sessions, evidence-policy interface and revised examples |
+| [Collins's review of Hanlin's draft](https://github.com/vlad8110/deskguide/pull/17#pullrequestreview-5725100910) | `95875135e8940f4ec44e7b431c1c9c0504fccf55`, October 31 | Specific authorization-context, semantic-support, feedback and timeout questions; COMMENTED review, not approval |
 | [David's verification package, PR #18](https://github.com/vlad8110/deskguide/pull/18) | `a9912c913e477b591bb801e48a5387a81b46104b` | Updated selected-workload and burst scenarios, security/reliability checks, and response to D01–D21 |
 | [David's review of the proposals](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5725784156) | Review of `13b635fc743ef4f3cc9b1318adcfa0bdcb3a1405`, October 31 | Workload interpretation accepted; capacity, expiry, session, ownership, grounding and breaker details remain open |
+| [David's revised-architecture review](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5730726420) | November 1, review of the revised architecture/diagrams | State-name mismatch, registered IDs, session/retention proposals, fixed eligibility labels and recovery checks |
+| [David's Draft 3.1 review](https://github.com/vlad8110/deskguide/pull/17#pullrequestreview-5738959296) | November 2, review of `0e7f855` | Conditional acceptance of 30-minute/eight-hour sessions and 30-minute unused IDs; save-metric, retention, evidence and breaker follow-up |
 | [Assignment requirements](assignment-requirements.md) | Course instructions linked there | Diagram, typed contracts, 500-word rationale; 10,000 concurrent users without a specified inquiry frequency or latency target |
 
-The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. The [complete architecture review document](architecture-first-draft/architecture-review.md), written sections and two-page diagram copies reflect the November 1 proposals. Owner evidence and final team agreement remain pending.
+The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. The [complete architecture review document](architecture-first-draft/architecture-review.md), written sections and two-page diagram copies are the November 1 shared-source snapshots. The [November 2 proposed decisions](proposed-decisions.md) are the current review direction; shared-source alignment and final team agreement remain pending.
 
 ## 2. Established direction and approval boundaries
 
@@ -32,7 +34,7 @@ The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6on
 | Teammate draft reviews | Vlad plans to review PRs #16–#18 and consolidate findings. |
 | David's response | Review received. David accepts the selected workload interpretation; final approval remains pending. |
 | November 1 follow-up | I propose the D11 timely-AI-service target and D09/D17 server-issued submission IDs. Section owners provide the remaining rules and evidence. |
-| Revised architecture | Shared document and component/deployment diagrams reflect the current proposals; all four reviews of the combined final version remain pending. |
+| November 2 direction | Vlad reviewed the 14-topic proposed list, selected David as backup release authorizer and set the response cutoff. Technical evidence and all four final-version reviews remain pending. |
 
 ## 3. Recommendations and clarification
 
@@ -56,19 +58,23 @@ Make C7 read-only, derive identity/scope server-side, authorize before lookup an
 
 **Raised by:** Collins's PR #17 review, question 2/V19; David distinguished structural checks from semantic support. **Owners:** Collins policy, Hanlin C10, David evaluation.
 
-Retrieve only permitted relevant passages. Clarify or offer support when evidence is missing, conflicting or inadequate. Require substantive claims to reference supporting passages. Check reference membership, version, permission, resolvability and quoted text against actual retrieved content; reject malformed or unsupported candidates. Valid IDs or matching quotations alone do not prove entailment.
+Retrieve only permitted relevant passages. Collins must define executable pre-generation evidence sufficiency and runtime answer-support rules, thresholds, allowed inputs, failure behavior and any additional model calls. Check source membership, version, permission, resolvability and actual claim support; valid IDs, matching quotations and model confidence alone do not prove support.
 
-**Evidence/status:** Proposed; the implementable pre-generation sufficiency and runtime semantic-support rules await Collins's examples and policy, with positive/negative cases and manual evaluation.
+If validation fails, times out or cannot run, suppress the candidate and return a controlled fallback with a support option; clarification may also be offered. Customer confirmation is required before saving support. No automatic generation retry.
+
+**Evidence/status:** Hanlin's C10 now supplies the interface and fail-closed outcome. Collins's executable rule remains pending evidence. Retain that limitation in the draft without claiming completed supported-answer functionality or a passed service target. David verifies supported, unsupported and check-unavailable cases; B12 manual evaluation remains separate.
 
 ### D04 — Failures and acknowledgements
 
 **Raised by:** Collins's review/failure flows and David's durable-save checks. **Owners:** Collins outcomes, Hanlin contracts, David failure review.
 
-Use 200 with `temporarily_unavailable` for a successfully delivered controlled AI-unavailable outcome and support offer; it is not an AI-answer success. Use 429 for customer limits, 503 `SERVICE_BUSY` for aggregate admission overload and 504 `DEADLINE_EXCEEDED` when the overall deadline expires and a response is still deliverable. Bound provider waiting within that deadline; ignore late results. Initially use no automatic generation retry.
+Use 200 `temporarily_unavailable` for a delivered controlled provider-unavailable outcome and support offer; it is not an AI-answer success. Use 429 for customer limits, 503 `SERVICE_BUSY` for aggregate admission overload and 504 `DEADLINE_EXCEEDED` when the overall deadline expires and a response is still deliverable. Keep C10 validation failures distinct.
+
+Use a 20-second overall deadline, at most 12 seconds for the provider and a one-second fallback reserve. Shorten dependency waits by the remaining budget; stop waiting by approximately second 19. Return fallback as soon as failure is known. Ignore late results and do not automatically resubmit failed inquiries or save support requests.
 
 Known failed save means “not saved”; unknown commit means “confirmation unavailable,” followed by same-ID lookup/retry. Acknowledgement requires durable persistence. Preserve unsent text in the current view without promising reload persistence.
 
-**Evidence/status:** Proposed; provide a complete outcome table, response examples and timeout/disconnect/lost-acknowledgement checks.
+**Evidence/status:** Proposed, including Hanlin's one-second reserve accepted by Vlad for team review. Collins confirms the outcome/timing table; Hanlin aligns contracts; David verifies timeouts, disconnects, lost acknowledgements and late results.
 
 ### D05 — Feedback without an answer
 
@@ -76,7 +82,7 @@ Known failed save means “not saved”; unknown commit means “confirmation un
 
 Require `inquiry_id`, rating and optional comment; verify inquiry ownership. Derive outcome/configuration from trusted metadata. Do not require an answer ID; retain a nullable internal link where an answer exists. Keep Hanlin's optional category if valid for the outcome. Pre-inquiry rejection creates no separate feedback feature.
 
-**Evidence/status:** Proposed; provide examples for an answer and a failed inquiry, including metadata expiry under D09.
+**Evidence/status:** Draft 3.1 addresses feedback without an answer and expiry with inquiry metadata. Team agreement and David's deletion/access checks remain pending.
 
 ### D06 — Authorization context
 
@@ -84,44 +90,59 @@ Require `inquiry_id`, rating and optional comment; verify inquiry ownership. Der
 
 Protected application operations receive verified `AccessContext`. Keep `generate(request)` limited to sanitized generation data and a safe correlation ID; never serialize credentials, session tokens, roles or the internal authorization object to the provider. Revise “every internal method” instead of adding unused authority parameters to pure helpers.
 
-**Evidence/status:** Proposed; reconcile signatures and show an allowed outbound payload and a forged-context denial example.
+**Evidence/status:** Draft 3.1 supplies the C3 exception, permitted payload and forged-context example. Final cross-contract alignment and verification remain pending.
 
 ### D07 — Company/customer isolation
 
 **Raised by:** Hanlin V20 and David's isolation questions. **Owners:** Vlad scope, Hanlin role matrix, David denial checks.
 
-Use one company initially without mandatory multi-company tenancy. Customers see their own records; agents see the unassigned work queue and requests assigned to them. Document-administration rights alone grant no support access. Scope is server-derived and checked for each protected object operation.
+Use one company initially without multi-company tenancy. Provision fictional prototype accounts through a protected management command or approved bulk import, with no public self-registration or role-selection screen. Map customer accounts to approved customer IDs from the existing customer database while retaining password hashes and roles in a separate controlled application account store. C7 remains read-only.
 
-**Evidence/status:** Proposed; provide role/operation and non-disclosure examples. Multi-company support is deferred rather than assumed.
+Customers see their own records; agents see the unassigned work queue and their own assigned requests. Administrators manage knowledge documents without automatic support-content or feedback access. Assign reviewer and release permissions explicitly. Scope is server-derived and checked for every protected object operation. Account/permission changes revoke existing sessions.
+
+**Evidence/status:** Vlad's proposed single-company/provisioning direction. Hanlin supplies the role/operation matrix and provisioning contracts; David verifies denied/cross-customer access and role-change revocation. Multi-company support remains deferred.
 
 ### D08 — Improvement and release authority
 
 **Raised by:** Collins's improvement flow and Hanlin's approver question. **Owners:** Collins walkthrough, Hanlin C6, David review, Vlad release coordination.
 
-A contributor proposes a bounded source/retrieval/prompt/configuration change; a different qualified member reviews it; evaluation precedes release. Vlad coordinates authorization. Record versions, evaluation and rollback reference. Use the existing review workflow rather than build a separate approval application. No automatic retraining or release from ratings.
+A contributor proposes a bounded source/retrieval/prompt/configuration change. A different qualified member reviews it, evaluation passes and a rollback reference is recorded before release. Vlad is the primary release authorizer; David is the backup. The author cannot give final release authorization. When Vlad authors, David authorizes; when David authors, Vlad authorizes. If neither is independent and available, designate another qualified non-author before release.
 
-**Evidence/status:** Proposed; supply one complete improvement/rollback example.
+An independent qualified reviewer may also authorize release. Enforce a specific release permission and release exactly the reviewed/evaluated version. Vlad or David may restore a previously approved version with a recorded reason. Approved source changes enter M3/C8; approved generation configuration enters M4. Use the existing workflow; no automatic retraining or release from ratings.
+
+**Evidence/status:** Proposed. Independent review existed earlier; non-author release authorization and David's backup designation are November 2 refinements selected by Vlad. Hanlin aligns C6 permissions; Collins supplies the flow; David verifies self-authorization denial and rollback.
 
 ### D09 — Retention and duplicate-protection lifetime
 
 **Raised by:** Hanlin V11/V21 and David's privacy review. Durations are Vlad's proposed defaults. **Owners:** David retention/security, Hanlin expiry contracts, Collins feedback utility.
 
-Do not persist general chat transcripts. Keep minimal inquiry metadata for 30 days from creation; linked feedback expires with it. Diagnostic logs last 7 days without raw question/answer/customer content, credentials or direct customer identifiers. Keep confirmed support content/replies while open plus 30 days after resolution. Periodically review old open work instead of deleting unresolved requests automatically. Use scheduled daily cleanup.
+Keep these proposed durations:
 
-I propose server-issued submission IDs registered in PostgreSQL before use. Bind each ID to the authenticated customer and intended operation. Only a registered, unused, unexpired ID can create a request. Save the request and complete its receipt in one transaction, with a database uniqueness rule for concurrent retries. Store the result reference and a payload-comparison value without keeping another copy of the support text.
+| Data | Retention |
+| --- | --- |
+| General chat transcripts | Do not persist |
+| Minimal inquiry metadata and linked feedback | 30 days from inquiry creation |
+| Sanitized diagnostic logs | Seven days; no raw content, credentials or direct customer identifiers |
+| Confirmed support content/replies and completed receipts | While open plus 30 days after resolution |
+| Minimal support-action audit records | Follow the associated support request |
+| Evaluation/release summaries | For active/retained rollback versions, then 30 days after associated version retirement |
+| Encrypted daily backups | Seven-day rotation |
+
+Block access at expiry, then purge live records in the next daily cleanup within 24 hours. Delete linked feedback with its inquiry metadata. Review old open work rather than automatically delete unresolved requests. Keep raw conversations/feedback out of audit/evaluation summaries. Track live purge separately from backup expiry; reapply current expiry rules and recorded deletions before restored data becomes available. Collins documents provider-held copies separately.
+
+Server-issued submission/reply IDs are registered in PostgreSQL, bound to customer/operation and parent request where applicable. Only registered, unused, unexpired IDs may create records. Proposed validity is 30 minutes from registration, with three unused, unexpired IDs per customer combined across operations. A fourth registration returns 429 with a clear pending-limit message; never evict an older ID. Enforce the cap atomically and exclude expired registrations from its count.
 
 | Submission identity | Behavior |
 | --- | --- |
-| Registered, unused and unexpired | Save once and acknowledge after the durable commit |
-| Completed, same payload | Return the original saved result; create nothing new |
+| Registered, unused and unexpired | Atomically save the request/reply and receipt, then acknowledge |
+| Completed, same payload | Replay the existing authorized result; create nothing new |
 | Completed, changed payload | Return a conflict |
-| Expired unused ID or missing registration/receipt | Reject; offer status checking and a deliberate new submission |
+| Expired unused ID | Reject; preserve text and require deliberate new registration/confirmation |
+| Missing or purged registration/receipt | Reject; never recreate an old request from its ID |
 
-Keep completed receipts for the retained request's lifetime; unused-ID expiry must not delete a completed receipt early. When a retained request and its receipt are purged, its old ID is unknown and remains unusable for creation. The browser must not automatically replace a failed retry with a fresh ID and resubmit. A deliberate new submission requires a newly issued ID and customer confirmation. This protects retries of the same submission; separately confirmed new submissions remain separate actions.
+Completed receipts remain with the retained request; unused-ID expiry never deletes them. Uncertain commits use the original ID for reconciliation, never an automatically generated replacement. Store a result reference and scoped payload-comparison value rather than another raw support-text copy; David reviews fingerprint/privacy details.
 
-David should recommend the unused-ID expiry period and review receipt, purge, backup and audit retention. Hanlin should specify issuance, ownership, payload comparison, response examples and recovery. Evaluation/release records and provider copies need separate retention definitions.
-
-**Evidence/status:** Server-issued, pre-registered IDs proposed by Vlad on November 1. Hanlin's current browser-generated UUID contract requires team review and revision; expiry values and deletion rules remain open.
+**Evidence/status:** Proposed. David conditionally accepts Hanlin's 30-minute/three-ID values. Draft 3.1 already rejects a fourth ID; combined-operation scope and no eviction need explicit wording. The earlier 24-hour V11 proposal concerned receipt retention, not unused-ID expiry. Hanlin aligns V11/V21/V25/V32/V33; David verifies purge, access, backup/restore and concurrent registration/commit/replay cases. Provider policy and actual deletion evidence remain pending.
 
 ### D10 — Deployment and storage
 
@@ -139,25 +160,28 @@ This reduces separately deployed parts for junior developers while preserving in
 
 | Setting | Proposal | Evidence/clarification owner |
 | --- | --- | --- |
-| Timely AI service | At least 95% of eligible inquiries received produce a validated, source-supported AI answer within 15 seconds at the selected workload | Collins supplies capacity/evidence-policy inputs; David defines measurement and verification |
-| Overall deadline | 20 seconds | Hanlin contracts; Collins outcome mapping |
-| Provider deadline | At most 12 seconds, reduced by remaining overall budget | Collins/Hanlin reconcile Hanlin's 15-second maximum; leave retrieval/validation time |
-| Retrieval/customer lookup | Up to 2 seconds each; avoid unnecessary lookup | Hanlin's proposed bounds; review required |
-| Successful durable support save | 95% within 2 seconds | David measurement definition; no false acknowledgements |
+| Timely AI service | At least 95% of all eligible inquiries received produce a supported answer within 15 seconds at the selected workload | Collins evidence/provider inputs; David classification and measurement |
+| Overall deadline / fallback reserve | 20 seconds / one second | Hanlin contracts; Collins outcomes |
+| Provider wait | At most 12 seconds, shortened by remaining budget and reserve | Collins + Hanlin |
+| Retrieval/customer lookup | Up to two seconds each; avoid unnecessary lookup | Hanlin's proposed bounds; review required |
+| Confirmed support save | At least 95% of valid, confirmed intended submissions durably saved with success acknowledgement ready within two seconds of application receipt | Hanlin boundary; David outcome accounting |
 | Customer inquiry admission | One active inquiry/customer; retain proposed 5/minute maximum | Hanlin scope and retry semantics |
 | Customer support submissions | Retain proposed 5/hour maximum | Hanlin + Collins review legitimate use |
-| AI waiting queue | None initially; admit within budget or return busy | Vlad + Collins; differs from bounded-queue alternative |
-| Prototype generation concurrency | Up to 5 only if selected model/account permits; also enforce RPM/token budgets | Collins actual account/model evidence; concurrency alone is not pacing |
-| Production concurrency/replicas | Undetermined | Vlad + Collins + David: service times, quotas and resources |
-| Automatic generation retries | Zero | Collins normalized failure policy |
+| AI waiting queue | None; bounded admission with immediate busy outcome | Vlad + Collins |
+| Prototype generation concurrency | Up to five only if account/model permits; also enforce request/token budgets | Collins quota evidence |
+| Planned peak factor | Two for the two-minute 333.33/second scenario | Vlad + David |
+| Production concurrency/replicas | Pending measured service times, quotas and resource evidence | Vlad + Collins + David |
+| Automatic generation retries | Zero; no automatic second-provider failover | Collins normalized outcomes |
 
-Eligible inquiries are valid, authorized, in-scope questions supported by approved knowledge and assigned to AI by the agreed routing policy. Identify eligibility before admission; fix the supported question set before validation. Otherwise-eligible busy/rejected requests, provider failures, timeouts, invalid answers and unnecessary fallback remain in the denominator and miss the target. Appropriate clarification or human escalation for genuinely unsupported/complex questions is a separate outcome.
+Fix eligibility and routing before admission using an independently reviewed, pre-labeled supported-question set. Otherwise-eligible busy/rejected inquiries, provider failures, timeouts, invalid answers and unnecessary fallback remain in the denominator and miss the target. Report genuine unsupported/ambiguous outcomes, account status and explicit human requests separately. A 200 fallback is not an AI answer.
 
-Measure from application receipt to the complete returned answer. Report offered, eligible, admitted, answered within target, answered late, fallback, rejected, failed and timed-out counts separately. The 95% target applies to all eligible inquiries received, replacing the earlier successful-answers-only latency percentage. A 200 fallback is not an AI answer.
+Measure AI service from application receipt to complete returned answer. Report received/eligible/admitted/timely/late/fallback/rejected/failed/timeout counts per scenario.
 
-Plan capacity for the full selected workload, not only the successful fraction. At one model call/inquiry this requires 10,000 model calls/minute plus adequate token capacity. Provider/model allowances, routing fractions and production resources remain to be justified. AI admission must preserve resources for support saves/status checks; human staffing, support-workload capacity and response-time expectations remain separate inputs.
+For support, start at receipt of the final confirmed submission; end at confirmed durable commit and success-response readiness. Exclude form editing, ID registration and human response time; measure registration separately. Slow saves, known failures, uncertain commits and capacity rejections count as misses. Count each intended submission once using its original ID/start time, while recording every retry attempt separately. Invalid, unauthorized, expired-ID and conflicting-payload attempts are reported separately. Later reconciliation cannot retroactively make a late save timely.
 
-**Status:** Initial service target proposed by Vlad on November 1; feasibility and team agreement pending. Recovery and any p99 objectives remain open.
+Plan for the full selected workload and include all external calls. AI admission and support admission are separately bounded. Twenty seconds minus a one-second reserve and a 12-second provider cap leaves seven seconds under the hard deadline; it does not establish the 15-second target. If the provider uses 12 seconds, only three seconds remain for other work to meet that target.
+
+**Evidence/status:** November 2 proposals awaiting team agreement and validation. Provider/resources, production concurrency and recovery/p99 objectives remain open. Simulated application load is not external-provider capacity.
 
 ### D12 — Five support states and ownership
 
@@ -167,29 +191,33 @@ Plan capacity for the full selected workload, not only the successful fraction. 
 
 Require ownership and expected-version checks; conflicts must not silently overwrite work. The durable database-backed human-agent work queue is distinct from the absence of an AI waiting queue.
 
-**Evidence/status:** Proposed. Provide the transition/required-field table and concurrent claim, non-owner, stale-version and late-reply examples. Releasing `in_review` or `waiting_for_customer` extends Hanlin's current release rule and needs agreement.
+**Evidence/status:** Proposed. Draft 3.1 supplies the transition table and broader owner-release rule. Reconcile all state spellings to `waiting_for_customer`; David verifies concurrent claims, non-owner updates, stale versions, release and late replies.
 
 ### D13 — Provider choice and capacity
 
 **Raised by:** [Issue #5](https://github.com/vlad8110/deskguide/issues/5), earlier Cohere/Groq recommendations and David's quota concern. **Owner:** Collins, with Vlad/David capacity review.
 
-Keep Cohere as the first prototype candidate; compare Groq using the same B05/B12 questions before choosing one exact model. Verify account eligibility, RPM/token/monthly allowances, output compatibility, data-use policy and latency. Do not add automatic second-provider failover; B17 remains consolidated into B11.
+Keep Cohere as the first prototype candidate and compare Groq using the same B05/B12 questions before choosing an exact model. Verify actual account eligibility, request/token/monthly/concurrent-call allowances, output compatibility, data-use/retention policy and latency.
 
-Official evidence inspected October 31: [Cohere](https://docs.cohere.com/v2/docs/rate-limits) lists free limited evaluation access, including 1,000 calls/month and 20 chat requests/minute for listed models. Several listed production models allow 500/minute; other variants require contact. At one model call/inquiry, 10,000/minute demand is 20 times 500/minute. [Groq](https://console.groq.com/docs/rate-limits) documents request/token limits and organization scope; verify the actual account tier instead of treating a generic table as a free allowance.
+Free evaluation access is prototype-only. [Cohere's documented limits](https://docs.cohere.com/v2/docs/rate-limits) list 20 trial chat requests/minute and 1,000 calls/month; several production models list 500/minute while others require contact. The planning case of 10,000 model calls/minute is 20 times 500/minute. A paid key alone does not establish sufficient capacity. [Groq limits](https://console.groq.com/docs/rate-limits) must be checked against the actual model/account.
 
-**Evidence/status:** Final provider/model and production capacity awaiting evidence. Collins supplies a sourced comparison, actual tier/model limits, permitted data and a production quota/cost feasibility proposal. Any smaller model-call fraction needs justification. Custom quota/dedicated capacity remains an option to investigate. Separate mocked load from small live compatibility checks.
+Collins supplies a sourced comparison, exact tier/model limits, permitted data, expected calls per inquiry and a production quota/cost feasibility proposal. Include any evidence-checking call. Any lower generation-call fraction requires justification. Keep prototype traffic fictional; separate simulated application load and small live compatibility checks. Automatic second-provider failover remains deferred.
+
+**Evidence/status:** Exact model/account and production capacity pending evidence and team agreement. No service purchase is selected by these proposals.
 
 ### D14 — Shared circuit breaker
 
 **Raised by:** Collins's requested policy and Hanlin V18. Numbers are Vlad's defaults for review. **Owners:** Collins behavior, David race/recovery review, Vlad shared-state design.
 
-Open after 3 consecutive qualifying provider timeouts/connection/service failures within 60 seconds; successful provider calls reset the sequence. Cool down 30 seconds, then permit one shared recovery trial using a new admitted inquiry. Success closes; failure reopens. Do not automatically resubmit failed inquiries.
+**Prototype:** open after three consecutive qualifying provider timeouts/connection/service failures within 60 seconds. A successful provider call resets this sequence.
 
-Across instances, use a PostgreSQL record scoped to provider/model/credential configuration, atomic state/version changes and a 20-second trial lease. Do not hold a database lock during the external call. Ignore obsolete trial results, recover expired leases and allow already-admitted calls to finish. Failure to obtain shared breaker/admission state must not launch unlimited calls; return a controlled unavailable outcome and preserve the support path where storage permits.
+**Production candidate:** open when at least 50% of completed provider calls in a rolling ten-second window are qualifying failures, after at least 20 calls have completed. This is a new provisional refinement for Collins and David to evaluate, not an established production setting. Ordinary successes contribute to the window rather than resetting it. Collins defines recording, reset and recovery-window semantics.
 
-Respect 429 guidance and quota reset; do not probe exhausted daily/monthly quota every 30 seconds. Credential/configuration failures need correction. Customer validation failures, unsupported questions and semantic rejection are not provider outages. The [circuit-breaker pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker) supports these state concepts, not our exact values.
+Both proposals retain a 30-second cooldown and one global recovery trial on a new admitted inquiry, protected by a 20-second lease. Success closes and failure reopens. Use a PostgreSQL record scoped to provider/model/credential configuration with atomic version changes. No database lock is held during the provider call. Ignore obsolete trial results, recover expired leases and allow already-admitted calls to finish. Shared-state failure returns a controlled unavailable outcome rather than launching unbounded calls. No automatic replay of failed inquiries.
 
-**Evidence/status:** Proposed. Collins should specify normalized categories and when counters, state and leases are updated, including successful-call resets. David should review one shared recovery trial, expired leases, stale results, quota resets and database-write contention. Shared PostgreSQL coordination and the existing thresholds remain proposals.
+Respect 429/quota-reset guidance; do not probe exhausted daily/monthly quota every 30 seconds. Credential/configuration failures require correction. Customer validation, unsupported questions and semantic rejection are not provider outages. [Sliding-window/minimum-volume guidance](https://resilience4j.readme.io/docs/circuitbreaker) supports the pattern, not the exact candidate values.
+
+**Evidence/status:** Proposed. Collins specifies qualifying categories, counter/window/reset/write policy and lease events. David verifies one global trial, expired leases, stale results, quota reset, simultaneous completions and database contention. Vlad reviews the shared-state/resource assumptions.
 
 ### D15 — Payload and token bounds
 
@@ -205,9 +233,11 @@ Support content: 1–1,000 characters; optional note: 0–2,000; customer reply:
 
 **Raised by:** Hanlin V22 and David's minimum-data questions. **Owners:** Vlad scope, Hanlin C7, Collins routing, David non-disclosure.
 
-General knowledge questions need no customer lookup. An explicit account-status operation reads only `customer_id` and `account_status`, returning an authorized deterministic template without AI. Initially omit `display_name` and `tier`; do not automatically send database fields to the provider. Explain unavailable required context without guessing, and offer support. Account changes remain human work. A customer-data outage must not block confirmed request saving using trusted identity.
+General knowledge questions need no customer lookup. Keep read-only account status through C1, selected explicitly by the customer. Add a requested-operation selector to C1; the response `route` alone is not a request selector. The server validates the requested operation and derives customer scope from the authenticated account.
 
-**Evidence/status:** Proposed narrowing of Hanlin's four-field allowlist. Provide an account-status example, denied lookup and unavailable lookup. This supplements the required AI knowledge-answering feature.
+Read only `customer_id` and `account_status` and return a fixed authorized template without retrieval/model generation. Omit display name/tier and never send customer-database fields to AI. Explain unavailable required data without guessing and offer support. Account changes go to a human. A customer-data outage must not block confirmed support saving with trusted identity.
+
+**Evidence/status:** Proposed. Draft 3.1 adopts the two-field/read-only/no-generation path; the explicit request selector remains to be specified by Hanlin. Collins aligns routing; David verifies own/foreign/unavailable lookups and zero provider calls.
 
 ### D17 — Customer reply endpoint
 
@@ -217,17 +247,21 @@ Keep text-only replies for the customer's own request in `waiting_for_customer`,
 
 For a new reply, check ownership, state and expected version atomically with saving. A reply racing resolution must not revive a resolved request. Apply parent-request retention; completed reply receipts remain for the retained record's lifetime. Customers return to the application for updates. Initially exclude attachments, live chat, email notifications and reopening.
 
-**Evidence/status:** Proposed; supply saved/lost-acknowledgement/state-conflict examples.
+**Evidence/status:** Proposed. Draft 3.1 supplies registered reply IDs and state/version examples; align the aggregate three-ID limit and 30-minute expiry, then verify duplicate/lost-acknowledgement/late-reply cases.
 
 ### D18 — Authentication and sessions
 
 **Raised by:** Hanlin's bearer-header draft and David's session/CSRF questions. **Owners:** Hanlin contracts, David security/lifetimes, Vlad identity provisioning.
 
-For a same-origin browser application, use an established server-side session library, opaque session ID cookies and shared PostgreSQL state. Configure `Secure`, `HttpOnly`, `SameSite=Lax`, login rotation, expiry and logout invalidation. Require CSRF protection for state-changing requests, not SameSite alone. Recheck authorization for protected operations. This choice simplifies the browser flow; it does not imply bearer tokens are inherently insecure or must be JWTs.
+Use a maintained server-side session library, opaque session-ID cookies and shared PostgreSQL state. Retain Secure, HttpOnly, SameSite=Lax cookies and CSRF protection for state-changing requests. Recheck authorization and object scope on protected operations.
 
-[Flask security guidance](https://flask.palletsprojects.com/en/stable/web-security/) and [Flask-Session configuration](https://flask-session.readthedocs.io/en/latest/config.html) support reviewing these controls. Default Flask client-side sessions are not the proposed shared server-side store.
+Propose a 30-minute idle limit and eight-hour absolute maximum. Authenticated activity renews idle expiry but never silently moves the absolute deadline within an existing session. Rotate IDs at login; account-role/permission changes revoke existing sessions and require another login. Current-session logout is the initial user-facing option. Enforce expiry/revocation across replicas independently of later cleanup.
 
-**Evidence/status:** Proposed change. David should recommend idle/absolute lifetimes, renewal, invalidation/cleanup rules and whether a separate all-sessions logout is needed. Hanlin supplies cookie/CSRF contract examples. I will decide logout scope after that input and clarify production identity provisioning. Expiry values, logout scope and provisioning remain open.
+Provision accounts through a protected management command or approved bulk import; no public self-registration or role picker. Seed fictional prototype accounts and map approved customer IDs from the existing customer database. Password hashes/roles belong in the controlled application account store; C7 remains read-only. Use one company initially and explicit reviewer/release permissions under D07/D08.
+
+[Flask security guidance](https://flask.palletsprojects.com/en/stable/web-security/) and [Flask-Session configuration](https://flask-session.readthedocs.io/en/latest/config.html) support reviewing these controls. Default client-side Flask sessions are not the proposed shared store.
+
+**Evidence/status:** Hanlin proposed 30 minutes/eight hours; David conditionally accepts them as stricter working defaults than his earlier 12-hour maximum. Vlad keeps them proposed with controlled provisioning and current-session logout. Hanlin supplies the concrete contracts; David verifies expiry, renewal, role changes, logout and denied access across replicas.
 
 ### D19 — Rationale and principal tradeoff
 
@@ -241,60 +275,66 @@ Use the [500-word draft](design-rationale.md) to explain focused modules, typed 
 
 **Raised by:** David's staged plan; Vlad's review supplied the selected rate and precise proposed synchronized burst interval. **Owner:** David; Vlad resources, Collins quotas, Hanlin expected outcomes.
 
-With mocked dependencies/synthetic data, start at 1–10 clients, then 100/1,000 sessions, then controlled ramps to 5,000/10,000. Propose 10 minutes at 166.67 inquiries/second, a 2× burst at 333.33/second for 2 minutes, and a separate bounded 10,000-arrivals-in-one-second overload case. Agree resource limits and stop conditions before execution. Simulate provider/DB failures and application restart.
+Use an independently reviewed, pre-labeled fixed supported-question set and routing policy before each run. Record expected outcomes and source versions. Preserve B12's 20 questions (12 supported, four unsupported, four ambiguous) and its existing proposed quality gates: 10/12 supported correct, all four unsupported fallback, ambiguous cases individually reviewed. Keep these checks separate from the production service targets.
 
-Record offered/accepted/answered rates, p50/p95/p99 by outcome, fallbacks/errors, concurrency, resource/connection use, support-save integrity, rejection and recovery. Preserve B12's fixed 20 questions: 12 supported, 4 unsupported, 4 ambiguous; proposed gate 10/12 supported correct and all 4 unsupported fallback, with ambiguous cases reviewed individually. Ten sequential prototype timings are separate from load evidence.
+With controlled dependencies and synthetic data, begin at 1–10 clients, then 100/1,000 sessions, then bounded ramps to 5,000/10,000. Proposed scenarios: ten minutes at 166.67 inquiries/second; a 2× 333.33/second peak for two minutes; and a separate 10,000-arrivals-in-one-second overload case. Agree resources and stop conditions before execution. Simulate provider/database failures and restart.
 
-**Evidence/status:** Planned; no executed results. Small live-provider smoke checks establish compatibility, not 10,000-user capacity.
+Record received/eligible/admitted/answered/late/fallback/rejected/failed/timeout counts, p50/p95/p99 by outcome, concurrency, resources/connections and support-save integrity. Eligible failures stay in the denominator. Report non-AI account status and explicit human requests separately. Verify session/ID expiry, cleanup/commit races, owner/version conflicts, non-author release permission, deletion/restore and shared-breaker recovery.
+
+**Evidence/status:** Planned, not executed. David owns test-set versions and scenarios; Hanlin supplies expected contract outcomes; Collins supplies provider/policy limits; Vlad reviews resource assumptions. Small live checks establish compatibility, not 10,000-user capacity.
 
 ### D21 — Review and final agreement
 
 **Raised by:** Work plan, teammate open questions, Vlad's request for ownership/evidence. **Owner:** Vlad coordinates; all four review the final version.
 
-David reviews architecture, Collins contracts, Hanlin AI flows, and Vlad verification. Vlad also plans to inspect PRs #16–#18. Reconcile M1–M9/C1–C10, fields, permissions, states, bounds, errors, retention and provider constraints. Distinguish Hanlin's V-prefixed validation values from David's V-prefixed test cases; their numbers refer to different things.
+Responses to the [complete revised proposal](proposed-decisions.md) are due **Tuesday, November 3, 2026, at 10:00 a.m. Eastern** in existing issues or section PRs. Include D-number, remaining concern, suggested wording and supporting evidence. I will consolidate the replies into a final review version after the cutoff. Unanswered technical items remain open.
 
-Consolidate responses into the shared architecture sources, contracts and rationale, then refresh repository snapshots. Each member reviews the same identified final version.
+David reviews architecture, Collins contracts, Hanlin AI flows and Vlad verification. Reconcile M1–M9/C1–C10, account/status selectors, permissions, exact state names, bounds, errors, retention, release governance and provider constraints. Hanlin's V-prefixed proposed values and David's V-prefixed test cases are different numbering systems.
 
-**Evidence/status:** Review planned; team approvals and final submission pending.
+The November 1 shared Google Doc/draw.io and repository source snapshots await the November 2 alignment walkthrough. Keep that baseline distinct from the current GitHub proposal. Align the final document, diagram, contracts and rationale, then obtain all four explicit reviews of one identified final version.
+
+**Evidence/status:** Vlad reviewed the proposed direction and selected David as backup release authorizer. Final team approval, shared-source alignment and submission remain pending.
 
 ## 4. Responsibility and evidence queue
 
-Reply in your existing issue or PR review with the D-number, clarification, supporting evidence and suggested wording.
+**Respond by Tuesday, November 3, 2026, at 10:00 a.m. Eastern** in your existing issue or section PR, using the D-number, clarification, evidence and suggested wording.
 
-| Person / existing issue | Clarify or provide | Evidence for current design | Review support |
-| --- | --- | --- | --- |
-| **Vlad — [#11](https://github.com/vlad8110/deskguide/issues/11)** | Keep the D11 service target and D09/D17 submission-ID approach proposed; resolve logout scope after security input; consolidate accepted decisions | Workload/deployment assumptions, production dependencies and one aligned final specification | David architecture; whole team final |
-| **Collins — [#13](https://github.com/vlad8110/deskguide/issues/13)** | D03/D04/D11/D13/D14: exact provider/model/tier limits, expected model-call fraction, runtime evidence policy, failure outcomes and breaker behavior | Current quota/data-use sources; capacity proposal for the selected workload and 95% target; evidence/fallback examples; counter/state/lease and quota-reset rules | Hanlin AI flow; David reliability/privacy |
-| **Hanlin — [#12](https://github.com/vlad8110/deskguide/issues/12)** | D05/D09/D12/D17/D18: review server-issued IDs, expiry/retry contracts, feedback expiry, session/CSRF behavior and agent conflicts; align C1–C10 | Issuance and transaction/uniqueness rules; same/changed/expired-ID examples; late/duplicate reply cases; session and feedback responses | Collins interfaces; David verification |
-| **David — [#14](https://github.com/vlad8110/deskguide/issues/14)** | D09/D11/D12/D14/D17/D18/D20: recommend session/unused-ID lifetimes, logout/retention rules and verification of the new proposals | Concrete security/expiry recommendations; receipt/purge/backup/audit boundaries; eligible-inquiry denominator and test window; agent/breaker race cases | Vlad verification; whole team cross-component findings |
+| Person / existing issue | Remaining input | Evidence/review |
+| --- | --- | --- |
+| **Vlad — [#11](https://github.com/vlad8110/deskguide/issues/11)** | Review production assumptions and cross-component findings; consolidate after the response cutoff; coordinate shared-source alignment | One consistent final document, diagram, contracts and rationale with all four reviews |
+| **Hanlin — [#12](https://github.com/vlad8110/deskguide/issues/12), [PR #17](https://github.com/vlad8110/deskguide/pull/17)** | D07/D08/D09/D11/D12/D16/D17/D18: exact state, session/ID values, combined no-eviction ID cap, C1 selector, account/permission/release contracts, save timing and V28 | Concrete request/response and denied/conflict/expiry examples; align C1–C10 |
+| **Collins — [#13](https://github.com/vlad8110/deskguide/issues/13), [PR #16](https://github.com/vlad8110/deskguide/pull/16)** | D03/D04/D11/D13/D14: executable evidence rules, exact provider/model/quota/data policy, prototype vs production breaker and timing outcomes | Sourced capacity/cost/data-retention comparison, support/failure examples and atomic counter/window/lease events |
+| **David — [#14](https://github.com/vlad8110/deskguide/issues/14), [PR #18](https://github.com/vlad8110/deskguide/pull/18)** | Review the proposed values and retention rules; define fixed eligibility labels, all-submission save accounting, release independence and race/recovery/restore cases | Identified test-set and scenario versions; distinguish planned checks, simulated results and live evidence; backup release authorizer |
 
 ### Differences requiring explicit agreement
 
-| Current draft/open question | Proposed resolution | Primary response |
+| Earlier draft / current open issue | Current proposal | Primary response |
 | --- | --- | --- |
-| Hanlin: bearer headers | Server-side cookie sessions plus CSRF (D18) | Hanlin + David |
-| Collins: bounded AI queue | No initial AI waiting queue; bounded admission (D11) | Collins + Vlad |
-| Hanlin: provider maximum 15 seconds | At most 12 seconds/remaining budget (D11) | Collins + Hanlin |
-| Hanlin: proposed 24-hour submission retention | Request-lifetime duplicate protection; explicit expiry behavior (D09) | Hanlin + David + Collins |
-| Hanlin: browser-generated submission UUID | Server-issued ID registered before use; unknown IDs cannot create requests (D09/D17) | Hanlin + David |
-| Earlier latency percentage counts successful answers only | At least 95% of all eligible inquiries received yield supported AI answers within 15 seconds (D11) | Collins + David + Vlad |
-| Hanlin: four customer fields | Two-field deterministic account-status path (D16) | Hanlin + Vlad |
-| Hanlin: feedback requires answer ID | Inquiry identity sufficient without an answer (D05) | Hanlin + Collins |
-| Hanlin: every internal call has access context | Protected operations get context; provider gets sanitized data (D06) | Hanlin + Collins |
-| Hanlin: release only from assigned | Owner release from unfinished owned states with reason (D12) | Hanlin + David |
-| David: illustrative 33.3/second baseline | Selected 166.67/second; retain lighter sensitivity case (D01) | David + Vlad |
-| Semantic-support rule open | Define runtime policy and manual evaluation; no correctness guarantee (D03) | Collins + David |
+| Earlier bearer-header authentication | Shared server-side cookie sessions, CSRF, 30-minute idle/eight-hour maximum, current-session logout | Hanlin + David |
+| Collins's bounded AI queue | No initial AI waiting queue; aggregate bounded admission | Collins + Vlad |
+| Earlier provider maximum 15 seconds | At most 12 seconds within remaining budget, with one-second fallback reserve | Collins + Hanlin |
+| Earlier 24-hour receipt retention | Receipts follow the retained request; separate fixed 30-minute unused-ID expiry | Hanlin + David |
+| Earlier browser-generated IDs | Server-issued registered IDs; max three unused/unexpired per customer across operations; fourth denied, no eviction | Hanlin + David |
+| Successful-answer-only latency percentage | 95% of all eligible AI inquiries received answered within 15 seconds; eligibility fixed before testing | Collins + David + Vlad |
+| Successful-save-only latency percentage | 95% of valid confirmed intended submissions durably saved/acknowledgement ready within two seconds; all outcomes reported | Hanlin + David |
+| Earlier four-field customer context | Two-field read-only account status through explicit C1 requested operation; no AI | Hanlin + Collins + Vlad |
+| Earlier feedback requires answer ID | Authorized inquiry identity sufficient without an answer | Hanlin + Collins |
+| Earlier every internal method takes access context | Protected operations get context; provider receives only permitted generation data | Hanlin + Collins |
+| Earlier release only from assigned support state | Owner release from unfinished owned states with reason; customer reply retains owner | Hanlin + David |
+| Improvement release authority undefined | Vlad primary, David backup; non-author authorization after independent review/evaluation | Hanlin + Collins + David |
+| Prototype consecutive-failure breaker | Retain prototype rule; evaluate a separate production rolling-window candidate | Collins + David + Vlad |
+| Evidence-support policy still missing | Executable Collins policy; fail closed while evidence/thresholds remain pending | Collins + David |
 
 ## 5. Approval register and next revision
 
 | Member | Review evidence/status | Final approval |
 | --- | --- | --- |
-| Vlad | First draft reviewed; reviews of PRs #16–#18 planned | Pending for combined final version |
-| Hanlin | Draft PR #17; response to this log pending | Pending |
-| Collins | Draft PR #16 and COMMENTED review on PR #17; response pending | Pending |
-| David | [Review received](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5725784156); workload interpretation accepted; verification draft updated in PR #18; follow-up recommendations requested | Pending |
+| Vlad | Reviewed the 14-topic November 2 proposed direction and selected David as backup; shared-source/final-version alignment pending | Pending for combined final version |
+| Hanlin | Draft 3.1 in PR #17; requested confirmations reflected in the revised proposal | Pending |
+| Collins | Draft PR #16 and COMMENTED review on PR #17; assigned evidence/policy response pending | Pending |
+| David | November 1 architecture review and November 2 Draft 3.1 review; conditionally accepts session/unused-ID values; asks for remaining policy/verification detail | Pending |
 
-I will update the affected recommendations and rationale after the team replies. Follow the existing [delivery schedule](week-3-delivery-schedule.md) for combined review and corrections.
+After the response cutoff I will consolidate remaining findings and align the final specification. Follow the [delivery schedule](week-3-delivery-schedule.md). A response cutoff is not final technical approval.
 
 ## 6. Revision record
 
@@ -303,4 +343,5 @@ I will update the affected recommendations and rationale after the team replies.
 | 1 | 2026-10-31 | D01–D21, source revisions, proposals, role-based evidence queue, approval register and rationale draft | Published for team review; technical/final approvals pending |
 | 2 | 2026-10-31 | Editorial cleanup | Team review pending |
 | 3 | 2026-11-01 | David's review recorded; service target, registered submission IDs and focused owner requests | Proposals pending responses and final agreement |
-| 4 | 2026-11-01 | Revised shared architecture document and component/deployment diagram copies aligned with the current proposals | Owner evidence and final team approval pending |
+| 4 | 2026-11-01 | Shared architecture and component/deployment diagram copies aligned with the then-current proposals | Owner evidence and final team approval pending |
+| 5 | 2026-11-02 | Draft 3.1 and David's latest reviews; revised 14-topic proposals, David as backup authorizer, refined measurements/retention/breaker and November 3 response cutoff | Team evidence, shared-source alignment and final-version approvals pending |

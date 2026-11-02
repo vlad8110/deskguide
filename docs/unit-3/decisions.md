@@ -11,6 +11,13 @@
 | 2026-10-29 | Use the shared Google Doc and shared draw.io file for editable architecture review; keep links, Markdown/source snapshots and PNG previews in GitHub; reserve PDF for final submission | Vlad's review-format direction; refines the earlier GitHub-only file policy while retaining GitHub coordination |
 | 2026-10-29 | Work from the local repository; commit and push only when Vlad explicitly requests the corresponding action | Vlad's local workflow direction; this publication is authorized, later publication requires a new request |
 
+## November 2 review direction
+
+- **Team response cutoff:** Tuesday, November 3, 2026, at 10:00 a.m. Eastern, selected by Vlad; final revision follows the response round.
+- [Complete revised proposed decisions](proposed-decisions.md): 14 topics reviewed by Vlad; final team agreement and identified evidence pending.
+- Proposed application improvement release authority: Vlad primary, David backup; the change author cannot provide final release authorization.
+- Shared document/diagram alignment and all four reviews of one final version remain pending.
+
 ## Open technical decisions
 
 The [Design Decisions and Review Log](design-decisions-and-review-log.md) supplies proposed resolutions D01–D21, sources, owners, evidence requests and differences from teammate drafts. The [rationale draft](design-rationale.md) reflects those proposals. Team review is pending.

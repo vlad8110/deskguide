@@ -1,6 +1,6 @@
 # Unit 3 architecture review
 
-Author: Vladimyr Merci. Updated: November 1, 2026. Status: proposed; team approval pending.
+Author: Vladimyr Merci. November 1 shared-source snapshots. Current review direction: [November 2 proposed decisions](../proposed-decisions.md). Shared-source alignment and final approval pending.
 
 Read the [complete architecture review document](architecture-review.md), the [Design Decisions and Review Log](../design-decisions-and-review-log.md), and the [rationale draft](../design-rationale.md).
 
