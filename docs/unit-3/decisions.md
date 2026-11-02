@@ -42,7 +42,7 @@ Published D01–D21 and the rationale draft for team review. Vlad plans to revie
 
 The [November 2 verification alignment document](david-verification-alignment-nov2.md) records David's planned tests N01–N15, session/ID/retention/release rules, pre-labeled 20-question B12 fixture candidate, workload and two-second/15-second denominator definitions against Vlad's 14 proposals. This is a **review response**, not authorization to run tests, adopt policy or publish a release.
 
-**Role decision still required:** Vlad nominated David as backup release authorizer, but David has **not personally confirmed acceptance**. The requirement for independent non-author release approval and rollback review can be evaluated without assuming David accepted the role.
+**Role decision still required:** Vlad nominated David as backup release authorizer, but David has **declined the nomination**. The requirement for independent non-author release approval and rollback review can be evaluated without assuming David accepted the role.
 
 **Evidence:** [Vlad's PR #18 COMMENTED review](https://github.com/vlad8110/deskguide/pull/18#pullrequestreview-5744463050), [David's architecture COMMENTED review](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5730726420), [David's contract COMMENTED review](https://github.com/vlad8110/deskguide/pull/17#pullrequestreview-5738959296). Final version, peer approval, implementation and capacity outcomes remain open.
 
