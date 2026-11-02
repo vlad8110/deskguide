@@ -15,7 +15,7 @@
 
 - **Team response cutoff:** Tuesday, November 3, 2026, at 10:00 a.m. Eastern, selected by Vlad; final revision follows the response round.
 - [Complete revised proposed decisions](proposed-decisions.md): 14 topics reviewed by Vlad; final team agreement and identified evidence pending.
-- Proposed application improvement release authority: Vlad primary, David backup; the change author cannot provide final release authorization.
+- Proposed application improvement release authority: Vlad primary, **alternate backup required because David declined the proposed role**; the change author cannot provide final release authorization.
 - Shared document/diagram alignment and all four reviews of one final version remain pending.
 
 ## Open technical decisions
