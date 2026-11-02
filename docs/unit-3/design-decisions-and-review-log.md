@@ -1,6 +1,6 @@
 # Unit 3 Design Decisions and Review Log
 
-Coordinator: Vladimyr Merci, Lead Architect. Updated: November 2, 2026. Revision 6.
+Coordinator: Vladimyr Merci, Lead Architect. Updated: November 2, 2026. Revision 8.
 
 I have worked through the open architecture questions and collected my proposed solutions here. Please review the items assigned to your role, flag concerns, and provide the requested clarification or evidence. I will reconcile the replies before assembling the final specification.
 
@@ -18,6 +18,8 @@ I have worked through the open architecture questions and collected my proposed 
 | [David's review of the proposals](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5725784156) | Review of `13b635fc743ef4f3cc9b1318adcfa0bdcb3a1405`, October 31 | Workload interpretation accepted; capacity, expiry, session, ownership, grounding and breaker details remain open |
 | [David's revised-architecture review](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5730726420) | November 1, review of the revised architecture/diagrams | State-name mismatch, registered IDs, session/retention proposals, fixed eligibility labels and recovery checks |
 | [David's Draft 3.1 review](https://github.com/vlad8110/deskguide/pull/17#pullrequestreview-5738959296) | November 2, review of `0e7f855` | Conditional acceptance of 30-minute/eight-hour sessions and 30-minute unused IDs; save-metric, retention, evidence and breaker follow-up |
+| [David's outbound-data and notice proposals, issue #8](https://github.com/vlad8110/deskguide/issues/8#issuecomment-6590423959) | November 2, 5:46:57 p.m. Eastern | Deny-by-default external generation, pre-submission notice and planned privacy checks; not implemented or tested |
+| [David's provider comparison, issue #5](https://github.com/vlad8110/deskguide/issues/5#issuecomment-6590430685) | November 2, 5:47:19 p.m. Eastern | Official provider-policy research; actual tier/model, configured controls, capacity and provider choice remain open |
 | [Assignment requirements](assignment-requirements.md) | Course instructions linked there | Diagram, typed contracts, 500-word rationale; 10,000 concurrent users without a specified inquiry frequency or latency target |
 
 The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. The [two-page diagram and PNGs](architecture-first-draft/README.md#diagrams) reflect the November 2 proposals. The [complete architecture review document](architecture-first-draft/architecture-review.md) and written sections retain the November 1 Google Doc wording. Written-source alignment and final team agreement remain pending.
@@ -35,6 +37,7 @@ The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6on
 | David's response | Review received. David accepts the selected workload interpretation; final approval remains pending. |
 | November 1 follow-up | I propose the D11 timely-AI-service target and D09/D17 server-issued submission IDs. Section owners provide the remaining rules and evidence. |
 | November 2 direction | Vlad reviewed the 14-topic proposed list, selected David as backup release authorizer and set the response cutoff. Technical evidence and all four final-version reviews remain pending. |
+| November 2 privacy follow-up | Vlad selected David's outbound-data rule and notice for inclusion as D22/D23 proposals. Exact policy, wording, provider controls and final team approval remain pending. |
 
 ## 3. Recommendations and clarification
 
@@ -295,6 +298,28 @@ The shared Google Doc and draw.io now reflect the November 2 proposals, and the 
 
 **Evidence/status:** Vlad reviewed the proposed direction and selected David as backup release authorizer. Final team approval, remaining owner evidence and submission remain pending.
 
+### D22 — Outbound-data eligibility for external AI
+
+**Raised by:** [David's issue #8 proposal](https://github.com/vlad8110/deskguide/issues/8#issuecomment-6590423959), supported by his [issue #5 provider comparison](https://github.com/vlad8110/deskguide/issues/5#issuecomment-6590430685). **Owners:** Vlad trust boundary and classification approval, Collins outbound policy/provider controls, Hanlin contract outcomes, David verification.
+
+Deny externally hosted generation unless both the user question and every retrieved passage included in the request are explicitly eligible. Proposed eligible classes are synthetic, public or specifically approved for the selected external model. Internal-confidential material, personnel/HR complaints, credentials, regulated or restricted records and unclassified/unapproved content are blocked unless separate documented authorization and controls permit the specific disclosure. Minimize unnecessary identifiers; redaction alone does not establish eligibility. Enforce the decision server-side before the provider call. If eligibility or required provider controls cannot be established, make no external call and use an authorized retrieval-only response or human-support path; local/restricted inference requires a separately approved configuration.
+
+Keep the classroom prototype limited to fictional questions and passages. Preserve D16's account-status path: fixed authorized response, no model generation and no customer-database fields sent to AI. D09's application retention rules do not establish provider retention; Collins must confirm the exact tier/model, actual data controls, exceptions, permitted data, quotas and cost under D13 before recommending the provider. Cohere remains the first prototype candidate for comparison with Groq; this proposal does not select either provider.
+
+**Evidence/status:** Included at Vlad's direction as a proposal for team agreement, not implemented or tested. Approve the classification labels, decision authority and enforcement/fallback contract. David should verify allowed synthetic requests, restricted/unclassified questions and passages, absence of blocked outbound calls, and content-free diagnostics using synthetic fixtures.
+
+### D23 — External-AI notice before question submission
+
+**Raised by:** [David's proposed notice in issue #8](https://github.com/vlad8110/deskguide/issues/8#issuecomment-6590423959). **Owners:** Hanlin notice/confirmation UI, Collins provider-specific accuracy, Vlad design alignment, David verification.
+
+Place a clear notice adjacent to the question box before submission. Proposed wording:
+
+> DeskGuide may send your question and approved reference passages to an external AI service. Do not enter confidential personnel information or credentials. DeskGuide does not save ordinary questions and answers as conversation history. The external provider may retain data under its applicable terms and configured controls. If you choose human support, you will review and confirm the exact content before it is shared.
+
+Reconcile the final wording with D09, D13, D16 and D22 and the selected provider's verified behavior. Distinguish DeskGuide's no-history rule from provider-held copies and from consented support records. A notice does not authorize restricted disclosure or replace outbound eligibility enforcement. The human-support preview must allow editing/cancellation and require confirmation before saving/sharing the support record.
+
+**Evidence/status:** Draft wording selected for inclusion as a proposal; team approval and implementation remain pending. Hanlin aligns the UI/contract and Collins verifies the provider statement. David verifies visibility before submission, consistency with actual storage/outbound behavior, and preview/confirm/cancel outcomes. No completed tests are claimed.
+
 ## 4. Responsibility and evidence queue
 
 **Respond by Tuesday, November 3, 2026, at 10:00 a.m. Eastern** in your existing issue or section PR, using the D-number, clarification, evidence and suggested wording.
@@ -324,6 +349,8 @@ The shared Google Doc and draw.io now reflect the November 2 proposals, and the 
 | Improvement release authority undefined | Vlad primary, David backup; non-author authorization after independent review/evaluation | Hanlin + Collins + David |
 | Prototype consecutive-failure breaker | Retain prototype rule; evaluate a separate production rolling-window candidate | Collins + David + Vlad |
 | Evidence-support policy still missing | Executable Collins policy; fail closed while evidence/thresholds remain pending | Collins + David |
+| Outbound classification and enforcement not finalized | D22 deny-by-default rule for both questions and passages; fictional prototype data; approved fallback with zero blocked provider calls | Vlad + Collins + Hanlin + David |
+| Pre-submission provider notice not finalized | D23 wording distinguishes application history, provider retention and confirmed human-support records | Hanlin + Collins + Vlad + David |
 
 ## 5. Approval register and next revision
 
@@ -347,3 +374,4 @@ After the response cutoff I will consolidate remaining findings and align the fi
 | 5 | 2026-11-02 | Draft 3.1 and David's latest reviews; revised 14-topic proposals, David as backup authorizer, refined measurements/retention/breaker and November 3 response cutoff | Team evidence, shared-source alignment and final-version approvals pending |
 | 6 | 2026-11-02 | Shared component/deployment diagrams revised for current proposals; editable source and PNG previews refreshed | Written-source alignment, owner evidence and final-version approvals pending |
 | 7 | 2026-11-02 | Rationale revision 3 and shared Google Doc rationale tab; updated shared-source alignment status | Owner responses and all four final-version approvals pending |
+| 8 | 2026-11-02 | David's issue #8/#5 evidence recorded; D22 outbound-data rule and D23 pre-submission notice added at Vlad's direction | Policy, notice wording, provider evidence and final team approval pending; implementation/tests not completed |
