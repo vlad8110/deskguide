@@ -291,9 +291,9 @@ Responses to the [complete revised proposal](proposed-decisions.md) are due **Tu
 
 David reviews architecture, Collins contracts, Hanlin AI flows and Vlad verification. Reconcile M1–M9/C1–C10, account/status selectors, permissions, exact state names, bounds, errors, retention, release governance and provider constraints. Hanlin's V-prefixed proposed values and David's V-prefixed test cases are different numbering systems.
 
-The shared draw.io and repository diagram/PNG copies now reflect the November 2 proposals. The November 1 Google Doc wording and written snapshots await the next alignment walkthrough. Align the final document, diagram, contracts and rationale, then obtain all four explicit reviews of one identified final version.
+The shared Google Doc and draw.io now reflect the November 2 proposals, and the Design rationale tab contains the current draft. Repository diagram/PNG copies are current; repository written architecture snapshots remain dated November 1. Reconcile owner responses and align the final document, diagram, contracts and rationale, then obtain all four explicit reviews of one identified final version.
 
-**Evidence/status:** Vlad reviewed the proposed direction and selected David as backup release authorizer. Final team approval, shared-source alignment and submission remain pending.
+**Evidence/status:** Vlad reviewed the proposed direction and selected David as backup release authorizer. Final team approval, remaining owner evidence and submission remain pending.
 
 ## 4. Responsibility and evidence queue
 
@@ -329,7 +329,7 @@ The shared draw.io and repository diagram/PNG copies now reflect the November 2 
 
 | Member | Review evidence/status | Final approval |
 | --- | --- | --- |
-| Vlad | Reviewed the 14-topic November 2 proposed direction and selected David as backup; shared-source/final-version alignment pending | Pending for combined final version |
+| Vlad | Reviewed the 14-topic November 2 proposed direction and revised rationale; shared sources aligned; owner evidence and final-version alignment pending | Pending for combined final version |
 | Hanlin | Draft 3.1 in PR #17; requested confirmations reflected in the revised proposal | Pending |
 | Collins | Draft PR #16 and COMMENTED review on PR #17; assigned evidence/policy response pending | Pending |
 | David | November 1 architecture review and November 2 Draft 3.1 review; conditionally accepts session/unused-ID values; asks for remaining policy/verification detail | Pending |
@@ -346,3 +346,4 @@ After the response cutoff I will consolidate remaining findings and align the fi
 | 4 | 2026-11-01 | Shared architecture and component/deployment diagram copies aligned with the then-current proposals | Owner evidence and final team approval pending |
 | 5 | 2026-11-02 | Draft 3.1 and David's latest reviews; revised 14-topic proposals, David as backup authorizer, refined measurements/retention/breaker and November 3 response cutoff | Team evidence, shared-source alignment and final-version approvals pending |
 | 6 | 2026-11-02 | Shared component/deployment diagrams revised for current proposals; editable source and PNG previews refreshed | Written-source alignment, owner evidence and final-version approvals pending |
+| 7 | 2026-11-02 | Rationale revision 3 and shared Google Doc rationale tab; updated shared-source alignment status | Owner responses and all four final-version approvals pending |
