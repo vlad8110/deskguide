@@ -35,7 +35,7 @@
 | N06 | C4e/C5 | Customer reply in waiting_for_customer with current expected_version saves once, retains assigned agent and returns to in_review; stale version or resolution/reply race ->409, resolved terminal. |
 | N07 | C5 | Two agents racing claim: exactly one successful; other agent cannot view case. Release requires owner, valid prior state/version, explicit reason and permitted authority. |
 | N08 | C1/C7/C9 | Explicit account-status request accesses only account_status/customer_id for authenticated customer, zero model/retrieval calls. Client-supplied role/customer_id ignored; C7 unavailable -> honest error, support saving independent. |
-| N09 | C6/D08 | Evaluate version A then attempt release B: denied. Author cannot self-authorize. Unauthorized roles denied. Approved rollback restores the exact signed-off version and logs reason. Backup designation remains pending personal confirmation. |
+| N09 | C6/D08 | Evaluate version A then attempt release B: denied. Author cannot self-authorize. Unauthorized roles denied. Approved rollback restores the exact signed-off version and logs reason. David declined the proposed backup release-authorizer role; reassignment is needed. |
 | N10 | D09 retention | Expired inquiry, feedback and support record inaccessible at deadline; live cleanup <=24h. Old backup restored into quarantine, expiration and deletions reapplied before customer access. Verify logs omit raw content and backup rotation <=7d. |
 | N11 | C2/C3/C10 | Citation reference exists but answer claim unsupported => runtime evidence failure. Checker unavailable => fail closed. Independently score supported, unsupported and ambiguous fixture cases in offline B12. |
 | N12 | C3 breaker | At 19 vs 20 completed calls and just below/at 50% qualifying errors, verify rate threshold. Across replicas one half-open lease; outdated trial after lease expiry cannot update next epoch. Quota lockout respects reset date. |
@@ -93,7 +93,7 @@
 | Backups and restores | Encrypted seven-day rotation; restore to quarantined environment; apply expiry and prior deletion/tombstones **before any access**; ensure restored records are not resurrected just because a snapshot is younger than seven days. |
 | Provider | The provider's own copies, abuse retention, backups and subprocessors are a distinct boundary; Collins verifies exact contractual settings before any real-data decision. Fictional data only for prototype. |
 | Breaker | Separate prototype and production thresholds, qualified-error list, atomic rolling counters, shared 30s cool-off, 20s leased single recovery trial and epoch protection for late results; quota reset not probed on cooldown. |
-| Release | Non-author authorization permission, immutable reviewed/evaluated version, independent review and B12 evidence, rollback reference, reason and version audit. **David's acceptance of nominated backup authority is still pending direct confirmation.** |
+| Release | Non-author authorization permission, immutable reviewed/evaluated version, independent review and B12 evidence, rollback reference, reason and version audit. **David declined the backup release-authorizer role; Vlad should designate another qualified independent non-author.** |
 
 ## F. Current review evidence and remaining owners
 
