@@ -1,6 +1,6 @@
 # Unit 3 Design Decisions and Review Log
 
-Coordinator: Vladimyr Merci, Lead Architect. Updated: November 2, 2026. Revision 5.
+Coordinator: Vladimyr Merci, Lead Architect. Updated: November 2, 2026. Revision 6.
 
 I have worked through the open architecture questions and collected my proposed solutions here. Please review the items assigned to your role, flag concerns, and provide the requested clarification or evidence. I will reconcile the replies before assembling the final specification.
 
@@ -20,7 +20,7 @@ I have worked through the open architecture questions and collected my proposed 
 | [David's Draft 3.1 review](https://github.com/vlad8110/deskguide/pull/17#pullrequestreview-5738959296) | November 2, review of `0e7f855` | Conditional acceptance of 30-minute/eight-hour sessions and 30-minute unused IDs; save-metric, retention, evidence and breaker follow-up |
 | [Assignment requirements](assignment-requirements.md) | Course instructions linked there | Diagram, typed contracts, 500-word rationale; 10,000 concurrent users without a specified inquiry frequency or latency target |
 
-The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. The [complete architecture review document](architecture-first-draft/architecture-review.md), written sections and two-page diagram copies are the November 1 shared-source snapshots. The [November 2 proposed decisions](proposed-decisions.md) are the current review direction; shared-source alignment and final team agreement remain pending.
+The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. The [two-page diagram and PNGs](architecture-first-draft/README.md#diagrams) reflect the November 2 proposals. The [complete architecture review document](architecture-first-draft/architecture-review.md) and written sections retain the November 1 Google Doc wording. Written-source alignment and final team agreement remain pending.
 
 ## 2. Established direction and approval boundaries
 
@@ -291,7 +291,7 @@ Responses to the [complete revised proposal](proposed-decisions.md) are due **Tu
 
 David reviews architecture, Collins contracts, Hanlin AI flows and Vlad verification. Reconcile M1–M9/C1–C10, account/status selectors, permissions, exact state names, bounds, errors, retention, release governance and provider constraints. Hanlin's V-prefixed proposed values and David's V-prefixed test cases are different numbering systems.
 
-The November 1 shared Google Doc/draw.io and repository source snapshots await the November 2 alignment walkthrough. Keep that baseline distinct from the current GitHub proposal. Align the final document, diagram, contracts and rationale, then obtain all four explicit reviews of one identified final version.
+The shared draw.io and repository diagram/PNG copies now reflect the November 2 proposals. The November 1 Google Doc wording and written snapshots await the next alignment walkthrough. Align the final document, diagram, contracts and rationale, then obtain all four explicit reviews of one identified final version.
 
 **Evidence/status:** Vlad reviewed the proposed direction and selected David as backup release authorizer. Final team approval, shared-source alignment and submission remain pending.
 
@@ -345,3 +345,4 @@ After the response cutoff I will consolidate remaining findings and align the fi
 | 3 | 2026-11-01 | David's review recorded; service target, registered submission IDs and focused owner requests | Proposals pending responses and final agreement |
 | 4 | 2026-11-01 | Shared architecture and component/deployment diagram copies aligned with the then-current proposals | Owner evidence and final team approval pending |
 | 5 | 2026-11-02 | Draft 3.1 and David's latest reviews; revised 14-topic proposals, David as backup authorizer, refined measurements/retention/breaker and November 3 response cutoff | Team evidence, shared-source alignment and final-version approvals pending |
+| 6 | 2026-11-02 | Shared component/deployment diagrams revised for current proposals; editable source and PNG previews refreshed | Written-source alignment, owner evidence and final-version approvals pending |

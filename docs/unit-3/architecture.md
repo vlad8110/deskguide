@@ -2,7 +2,7 @@
 
 Lead: Vlad. Reviewer: David; Hanlin and Collins validate interfaces and AI boundaries.
 
-Status: [November 2 proposed decisions](proposed-decisions.md) available for team review; responses due **November 3, 2026, at 10:00 a.m. Eastern**. Read the [review log](design-decisions-and-review-log.md). The [complete architecture document and diagrams](architecture-first-draft/README.md) remain the November 1 shared-source snapshots pending alignment.
+Status: [November 2 proposed decisions](proposed-decisions.md) available for team review; responses due **November 3, 2026, at 10:00 a.m. Eastern**. Read the [review log](design-decisions-and-review-log.md). The [architecture review hub](architecture-first-draft/README.md) contains the November 2 revised diagrams and November 1 written-source snapshots; written alignment remains pending.
 
 ## Component inventory
 
@@ -45,7 +45,7 @@ Respond in your existing issue or section PR by **Tuesday, November 3, 2026, at 
 - David: denominator-aware service-level tests, expired-ID/duplicate races, session/ownership isolation and breaker recovery across replicas.
 - Vlad: reconcile the architecture, contracts and rationale and coordinate all four reviews of one final version.
 
-The shared Google Doc and draw.io file remain the editable architecture sources. Repository copies reflect the November 1 review draft. Final agreement and submission remain pending.
+The shared Google Doc and draw.io file remain the editable architecture sources. Diagram copies reflect the November 2 revision; written snapshots remain at November 1. Final agreement and submission remain pending.
 
 ## Backlog traceability
 

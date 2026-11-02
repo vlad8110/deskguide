@@ -1,6 +1,6 @@
 # DeskGuide Unit 3 — Architecture Review Draft
 
-*November 1 shared-source snapshot. Current direction: [November 2 proposed decisions](../proposed-decisions.md).*
+*November 1 written-source snapshot with November 2 diagram previews. Current direction: [November 2 proposed decisions](../proposed-decisions.md).*
 
 Vladimyr Merci | CMSC 495 Team 4 | November 1, 2026
 

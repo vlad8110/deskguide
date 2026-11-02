@@ -1,6 +1,6 @@
 # Unit 3 architecture review
 
-Author: Vladimyr Merci. November 1 shared-source snapshots. Current review direction: [November 2 proposed decisions](../proposed-decisions.md). Shared-source alignment and final approval pending.
+Author: Vladimyr Merci. November 2 diagram revision; November 1 written-source snapshots. Current review direction: [November 2 proposed decisions](../proposed-decisions.md). Written-source alignment and final approval pending.
 
 Read the [complete architecture review document](architecture-review.md), the [Design Decisions and Review Log](../design-decisions-and-review-log.md), and the [rationale draft](../design-rationale.md).
 
@@ -16,7 +16,7 @@ Read the [complete architecture review document](architecture-review.md), the [D
 
 ## Diagrams
 
-The [editable draw.io source](deskguide-unit-3-architecture.drawio) contains two pages: **Component architecture** and **Production deployment**.
+The [editable draw.io source](deskguide-unit-3-architecture.drawio) contains two pages: **Component architecture** and **Production deployment**, revised November 2 to reflect the current proposals.
 
 ### Component architecture
 
@@ -28,7 +28,7 @@ The [editable draw.io source](deskguide-unit-3-architecture.drawio) contains two
 
 M1–M9 are logical modules. The production proposal replicates one modular Flask application behind HTTPS ingress/load balancing with shared PostgreSQL state. The workload assumption is 10,000 active customer sessions averaging one inquiry per minute, approximately 167 inquiries per second. Capacity remains untested.
 
-Provider/model capacity, resource sizing, session and unused-ID lifetimes, runtime evidence-support rules, and breaker update details remain assigned for review. See the [review log](../design-decisions-and-review-log.md) for owners and evidence requests.
+The diagrams include explicit account-status routing, proposed session/ID limits, non-author release authorization with David as backup, fail-closed evidence checking, and shared admission, breaker and retention policies. Provider/model capacity, resource sizing, executable evidence-support rules and exact breaker update behavior remain assigned for review. See the [review log](../design-decisions-and-review-log.md) for owners and evidence requests.
 
 ## Shared editing sources
 
@@ -36,4 +36,4 @@ Provider/model capacity, resource sizing, session and unused-ID lifetimes, runti
 - [Shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO)
 - [Same diagram in Google Drive](https://drive.google.com/file/d/1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO/view)
 
-The shared files remain the editable architecture sources; these repository copies reflect the November 1 review draft. Follow the [Week 3 schedule](../week-3-delivery-schedule.md) for team agreement and submission.
+The shared files remain the editable architecture sources. Diagram copies reflect the November 2 revision; written copies still reflect the November 1 Google Doc. Follow the [Week 3 schedule](../week-3-delivery-schedule.md) for team agreement and submission.
