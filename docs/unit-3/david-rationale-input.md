@@ -9,3 +9,15 @@
 Parnas, D. L. (1972). On the criteria to be used in decomposing systems into modules. *Communications of the ACM, 15*(12), 1053–1058. https://doi.org/10.1145/361598.361623
 
 **Before final submission:** validate the reference details; incorporate only what matches the accepted diagram and contracts; keep the *combined rationale* at the instructor-required 500 words; record actual peer review and individual contribution. AI-assisted draft — review and attribute according to course policy. 
+
+## November 2 rubric/alignment inspection (not final team approval)
+
+Reviewed [Vlad's rationale revision 3](https://github.com/vlad8110/deskguide/blob/docs/unit-3-architecture-review/docs/unit-3/design-rationale.md) as a **draft**, alongside the [14 proposed decisions](https://github.com/vlad8110/deskguide/blob/docs/unit-3-architecture-review/docs/unit-3/proposed-decisions.md). Its rationale body counts to **500 whitespace-delimited words**, excluding headers and references, at the inspected revision. This is a count of the current draft and **must be repeated after final editing/export**.
+
+- **Rubric: separation/cohesion/coupling.** The rationale names distinct ownership for retrieval/versioned sources, generation via a bounded provider adapter, authorization/customer status, durable support, and reviewed feedback. It states why typed interfaces preserve coupling boundaries.
+- **Rubric: one major architectural tradeoff.** It explicitly compares a replicated modular Flask application with separate microservices, choosing lower deployment burden for an eight-week student project at the cost of scaling and releasing the application as a unit; shared PostgreSQL and a production application server are **proposed design**, not tested capacity.
+- **Cross-component reliability.** The new draft covers no implicit provider authority, scoped durable submissions, measured support saves, non-author release checks and fallback/governance. Vlad describes David as **backup release authorizer pending acceptance**, which correctly avoids asserting personal acceptance.
+- **Unresolved final gate.** Source citations, diagram arrows, C1–C10 signatures, accepted technical details and export must refer to one identical final version; current PRs are separate, and the runtime semantic-support algorithm/provider capacity remain open.
+
+David's original wording above is a **contribution**, not an instruction to replace Vlad's 500-word rationale or to add words beyond the limit. See [November 2 verification alignment](david-verification-alignment-nov2.md) and [actual peer review record](david-design-review-notes.md).
+
