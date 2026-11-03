@@ -1,10 +1,10 @@
-# Combined design review — November 3 C1
+# Combined design review — November 3 C2
 
 Coordinator: Vladimyr Merci. Status: awaiting team review.
 
-Candidate content fingerprint: `871defc9b477fcc14233d66764b1d6b1e8a7c587357ce6e0e92cb9fcaaacbdb1`.
+Candidate content fingerprint: `ae063cb36ed7bf75da64c54ab779c014f3c718562c36dd9ab495b00414ef781a`.
 
-Please review the [contracts](interface-contracts.md), [AI flows](ai-integration.md), [architecture and diagrams](architecture-first-draft/README.md), [rationale](design-rationale.md) and [verification alignment](david-verification-alignment-nov2.md). Reply with your decision on **November 3 C1** and the exact published commit: approve, or list the specific correction needed. A changed deliverable needs renewed review.
+Please review the [contracts](interface-contracts.md), [AI flows](ai-integration.md), [architecture and diagrams](architecture-first-draft/README.md), [rationale](design-rationale.md) and [verification alignment](david-verification-alignment-nov2.md). Reply with your decision on **November 3 C2** and the exact published commit: approve, or list the specific correction needed. A changed deliverable needs renewed review.
 
 | Member | Review focus | Combined-version approval |
 | --- | --- | --- |

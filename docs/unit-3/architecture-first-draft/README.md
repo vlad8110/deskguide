@@ -37,3 +37,5 @@ The diagrams include explicit account-status routing, proposed session/ID limits
 - [Same diagram in Google Drive](https://drive.google.com/file/d/1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO/view)
 
 The shared files remain the editable architecture sources. Written copies were reconciled with the November 2 Google Doc. Backup-role and diagram-connection corrections are prepared locally; the shared editable files still require those corrections. Follow the [Week 3 schedule](../week-3-delivery-schedule.md) for team agreement and submission.
+
+Both diagram pages and PNG previews reflect the November 3 combined contracts: inquiry-bound evidence expectations, eligible outbound data, provider-versus-answer accounting, stage-dependent responses and Hanlin as backup. The shared draw.io file contains this same diagram. Final team approval remains pending.
