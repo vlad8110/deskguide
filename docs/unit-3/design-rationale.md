@@ -1,6 +1,6 @@
 # Design rationale — draft for team review
 
-Coordinator: Vladimyr Merci. Revision 5, November 3, 2026.
+Coordinator: Vladimyr Merci. Revision 6, November 3, 2026.
 
 Status: Proposed design; owner confirmations and final team approval pending.
 
@@ -14,7 +14,7 @@ We choose one modular Flask application to limit deployment and coordination wor
 
 Identity and authorization remain application responsibilities. One company and controlled account provisioning keep scope manageable. Proposed session expiry and shared revocation reduce unauthorized access and keep permissions consistent across instances. Customers access their own records; agents access unassigned or owned work. Explicit account-status selection reads only the customer’s identifier and account status through the read-only customer-data contract, returning fixed text without model generation or exposing database fields to the provider.
 
-The AI adapter receives permitted questions and retrieved passages. Source membership alone cannot establish answer support: executable evidence checks must pass before displaying answers with source links. Missing, failed, or unavailable checks produce a controlled limitation and support option. We retain Cohere-first evaluation against Groq, bounded admission without an AI queue, and no automatic retry. Shared breaker coordination permits one recovery trial across replicas; production counting, reset, and recovery details follow Collins’s proposal, pending team agreement. A 20-second deadline, 12-second provider cap, and one-second fallback reserve bound dependency waiting.
+We limit prototype answers to reviewed, exactly matched excerpts. Source membership alone cannot establish answer support: executable evidence checks must pass before displaying answers with source links. Missing, failed, or unavailable checks produce a controlled limitation and support option. We retain Cohere-first evaluation against Groq, bounded admission without an AI queue, and no automatic retry. Shared breaker coordination permits one recovery trial across replicas; production counting, reset, and recovery details follow Collins’s proposal, pending team agreement. A 20-second deadline, 12-second provider cap, and one-second fallback reserve bound dependency waiting.
 
 Customers confirm support content before saving, keeping escalation under their control. Registered submission IDs prevent duplicate requests and misleading confirmations when customers retry. Acknowledgement follows durable saving, protecting customers from false success messages. Agent ownership makes handoffs accountable. The proposed target requires 95% of valid, confirmed submissions to commit with acknowledgement ready within two seconds after the application receives confirmation. Slow saves, failures, uncertain commits, and capacity rejections count as misses.
 

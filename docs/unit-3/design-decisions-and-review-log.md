@@ -1,6 +1,6 @@
 # Unit 3 Design Decisions and Review Log
 
-Coordinator: Vladimyr Merci, Lead Architect. Updated: November 3, 2026. Revision 11.
+Coordinator: Vladimyr Merci, Lead Architect. Updated: November 3, 2026. Revision 12.
 
 I have worked through the open architecture questions and collected my proposed solutions here. Please review the items assigned to your role, flag concerns, and provide the requested clarification or evidence. I will reconcile the replies before assembling the final specification.
 
@@ -409,3 +409,7 @@ Vlad selected the following direction on November 3: adopt the narrow extractive
 | 10 | 2026-11-03 | Hanlin accepted backup authorization; Collins’s revised evidence and breaker proposals received for review | Role recorded locally; technical and final-version approvals pending |
 
 | 11 | 2026-11-03 | Vlad selected the extractive prototype, inquiry-bound expectation, breaker settings, availability counting and response-stage rules | Coordinator direction recorded; final team approval, fixtures and executed validation pending |
+
+| 12 | 2026-11-03 | Combined contracts Draft 3.3, revised integration flows and N16–N21 planned checks aligned locally with the selected direction | Candidate review pending; manifest, provider evidence and executed validation remain open |
+
+The combined candidate contains Hanlin's 253be0d contracts, Collins's 0099cd8 flows and David's 9aa7a49 verification material with coordinator alignment. C10 now defines an immutable inquiry-bound expectation, exact-match policy and canonical excerpt offsets. C3/C1 distinguish provider availability from answer quality and admission denial from admitted failure. Hanlin is recorded as backup. See the [final review request](final-review-request.md) for the candidate identifier and remaining evidence. Earlier requests to define these interfaces are addressed by this candidate; owner review is still required.
