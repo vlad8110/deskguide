@@ -1484,7 +1484,4 @@ Final team approval remains pending. Unanswered technical items stay open after 
 **Tools used**
 - I used an AI assistant (Claude) to help draft and structure the contracts. I reviewed the content and checked it against the team documents.
 
-**Not yet done / limits**
-- All limits are proposals pending team approval.
-- Findings from reading Collins's AI section and cross-checking Vlad's diagrams are in Sections 7 and 8; I still need to post them on PR #16 and PR #15. I have not yet addressed David's Nov 2 review comments on PR #17, which I could not read.
-- No implementation or testing has been done. This is a design specification.
+
