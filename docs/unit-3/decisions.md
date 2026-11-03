@@ -15,7 +15,7 @@
 
 - **Team response cutoff:** Tuesday, November 3, 2026, at 10:00 a.m. Eastern, selected by Vlad; final revision follows the response round.
 - [Complete revised proposed decisions](proposed-decisions.md): 14 topics reviewed by Vlad; final team agreement and identified evidence pending.
-- Proposed application improvement release authority: Vlad primary, David backup; the change author cannot provide final release authorization.
+- Application improvement release authority: Vlad primary, Hanlin accepted backup. David declined the additional role; the technical release policy remains pending final team agreement. The change author cannot provide final release authorization.
 - Shared document/diagram alignment and all four reviews of one final version remain pending.
 
 ## Open technical decisions
@@ -37,3 +37,7 @@ The later workload selection above supersedes the pending status of the scenario
 ## October 31 proposal publication
 
 Published D01–D21 and the rationale draft for team review. Vlad plans to review PRs #16–#18. Provider/model, capacity evidence, runtime semantic-support policy, authentication/retention details and final agreement remain pending.
+
+## November 3 — Evidence and breaker direction selected
+
+Vlad selected Collins's conservative extractive prototype policy, accepting limited FAQ coverage, with an explicit immutable inquiry-bound evidence expectation supplied to C10. Activation requires a reviewed manifest; unavailable checks fail closed. Retain the prototype 3-failures/60-second breaker and provisional production 50-percent/minimum-20/10-second window, 30-second cooldown and single 20-second recovery lease. Completed valid provider responses remain availability successes even when content validation rejects them. Use 503 before admission, controlled 200 unavailable after admission, and 504 at the hard deadline. See the [complete decisions](proposed-decisions.md#7-ai-evidence-support-policy--d03c10) for ownership and remaining evidence. Final combined-version team approval and executed validation remain pending.

@@ -1,10 +1,6 @@
 # Team review
 
-*November 1 shared-source snapshot. Current direction: [November 2 proposed decisions](../proposed-decisions.md).*
-
-Author: Vladimyr Merci. Status: proposed; team approval pending.
-
-This architecture combines the current proposals for team review. Final agreement and LEO submission remain pending.
+This architecture reflects the November 2 proposals for team review. Responses are due November 3 at 10:00 a.m. Eastern; I will consolidate them afterward. Unanswered technical items remain open. Final agreement and LEO submission remain pending.
 
 ## What this review copy covers
 
@@ -20,19 +16,19 @@ This architecture combines the current proposals for team review. Final agreemen
 
 ## Remaining architecture work
 
-Production storage, deployment pattern, bounded admission and service targets are proposed above. Exact provider/model quotas, replica/database sizing, session lifetimes, unused submission-ID validity, payload/in-flight/support limits and capacity results remain pending.
+Production deployment/storage, service targets, session/ID defaults, non-author release, retention and breaker policies are proposed above. Exact provider/model capacity, replica/database sizing, payload/in-flight/support limits, executable evidence rules and breaker update behavior still require owner evidence and agreement.
 
 M5 performs runtime evidence and source validation under C10. B12 manual scoring is separate offline verification. The executable runtime evidence-support rule remains with Collins; valid source IDs alone do not establish correctness.
 
-The design rationale is available with the review log. Align its final wording with the agreed diagram and C1–C10 contracts.
+The [design rationale](../design-rationale.md) contains the current draft. Align its final wording with the agreed diagram and contracts after the response round.
 
 ## Requested team review
 
-- Hanlin: finalize C1–C10, session/identity details, submission-ID registration/expiry and ownership/version conflicts.
+- Hanlin: reconcile C1–C10 with the proposed policies, request selectors, permissions, session/ID values and concurrency/measurement boundaries.
 
-- Collins: supply provider/model capacity evidence, runtime evidence-support policy and shared-breaker counter/reset/write details.
+- Collins: supply exact provider/model capacity and data-policy evidence, executable evidence-support rules, breaker window/reset/write rules and timing/outcome confirmation.
 
-- David: verify the service-level denominator, expired-ID/duplicate races, session/ownership isolation and shared-breaker recovery.
+- David: verify fixed labels and denominators, session/ID/ownership races, release independence, deletion/restoration and shared-breaker recovery; review one identified final version.
 
 - Vlad: reconcile the architecture, contracts and rationale, resolve cross-component findings and coordinate final team review.
 
@@ -40,4 +36,4 @@ B13/B14 are later full-backlog items rather than commitments in the first four-w
 
 ## Dates
 
-Internal combined review: Sunday, November 1; corrections and agreement: Monday, November 2. Working submission deadline: Tuesday, November 3, 2026, at 11:59 p.m. Eastern.
+Team response cutoff: Tuesday, November 3, 2026, at 10:00 a.m. Eastern. Consolidation and final-version review follow. Working submission cutoff: November 3 at 11:59 p.m. Eastern; final team agreement and submission remain pending.

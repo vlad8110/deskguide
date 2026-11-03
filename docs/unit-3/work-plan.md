@@ -9,7 +9,7 @@ Vlad is the continuing coordinator. Any temporary delegation must be recorded in
 | Collins Amponsah | @MrAmpossible | AI integration and data flow | Normal, unsupported, provider-failure, escalation and reviewed-feedback paths |
 | David Warren | @dwarren10 | Quality and design verification | Requirement traceability, edge-case review, security and load-validation plan |
 
-Owners coordinate their sections; everyone contributes and reviews. Vlad assembles the 500-word rationale from the team's design reasoning. David reviews architecture, Collins reviews interfaces, Hanlin reviews AI flows, and the whole team reviews the rationale.
+Owners coordinate their sections; everyone contributes and reviews. David has posted his revised verification package and has limited availability for additional urgent work; Vlad coordinates that coverage. Vlad assembles the 500-word rationale from the team's design reasoning. David has reviewed earlier architecture and contract revisions. Collins reviews interfaces, Hanlin reviews AI flows, and the whole team reviews the rationale. Vlad coordinates any remaining urgent architecture/verification review coverage.
 
 ## Delivery schedule
 
@@ -19,7 +19,7 @@ The [Week 3 delivery schedule](week-3-delivery-schedule.md) is the shared schedu
 
 ## Application improvement release authority
 
-Proposed: Vlad is the primary release authorizer and David the backup. A non-author authorizes release after independent review, passed evaluation and a rollback reference. A qualified independent reviewer may also authorize. Assign explicit release permission to designated staff accounts; retain the existing project coordination roles.
+Vlad is the primary release authorizer and Hanlin is the accepted backup. David declined the additional role. The technical release rules remain proposed pending final team agreement. A non-author authorizes release after independent review, passed evaluation and a rollback reference. A qualified independent reviewer may also authorize. Assign explicit release permission to designated staff accounts; retain the existing project coordination roles.
 
 ## GitHub workflow
 

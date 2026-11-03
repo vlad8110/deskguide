@@ -1,6 +1,6 @@
 # DeskGuide — Revised Proposed Decisions
 
-Vladimyr Merci | November 2, 2026
+Vladimyr Merci | November 3, 2026
 
 **Team response cutoff: Tuesday, November 3, 2026, at 10:00 a.m. Eastern.** Please provide your remaining feedback, corrections and supporting evidence in your assigned issue or section PR by then so I can prepare the final revision.
 
@@ -44,17 +44,13 @@ This preserves D16's narrowing of Hanlin's original four-field proposal. Hanlin 
 
 ## 5. Release authority and backup — D08
 
-**I am the primary release authorizer; David is the backup.**
+**I am the primary release authorizer, and Hanlin is the accepted backup.** David declined the additional role. Hanlin confirmed availability in response to my request; this records the role assignment, while the technical release rules still await final team agreement.
 
-A change requires independent review, passed evaluation and a rollback reference. Its author cannot provide final release authorization:
+A change requires independent review, passed evaluation and a rollback reference. Its author cannot provide final release authorization. When I author a change, an available designated non-author must authorize it. When the backup authors a change, I may authorize it if independent. If no designated non-author is available, hold release until another qualified non-author accepts and receives explicit release permission.
 
-- When I author the change, David authorizes release.
-- When David authors it, I authorize release.
-- If neither is independent and available, designate another qualified non-author before release.
+A qualified independent reviewer may also authorize release if designated with the required permission, avoiding an unnecessary third mandatory approver. Release only the exact version reviewed and evaluated. I or the designated backup may restore a previously approved version, recording the reason.
 
-A qualified independent reviewer may also authorize release, avoiding an unnecessary third mandatory approver. Enforce a specific release permission on designated staff accounts. Release only the exact version reviewed and evaluated. David or I may restore a previously approved version, recording the reason.
-
-Independent review came from Collins's improvement flow and Hanlin's approver question. Separate non-author release authorization and David's backup designation refine that proposal. Hanlin aligns C6 permissions; Collins supplies the release flow; David verifies non-author enforcement and rollback.
+Independent review came from Collins's improvement flow and Hanlin's approver question. Hanlin's Draft 3.2 and David's revised verification plan now record non-author enforcement and David's decline. Hanlin aligns C6 permissions, Collins supplies the release flow, and Vlad coordinates remaining independent verification.
 
 ## 6. Support-save performance — D11/V31
 
@@ -70,21 +66,23 @@ This addresses David's objection to measuring only successful saves. The target 
 
 ## 7. AI evidence-support policy — D03/C10
 
-Collins defines the executable pre-generation evidence-sufficiency rule and runtime answer-support rule, including thresholds, allowed inputs, failure behavior and any additional provider calls.
+**Selected by Vlad on November 3:** adopt Collins's conservative, extractive evidence policy for the prototype, with the following contract refinements. Final integrated team approval remains pending.
 
-Check permitted sources, versions, access, citation membership and actual support for the answer. Matching source IDs or model-reported confidence alone cannot establish support.
+Use a reviewed, versioned manifest of exact normalized question aliases, required source versions/excerpts and approved answers. Require one matching active intent, all required authorized evidence and an exact normalized approved-answer match, with no additional wording. Preserve case, numbers, punctuation and negation. Do not add fuzzy acceptance, another model call or automatic generation retry.
 
-If checking fails, times out or cannot run, suppress the candidate answer and return a controlled fallback with a support option. Clarification may also be offered where useful. Customer confirmation remains necessary before saving a support request.
+Bind an immutable evidence expectation to each inquiry before generation: policy/manifest version, intent ID, approved answer and required source references/excerpt spans. Pass this explicitly to C10; never infer the expectation from candidate output or use shared mutable inquiry state. Keep customer/session data outside the provider request. Missing, unavailable or failed checking suppresses the candidate and offers clarification or support; saving support still requires customer confirmation.
 
-If the exact rule is unavailable for the draft, retain the interface and fail-closed behavior, with thresholds explicitly pending evidence. That limitation cannot be counted as completed supported-answer functionality or proof of meeting the service target. Keep B12 manual evaluation separate from runtime checking.
+Accept the limited FAQ coverage for the prototype: the model produces constrained evidence wording rather than free-form synthesis. Unlisted questions and paraphrased answers may fall back. This restriction does not establish general semantic correctness. The manifest must be supplied and independently reviewed before activation; absent it, fail closed. Keep B12 manual evaluation separate. Eligibility is fixed before testing; eligible alias misses and rejected paraphrases remain service-target misses.
 
-Hanlin aligns C10 inputs/outcomes; David verifies supported, unsupported and check-unavailable cases. Additional model calls must fit the provider and deadline budgets.
+Hanlin aligns C10's typed expectation and outcomes. Collins supplies the manifest, normalization/excerpt rules and coordinator handoff. Vlad coordinates independent fixture review. Implementation and measured quality remain pending.
 
 ## 8. Prototype and production circuit breakers — D14/V18
 
+**Selected by Vlad on November 3:** retain the following prototype defaults and provisional production candidate, incorporating Collins's shared-state rules. Final team approval and measured validation remain pending.
+
 **Prototype:** retain three consecutive qualifying failures within 60 seconds; successful provider calls reset that sequence.
 
-**Production candidate:** evaluate opening on **at least 50% qualifying failures among completed provider calls in a rolling ten-second window, after at least 20 calls have completed**. These values are provisional and require Collins's specification and David's validation.
+**Production candidate:** evaluate opening on **at least 50% qualifying failures among completed provider calls in a rolling ten-second window, after at least 20 calls have completed**. These values remain provisional; Collins's specification is received and independent validation remains pending.
 
 Both proposals retain:
 
@@ -98,6 +96,14 @@ The production window replaces consecutive-failure counting; an ordinary success
 Respect provider quota-reset guidance. Customer validation failures, unsupported questions and semantic rejections are not provider outages. Exhausted daily/monthly quota is not probed every 30 seconds. Credential/configuration errors require correction. Failed inquiries are not automatically resubmitted.
 
 The rate-based production candidate is a new refinement, not a teammate-selected threshold. Sliding windows with minimum call volumes are a documented approach, but that does not validate our exact settings. [Circuit-breaker reference](https://resilience4j.readme.io/docs/circuitbreaker).
+
+### Counting, recovery and response rules
+
+Use unique completed-call IDs, database completion times and state epochs to count each provider outcome once. A well-formed provider response is an availability success even when C10 rejects its content: include it in the production denominator, exclude it from qualifying failures, and retain it as an AI-service miss. Prototype successes reset the consecutive sequence; production successes contribute to the rolling window.
+
+Keep one globally leased trial on a new admitted inquiry, with no database lock held during the external call. Ignore obsolete-epoch completions for breaker state, recover expired leases and fail closed when shared coordination is unavailable. The lease never extends the provider or inquiry deadline. Respect longer Retry-After/reset guidance; disable exhausted quota or invalid configuration rather than probing every 30 seconds. No automatic inquiry replay.
+
+Before admission, return 503 SERVICE_BUSY with Retry-After for admission denial. After admission, C3 circuit_open/provider failure returns controlled 200 temporarily_unavailable with a support option. Overall-deadline expiry returns 504. Otherwise-eligible no-answer outcomes remain misses against the separate AI-service objective. Collins and Hanlin align their flows/contracts; resource contention and recovery checks remain planned.
 
 ## 9. Retention and deletion — D09
 
@@ -186,7 +192,7 @@ The **95%-within-15-seconds target** is separate from the 20-second hard deadlin
 | Vlad — [#11](https://github.com/vlad8110/deskguide/issues/11) | Review cross-component findings and coordinate one consistent final document, diagram, contracts and rationale after the response cutoff |
 | Hanlin — [#12](https://github.com/vlad8110/deskguide/issues/12), [PR #17](https://github.com/vlad8110/deskguide/pull/17) | Align state names, session/ID values, combined ID limit, explicit account-status selector, provisioning/permissions, release authority and measurement contracts |
 | Collins — [#13](https://github.com/vlad8110/deskguide/issues/13), [PR #16](https://github.com/vlad8110/deskguide/pull/16) | Supply provider evidence, evidence-support rules, production-breaker details and timing confirmation |
-| David — [#14](https://github.com/vlad8110/deskguide/issues/14), [PR #18](https://github.com/vlad8110/deskguide/pull/18) | Review security, deletion/restoration, duplicate/race cases, test classifications and performance measurements; serve as backup release authorizer |
+| David — [#14](https://github.com/vlad8110/deskguide/issues/14), [PR #18](https://github.com/vlad8110/deskguide/pull/18) | Revised verification and review responses posted; backup role declined. Vlad coordinates remaining urgent review coverage |
 | All four members | Review the same identified final document, diagram, contracts and rationale |
 
 Final team approval remains pending. Unanswered technical items remain open after the response cutoff.

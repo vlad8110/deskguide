@@ -31,7 +31,7 @@
         <mxCell id="hwXAEPP3mjso2QIhsSkL-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M9 | Shared persistence interfaces&lt;br&gt;Knowledge / support / feedback&lt;br&gt;Sessions / receipts / breaker state" vertex="1">
           <mxGeometry height="80" width="230" x="350" y="570" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M8 | Feedback + improvement&lt;br&gt;Independent review / evaluate / release&lt;br&gt;Vlad primary / David backup" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fontSize=11;" value="M8 | Feedback + improvement&lt;br&gt;Independent review / evaluate / release&lt;br&gt;Vlad primary / Hanlin backup" vertex="1">
           <mxGeometry height="65" width="230" x="350" y="710" as="geometry" />
         </mxCell>
         <mxCell id="hwXAEPP3mjso2QIhsSkL-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="External AI&lt;br&gt;provider" vertex="1">
@@ -40,7 +40,7 @@
         <mxCell id="hwXAEPP3mjso2QIhsSkL-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="Existing customer&lt;br&gt;database" vertex="1">
           <mxGeometry height="80" width="140" x="1010" y="570" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="DeskGuide | Component Architecture&lt;br&gt;Vladimyr Merci · Proposed design · November 2, 2026" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="DeskGuide | Component Architecture&lt;br&gt;Vladimyr Merci · Proposed design · November 3, 2026" vertex="1">
           <mxGeometry height="50" width="1140" x="10" y="15" as="geometry" />
         </mxCell>
         <mxCell id="hwXAEPP3mjso2QIhsSkL-14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="PLANNING ASSUMPTION: 10,000 active customers × 1 inquiry/minute ≈ 167 inquiries/second; capacity untested." vertex="1">
@@ -49,7 +49,7 @@
         <mxCell id="hwXAEPP3mjso2QIhsSkL-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M1–M9 are logical modules in one application.&lt;br&gt;Solid lines: requests/data. Dashed lines: approved improvements." vertex="1">
           <mxGeometry height="45" width="1140" x="10" y="825" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-17" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-2" style="endArrow=classic;startArrow=classic;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-1" value="C1 inquiry / explicit account status&lt;br&gt;C4/C5 support&lt;br&gt;C6 feedback · C8 document admin">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-17" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-2" style="endArrow=classic;startArrow=classic;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-1" value="C1 inquiry / explicit account status&lt;br&gt;C2b sources · C9 sessions&lt;br&gt;C4/C5 support · C6 feedback&lt;br&gt;C8 document admin">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="620" y="230" as="sourcePoint" />
             <mxPoint x="670" y="180" as="targetPoint" />
@@ -151,6 +151,23 @@
         </mxCell>
         <mxCell id="component-release-policy" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Release / evidence controls (proposed)&lt;/b&gt;&lt;br&gt;Author cannot authorize own release; exact version + rollback.&lt;br&gt;Independent review and passed evaluation precede release.&lt;br&gt;Failed / unavailable support checking suppresses the answer.&lt;br&gt;Only confirmed support is saved; no automatic escalation." vertex="1">
           <mxGeometry height="125" width="560" x="590" y="895" as="geometry" />
+        </mxCell>
+        <mxCell id="m2-session-state" parent="1" edge="1" source="hwXAEPP3mjso2QIhsSkL-1" target="hwXAEPP3mjso2QIhsSkL-9" value="Sessions / accounts" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.375;entryX=0.15;entryY=1;">
+          <mxGeometry relative="1" x="0.6" y="-9" as="geometry">
+            <Array as="points">
+              <mxPoint x="40" y="270" />
+              <mxPoint x="40" y="680" />
+              <mxPoint x="385" y="680" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m4-breaker-state" parent="1" edge="1" source="hwXAEPP3mjso2QIhsSkL-5" target="hwXAEPP3mjso2QIhsSkL-9" value="Breaker state" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;exitX=0.75;exitY=1;entryX=0.83;entryY=0;">
+          <mxGeometry relative="1" x="0" y="-10" as="geometry">
+            <Array as="points">
+              <mxPoint x="812.5" y="525" />
+              <mxPoint x="540" y="525" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

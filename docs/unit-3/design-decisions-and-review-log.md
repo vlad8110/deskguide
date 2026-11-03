@@ -1,6 +1,6 @@
 # Unit 3 Design Decisions and Review Log
 
-Coordinator: Vladimyr Merci, Lead Architect. Updated: November 2, 2026. Revision 8.
+Coordinator: Vladimyr Merci, Lead Architect. Updated: November 3, 2026. Revision 11.
 
 I have worked through the open architecture questions and collected my proposed solutions here. Please review the items assigned to your role, flag concerns, and provide the requested clarification or evidence. I will reconcile the replies before assembling the final specification.
 
@@ -11,10 +11,10 @@ I have worked through the open architecture questions and collected my proposed 
 | Source | Revision inspected | Evidence supplied |
 | --- | --- | --- |
 | [Vlad's architecture, PR #15](https://github.com/vlad8110/deskguide/pull/15) | `ff5c281f2db236a1f2846b5a53a340d709af2ec3`, November 1 baseline | Scope, selected workload, nine logical components, walkthroughs and shared sources |
-| [Collins's integration flows, PR #16](https://github.com/vlad8110/deskguide/pull/16) | `bcf86e01b779436325c4956773cd91cffa7e8276` | Answering, failure, escalation, improvement and bounded-queue proposals |
-| [Hanlin's contracts, PR #17](https://github.com/vlad8110/deskguide/pull/17) | Draft 3.1, `0e7f85585c5887999d78337084185538822a9096` | Registered IDs/receipts, C1–C10, cookie sessions, evidence-policy interface and revised examples |
+| [Collins's integration flows, PR #16](https://github.com/vlad8110/deskguide/pull/16) | `0099cd842ff02463f6ad6adf5ff4e887fb501280` | Extractive evidence manifest, shared-breaker counting/recovery, revised routing and provider research; proposals, not test results |
+| [Hanlin's contracts, PR #17](https://github.com/vlad8110/deskguide/pull/17) | Draft 3.2, `253be0deb5f3f96b75373de9925e4df8d4035d97` | Registered IDs/receipts, C1 selector, C1–C10, sessions, release permissions and denominator-aware measurements |
 | [Collins's review of Hanlin's draft](https://github.com/vlad8110/deskguide/pull/17#pullrequestreview-5725100910) | `95875135e8940f4ec44e7b431c1c9c0504fccf55`, October 31 | Specific authorization-context, semantic-support, feedback and timeout questions; COMMENTED review, not approval |
-| [David's verification package, PR #18](https://github.com/vlad8110/deskguide/pull/18) | `a9912c913e477b591bb801e48a5387a81b46104b` | Updated selected-workload and burst scenarios, security/reliability checks, and response to D01–D21 |
+| [David's verification package, PR #18](https://github.com/vlad8110/deskguide/pull/18) | `9aa7a493dc5c4ff922d4ce2ace8744b3283a0a2b` | Revised verification package, N01–N15 and proposed B12 fixture manifest; execution and final approval pending |
 | [David's review of the proposals](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5725784156) | Review of `13b635fc743ef4f3cc9b1318adcfa0bdcb3a1405`, October 31 | Workload interpretation accepted; capacity, expiry, session, ownership, grounding and breaker details remain open |
 | [David's revised-architecture review](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5730726420) | November 1, review of the revised architecture/diagrams | State-name mismatch, registered IDs, session/retention proposals, fixed eligibility labels and recovery checks |
 | [David's Draft 3.1 review](https://github.com/vlad8110/deskguide/pull/17#pullrequestreview-5738959296) | November 2, review of `0e7f855` | Conditional acceptance of 30-minute/eight-hour sessions and 30-minute unused IDs; save-metric, retention, evidence and breaker follow-up |
@@ -22,7 +22,7 @@ I have worked through the open architecture questions and collected my proposed 
 | [David's provider comparison, issue #5](https://github.com/vlad8110/deskguide/issues/5#issuecomment-6590430685) | November 2, 5:47:19 p.m. Eastern | Official provider-policy research; actual tier/model, configured controls, capacity and provider choice remain open |
 | [Assignment requirements](assignment-requirements.md) | Course instructions linked there | Diagram, typed contracts, 500-word rationale; 10,000 concurrent users without a specified inquiry frequency or latency target |
 
-The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. The [two-page diagram and PNGs](architecture-first-draft/README.md#diagrams) reflect the November 2 proposals. The [complete architecture review document](architecture-first-draft/architecture-review.md) and written sections retain the November 1 Google Doc wording. Written-source alignment and final team agreement remain pending.
+The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. The local [complete architecture review document](architecture-first-draft/architecture-review.md) and written sections reflect the November 2 shared wording with the accepted-backup correction. The local [two-page diagram and PNGs](architecture-first-draft/README.md#diagrams) include the backup and connection corrections. Shared-source alignment and final team agreement remain pending.
 
 ## 2. Established direction and approval boundaries
 
@@ -65,7 +65,7 @@ Retrieve only permitted relevant passages. Collins must define executable pre-ge
 
 If validation fails, times out or cannot run, suppress the candidate and return a controlled fallback with a support option; clarification may also be offered. Customer confirmation is required before saving support. No automatic generation retry.
 
-**Evidence/status:** Hanlin's C10 now supplies the interface and fail-closed outcome. Collins's executable rule remains pending evidence. Retain that limitation in the draft without claiming completed supported-answer functionality or a passed service target. David verifies supported, unsupported and check-unavailable cases; B12 manual evaluation remains separate.
+**Evidence/status:** Collins's section 5 now proposes an exact-alias, versioned extractive manifest and exact approved-answer matching, with no extra model call and fail-closed checking. This is a narrow prototype policy: unlisted questions and paraphrased answers fall back. The manifest, aliases and source labels are not yet supplied or evaluated. C10's request-specific expected-answer input needs alignment; see the November 3 review below. No completed supported-answer functionality or passed service target is claimed. B12 manual evaluation remains separate.
 
 ### D04 — Failures and acknowledgements
 
@@ -107,13 +107,13 @@ Customers see their own records; agents see the unassigned work queue and their 
 
 ### D08 — Improvement and release authority
 
-**Raised by:** Collins's improvement flow and Hanlin's approver question. **Owners:** Collins walkthrough, Hanlin C6, David review, Vlad release coordination.
+**Raised by:** Collins's improvement flow and Hanlin's approver question. **Owners:** Collins walkthrough, Hanlin C6, Vlad release coordination and remaining independent review; David’s planned N09 checks are received.
 
-A contributor proposes a bounded source/retrieval/prompt/configuration change. A different qualified member reviews it, evaluation passes and a rollback reference is recorded before release. Vlad is the primary release authorizer; David is the backup. The author cannot give final release authorization. When Vlad authors, David authorizes; when David authors, Vlad authorizes. If neither is independent and available, designate another qualified non-author before release.
+A contributor proposes a bounded source/retrieval/prompt/configuration change. A different qualified member reviews it, evaluation passes and a rollback reference is recorded before release. Vlad is the primary release authorizer and Hanlin is the accepted backup. David declined the additional role; Hanlin confirmed availability in direct response to the backup-role request. The author cannot give final release authorization. A designated non-author must authorize a change; hold release if no qualified independent authorizer is available.
 
-An independent qualified reviewer may also authorize release. Enforce a specific release permission and release exactly the reviewed/evaluated version. Vlad or David may restore a previously approved version with a recorded reason. Approved source changes enter M3/C8; approved generation configuration enters M4. Use the existing workflow; no automatic retraining or release from ratings.
+An independent qualified reviewer may also authorize release. Enforce a specific release permission and release exactly the reviewed/evaluated version. Vlad or the designated backup may restore a previously approved version with a recorded reason. Approved source changes enter M3/C8; approved generation configuration enters M4. Use the existing workflow; no automatic retraining or release from ratings.
 
-**Evidence/status:** Proposed. Independent review existed earlier; non-author release authorization and David's backup designation are November 2 refinements selected by Vlad. Hanlin aligns C6 permissions; Collins supplies the flow; David verifies self-authorization denial and rollback.
+**Evidence/status:** Proposed. David explicitly declined backup authorization in [PR #18](https://github.com/vlad8110/deskguide/pull/18#issuecomment-6590781449). Hanlin Draft 3.2 defines non-author permission and exact evaluated-version release; David N09 defines the planned checks. Hanlin accepted the backup role; the design and final combined-version approval remain pending. Vlad coordinates remaining independent review.
 
 ### D09 — Retention and duplicate-protection lifetime
 
@@ -220,7 +220,7 @@ Both proposals retain a 30-second cooldown and one global recovery trial on a ne
 
 Respect 429/quota-reset guidance; do not probe exhausted daily/monthly quota every 30 seconds. Credential/configuration failures require correction. Customer validation, unsupported questions and semantic rejection are not provider outages. [Sliding-window/minimum-volume guidance](https://resilience4j.readme.io/docs/circuitbreaker) supports the pattern, not the exact candidate values.
 
-**Evidence/status:** Proposed. Collins specifies qualifying categories, counter/window/reset/write policy and lease events. David verifies one global trial, expired leases, stale results, quota reset, simultaneous completions and database contention. Vlad reviews the shared-state/resource assumptions.
+**Evidence/status:** Collins's section 10 now specifies qualifying categories, shared completion/epoch recording, rolling-window resets, one recovery lease, expired-lease recovery, stale-result exclusion and quota/configuration disable rules. Retain the proposed numeric settings for review. Clarify the availability denominator and stage-dependent response mapping below. Independent review and eventual recovery/contention tests remain pending; this specification does not establish capacity.
 
 ### D15 — Payload and token bounds
 
@@ -294,9 +294,9 @@ Responses to the [complete revised proposal](proposed-decisions.md) are due **Tu
 
 David reviews architecture, Collins contracts, Hanlin AI flows and Vlad verification. Reconcile M1–M9/C1–C10, account/status selectors, permissions, exact state names, bounds, errors, retention, release governance and provider constraints. Hanlin's V-prefixed proposed values and David's V-prefixed test cases are different numbering systems.
 
-The shared Google Doc and draw.io now reflect the November 2 proposals, and the Design rationale tab contains the current draft. Repository diagram/PNG copies are current; repository written architecture snapshots remain dated November 1. Reconcile owner responses and align the final document, diagram, contracts and rationale, then obtain all four explicit reviews of one identified final version.
+The shared Google Doc and draw.io now reflect the November 2 proposals, and the Design rationale tab contains the current draft. Local diagram/PNG and written snapshots have been reconciled with the November 2 shared sources and the pending backup/connection corrections; shared-file correction and publication remain pending. Reconcile owner responses and align the final document, diagram, contracts and rationale, then obtain all four explicit reviews of one identified final version.
 
-**Evidence/status:** Vlad reviewed the proposed direction and selected David as backup release authorizer. Final team approval, remaining owner evidence and submission remain pending.
+**Evidence/status:** Vlad reviewed the proposed direction; David subsequently declined backup authorization. Hanlin accepted replacement backup responsibility. Final team approval, remaining owner evidence and submission remain pending.
 
 ### D22 — Outbound-data eligibility for external AI
 
@@ -320,6 +320,20 @@ Reconcile the final wording with D09, D13, D16 and D22 and the selected provider
 
 **Evidence/status:** Draft wording selected for inclusion as a proposal; team approval and implementation remain pending. Hanlin aligns the UI/contract and Collins verifies the provider statement. David verifies visibility before submission, consistency with actual storage/outbound behavior, and preview/confirm/cancel outcomes. No completed tests are claimed.
 
+## Current revision alignment
+
+| Item | Current evidence | Remaining action |
+| --- | --- | --- |
+| Sessions and provisioning | Hanlin Draft 3.2 C9/C9c and David N01/N02 define the 30-minute/eight-hour rules, role-change revocation and controlled accounts | Final integrated review; execution is future work |
+| Registered IDs | Draft 3.2 C4 and David N03–N06 define fixed expiry, combined three-ID cap, no eviction, receipt lifetime and retry races | Final integrated review and eventual tests |
+| Explicit account status | Draft 3.2 C1 adds `requested_operation`; C7 and David N08 keep lookup read-only and outside AI | Collins aligns Flow A with the selector and zero model calls |
+| Save and AI measurements | Draft 3.2 section 2.7/V31 and David section D include all eligible/confirmed outcomes and first-submit timing across retries | Approve final measurement contract with provider/resource limits |
+| Release authority | Draft 3.2 C6/V35 and David N09 preserve non-author permission and exact evaluated versions; Hanlin accepted backup responsibility after David declined | Record Hanlin as backup in the final shared sources and C6; retain non-author authorization |
+| Diagrams | Local M8 label, browser C2b/C9 labels and M2–M9/M4–M9 connections corrected | Reconcile the corrected source/PNG with shared files and final review version |
+| B12 fixture manifest | David proposes 12 supported, four unsupported and four ambiguous cases | Lock actual synthetic sources, hashes/spans and independent labels. U01/U02/U04 are privacy/authorization cases; add ordinary missing-evidence coverage so the abstention check cannot pass through policy denials alone |
+| Provider, evidence and breaker | Collins PR #16 at 0099cd8 supplies extractive evidence and shared-breaker proposals; reviewed below | Align the request-specific expected answer, availability counting and response mapping; supply the reviewed manifest and exact model/tier/quota/data controls |
+| Cross-document wording | Draft 3.2 operative rules reflect many corrections | Reconcile the stale source-limit header and old change-history references; C1 `answer_id` wording must also cover deterministic account-status answers |
+
 ## 4. Responsibility and evidence queue
 
 **Respond by Tuesday, November 3, 2026, at 10:00 a.m. Eastern** in your existing issue or section PR, using the D-number, clarification, evidence and suggested wording.
@@ -328,8 +342,8 @@ Reconcile the final wording with D09, D13, D16 and D22 and the selected provider
 | --- | --- | --- |
 | **Vlad — [#11](https://github.com/vlad8110/deskguide/issues/11)** | Review production assumptions and cross-component findings; consolidate after the response cutoff; coordinate shared-source alignment | One consistent final document, diagram, contracts and rationale with all four reviews |
 | **Hanlin — [#12](https://github.com/vlad8110/deskguide/issues/12), [PR #17](https://github.com/vlad8110/deskguide/pull/17)** | D07/D08/D09/D11/D12/D16/D17/D18: exact state, session/ID values, combined no-eviction ID cap, C1 selector, account/permission/release contracts, save timing and V28 | Concrete request/response and denied/conflict/expiry examples; align C1–C10 |
-| **Collins — [#13](https://github.com/vlad8110/deskguide/issues/13), [PR #16](https://github.com/vlad8110/deskguide/pull/16)** | D03/D04/D11/D13/D14: executable evidence rules, exact provider/model/quota/data policy, prototype vs production breaker and timing outcomes | Sourced capacity/cost/data-retention comparison, support/failure examples and atomic counter/window/lease events |
-| **David — [#14](https://github.com/vlad8110/deskguide/issues/14), [PR #18](https://github.com/vlad8110/deskguide/pull/18)** | Review the proposed values and retention rules; define fixed eligibility labels, all-submission save accounting, release independence and race/recovery/restore cases | Identified test-set and scenario versions; distinguish planned checks, simulated results and live evidence; backup release authorizer |
+| **Collins — [#13](https://github.com/vlad8110/deskguide/issues/13), [PR #16](https://github.com/vlad8110/deskguide/pull/16)** | D03/D04/D11/D13/D14: clarify request-specific evidence expectation and availability counting; finalize the manifest, exact provider/model/quota/data policy and response alignment | Reviewed source/alias fixtures, supported/fallback examples, account-specific provider evidence and planned atomic window/lease checks |
+| **David — [#14](https://github.com/vlad8110/deskguide/issues/14), [PR #18](https://github.com/vlad8110/deskguide/pull/18)** | Revised verification and N01–N15 posted; review coverage and proposed B12 manifest are available. David declined additional backup/urgent duties | Vlad coordinates remaining urgent review, independent fixture labels and final consistency; execution and final approval remain pending |
 
 ### Differences requiring explicit agreement
 
@@ -346,9 +360,9 @@ Reconcile the final wording with D09, D13, D16 and D22 and the selected provider
 | Earlier feedback requires answer ID | Authorized inquiry identity sufficient without an answer | Hanlin + Collins |
 | Earlier every internal method takes access context | Protected operations get context; provider receives only permitted generation data | Hanlin + Collins |
 | Earlier release only from assigned support state | Owner release from unfinished owned states with reason; customer reply retains owner | Hanlin + David |
-| Improvement release authority undefined | Vlad primary, David backup; non-author authorization after independent review/evaluation | Hanlin + Collins + David |
+| Improvement release authority undefined | Vlad primary; Hanlin accepted backup; non-author authorization after independent review/evaluation | Hanlin + Collins + David |
 | Prototype consecutive-failure breaker | Retain prototype rule; evaluate a separate production rolling-window candidate | Collins + David + Vlad |
-| Evidence-support policy still missing | Executable Collins policy; fail closed while evidence/thresholds remain pending | Collins + David |
+| Evidence-policy proposal now received | Exact-alias/extractive prototype; explicit inquiry-bound expectation and reviewed manifest needed before activation | Collins + Hanlin + Vlad; independent fixture review |
 | Outbound classification and enforcement not finalized | D22 deny-by-default rule for both questions and passages; fictional prototype data; approved fallback with zero blocked provider calls | Vlad + Collins + Hanlin + David |
 | Pre-submission provider notice not finalized | D23 wording distinguishes application history, provider retention and confirmed human-support records | Hanlin + Collins + Vlad + David |
 
@@ -357,11 +371,25 @@ Reconcile the final wording with D09, D13, D16 and D22 and the selected provider
 | Member | Review evidence/status | Final approval |
 | --- | --- | --- |
 | Vlad | Reviewed the 14-topic November 2 proposed direction and revised rationale; shared sources aligned; owner evidence and final-version alignment pending | Pending for combined final version |
-| Hanlin | Draft 3.1 in PR #17; requested confirmations reflected in the revised proposal | Pending |
-| Collins | Draft PR #16 and COMMENTED review on PR #17; assigned evidence/policy response pending | Pending |
-| David | November 1 architecture review and November 2 Draft 3.1 review; conditionally accepts session/unused-ID values; asks for remaining policy/verification detail | Pending |
+| Hanlin | Draft 3.2 at 253be0d in PR #17; requested selector, session/ID, measurement and release rules incorporated; final cross-check pending | Pending |
+| Collins | PR #16 at 0099cd8; evidence and breaker proposals reviewed below; contract, manifest and provider evidence remain open | Pending |
+| David | Revised six-file PR #18 at 9aa7a49, N01–N15 and proposed B12 manifest received; backup role declined; final fixture lock and integrated review pending | Pending |
 
 After the response cutoff I will consolidate remaining findings and align the final specification. Follow the [delivery schedule](week-3-delivery-schedule.md). A response cutoff is not final technical approval.
+
+### November 3 review — Collins's evidence and breaker proposals
+
+Vlad selected the following direction on November 3: adopt the narrow extractive prototype with an explicit inquiry-bound evidence expectation; retain the breaker settings and shared-state recovery rules; clarify availability counting and stage-dependent responses. These coordinator decisions are recorded in the [revised decisions](proposed-decisions.md#7-ai-evidence-support-policy--d03c10). Final integrated team approval, manifest activation and implementation evidence remain pending.
+
+| Item | Review finding and proposed solution | Owner / remaining evidence |
+| --- | --- | --- |
+| Evidence policy scope | Exact aliases and exact approved extractive answers provide a conservative prototype boundary. They reject otherwise useful paraphrases and unlisted questions. The approved answer exists before generation, so the model adds no free-form synthesis under this policy. Vlad accepts this limited feature for the prototype; broader semantic answering requires a separate reviewed policy. | Vlad and Collins confirm product scope; retain B12 independent source/answer review. |
+| Inquiry-bound expected answer | Collins selects an approved answer before C3, but C10 currently exposes only candidate and retrieved/cited passages to its policy. Pass an immutable, request-scoped evidence expectation containing policy/manifest version, intent ID, approved answer and required source references/excerpt spans. Bind it before generation; never infer the expectation from the candidate or store it in shared mutable request state. Missing expectation fails closed. This internal context contains permitted knowledge only and adds no customer/session data to the provider request. | Hanlin aligns the C10 type/signature; Collins specifies coordinator handoff and canonical excerpt offsets. |
+| Fixture and service-target accounting | Supply exact synthetic source versions, aliases, excerpts and independent eligibility labels before activation. Fix question eligibility before testing. An eligible question that misses alias matching or produces a rejected paraphrase remains a service-target miss. Include ordinary missing-evidence cases alongside privacy/authorization denials. | Collins supplies the manifest; Vlad coordinates independent fixture review using David's proposed B12 set. |
+| Breaker structure and settings | Retain prototype three consecutive qualifying failures within 60 seconds; production candidate at least 50% failures after at least 20 completed calls in a rolling ten-second window. Retain 30-second cooldown, one globally leased recovery call and a 20-second lease. Collins's epoch, stale-completion, quota/configuration and unavailable-coordination rules address the principal recovery cases. Numeric settings remain provisional. | Collins owns the policy; independent recovery, race and database-contention checks remain planned. |
+| Availability counting | A well-formed completed provider response contributes one availability success to the production denominator, even if C10 later rejects its content. Semantic rejection is not a qualifying provider failure; it must not remove an otherwise completed call from the denominator. The rejected answer remains a miss for the separate AI-service target. | Collins clarifies N/F wording; Hanlin aligns V18/C3 and planned examples. |
+| Response mapping | Retain 503 SERVICE_BUSY with Retry-After when admission is denied before processing; an already-admitted inquiry receiving C3 circuit_open/provider failure returns controlled 200 temporarily_unavailable with a support option; hard overall-deadline expiry uses 504. Otherwise-eligible no-answer outcomes remain service-target misses. | Vlad proposes this stage distinction; Hanlin and Collins align the contracts/flows. |
+| Remaining provider/capacity evidence | Cohere-first/Groq-comparison order remains. Exact account/model/tier controls, quotas, cost and measured latency are still required. Shared per-call database recording needs contention checks before any production-capacity claim. | Collins provides account-specific evidence; Vlad reviews resource assumptions. |
 
 ## 6. Revision record
 
@@ -375,3 +403,9 @@ After the response cutoff I will consolidate remaining findings and align the fi
 | 6 | 2026-11-02 | Shared component/deployment diagrams revised for current proposals; editable source and PNG previews refreshed | Written-source alignment, owner evidence and final-version approvals pending |
 | 7 | 2026-11-02 | Rationale revision 3 and shared Google Doc rationale tab; updated shared-source alignment status | Owner responses and all four final-version approvals pending |
 | 8 | 2026-11-02 | David's issue #8/#5 evidence recorded; D22 outbound-data rule and D23 pre-submission notice added at Vlad's direction | Policy, notice wording, provider evidence and final team approval pending; implementation/tests not completed |
+
+| 9 | 2026-11-02 | David’s revised verification package, Hanlin Draft 3.2, pending replacement backup and diagram corrections | Local correction draft; owner evidence and all four final-version approvals pending |
+
+| 10 | 2026-11-03 | Hanlin accepted backup authorization; Collins’s revised evidence and breaker proposals received for review | Role recorded locally; technical and final-version approvals pending |
+
+| 11 | 2026-11-03 | Vlad selected the extractive prototype, inquiry-bound expectation, breaker settings, availability counting and response-stage rules | Coordinator direction recorded; final team approval, fixtures and executed validation pending |

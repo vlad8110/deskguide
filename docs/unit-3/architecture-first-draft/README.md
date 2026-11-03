@@ -1,6 +1,6 @@
 # Unit 3 architecture review
 
-Author: Vladimyr Merci. November 2 diagram revision; November 1 written-source snapshots. Current review direction: [November 2 proposed decisions](../proposed-decisions.md). Written-source alignment and final approval pending.
+Author: Vladimyr Merci. November 2 working revision, including Hanlin’s accepted backup role and diagram-connection corrections. Current review direction: [November 2 proposed decisions](../proposed-decisions.md). Written-source alignment and final approval pending.
 
 Read the [complete architecture review document](architecture-review.md), the [Design Decisions and Review Log](../design-decisions-and-review-log.md), and the [rationale draft](../design-rationale.md).
 
@@ -28,7 +28,7 @@ The [editable draw.io source](deskguide-unit-3-architecture.drawio) contains two
 
 M1–M9 are logical modules. The production proposal replicates one modular Flask application behind HTTPS ingress/load balancing with shared PostgreSQL state. The workload assumption is 10,000 active customer sessions averaging one inquiry per minute, approximately 167 inquiries per second. Capacity remains untested.
 
-The diagrams include explicit account-status routing, proposed session/ID limits, non-author release authorization with David as backup, fail-closed evidence checking, and shared admission, breaker and retention policies. Provider/model capacity, resource sizing, executable evidence-support rules and exact breaker update behavior remain assigned for review. See the [review log](../design-decisions-and-review-log.md) for owners and evidence requests.
+The diagrams include explicit account-status routing, proposed session/ID limits, non-author release authorization with Hanlin as the accepted backup, fail-closed evidence checking, and shared admission, breaker and retention policies. Provider/model capacity, resource sizing, executable evidence-support rules and exact breaker update behavior remain assigned for review. See the [review log](../design-decisions-and-review-log.md) for owners and evidence requests.
 
 ## Shared editing sources
 
@@ -36,4 +36,4 @@ The diagrams include explicit account-status routing, proposed session/ID limits
 - [Shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO)
 - [Same diagram in Google Drive](https://drive.google.com/file/d/1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO/view)
 
-The shared files remain the editable architecture sources. Diagram copies reflect the November 2 revision; written copies still reflect the November 1 Google Doc. Follow the [Week 3 schedule](../week-3-delivery-schedule.md) for team agreement and submission.
+The shared files remain the editable architecture sources. Written copies were reconciled with the November 2 Google Doc. Backup-role and diagram-connection corrections are prepared locally; the shared editable files still require those corrections. Follow the [Week 3 schedule](../week-3-delivery-schedule.md) for team agreement and submission.
