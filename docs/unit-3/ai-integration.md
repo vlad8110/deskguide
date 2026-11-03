@@ -1,232 +1,552 @@
-# AI integration and data flow — working specification
+# AI integration, escalation and feedback — revised design specification
 
-Lead: Collins Amponsah. Reviewers: Hanlin Wang and David Warren. Vladimyr Merci checks architecture consistency.
+**Lead:** Collins Amponsah  
+**Reviewers:** Hanlin Wang and David Warren  
+**Architecture coordination:** Vladimyr Merci  
+**Revision:** November 3, 2026; aligned to Hanlin's Interface Contracts Draft 3.2 and Vlad's November 2 Revised Proposed Decisions.
 
-Status: First design draft for review. Component names, field names, states, and policies below are proposals pending alignment with the architecture and interface contracts. This document does not claim implementation, provider access, tested capacity, or measured answer quality.
+**Status:** Revised design proposal for review. Team acceptance remains pending. No application implementation, executed tests, live provider access, measured answer quality or production capacity is claimed.
 
-## 1. Purpose and boundaries
+The alignment below uses the copies reviewed for this revision. Final approval must identify the exact reviewed commits and final combined document. Subsequent changes require another consistency check.
 
-DeskGuide handles basic customer-service inquiries using permitted knowledge sources, offers customer-confirmed escalation to human agents, and improves through reviewed interaction feedback.
+## 1. Purpose, architecture and boundaries
 
-The AI component does not directly query the customer database, authorize access, create support requests, or make administrative changes. Application services enforce these responsibilities through explicit interfaces.
+DeskGuide answers basic customer-service questions from permitted knowledge sources, offers customer-confirmed human support, and uses feedback through a reviewed improvement process.
 
-This design supports the team's requirement to plan for 10,000 concurrent customers. That population is not assumed to equal 10,000 simultaneous model requests. Workload rates, provider quotas, queue limits, and capacity calculations require agreement with Vlad and David.
+The proposed deployment is a modular Flask application replicated behind HTTPS ingress, with shared PostgreSQL persistence. Logical modules do not imply independently deployed microservices.
 
-Examples and evaluation data are fictional or synthetic. No real customer database connection, paid service activation, or automatic model retraining is proposed here.
+The model cannot authorize access, query customer databases, save support requests, change accounts or release improvements. Application components enforce these responsibilities.
+
+The initial scope is one company with controlled account provisioning. Multi-company support, public registration, automatic model retraining and automatic second-provider failover are deferred.
+
+All examples and evaluation fixtures are fictional. Real customer content and credentials must not enter the public repository.
 
 ## 2. Components and contract mapping
 
-These are logical responsibilities; they do not require separate deployed microservices.
-
-| Component | Responsibility | Contracts |
+| Module | Responsibility | Contracts |
 |---|---|---|
-| Customer interface | Collect questions; display answers, citations, failures, and escalation confirmation | C1, C4, C6 |
-| Inquiry coordinator | Validate requests, enforce scope, coordinate retrieval/generation, and select the response path | C1, C2, C3, C7 |
-| Retrieval/source service | Retrieve permitted passages and resolve authorized source versions | C2 |
-| Generation adapter | Translate the internal generation request into provider-specific calls and normalize results/errors | C3 |
-| Output validator | Check response structure, source membership, citation resolution, and evidence-support rules | C2, C3 |
-| Escalation service | Persist customer-confirmed requests and provide retry-safe acknowledgments | C4 |
-| Agent service | Authorize queue access, ownership, and request-state transitions | C5 |
-| Feedback/review service | Store permitted feedback and manage reviewed improvement proposals | C6 |
-| Customer-data adapter | Return only authorized customer fields required by the current operation | C7 |
+| M1 Browser interfaces | Questions, account-status selection, citations, consent, support submissions and replies, feedback | Calls C1, C2b, C4a–C4e, C5, C6, C8 and C9b as permitted |
+| M2 InquiryService and AccessControl | Authentication, authorization, routing and orchestration | C1, C9a–C9c |
+| M3 Retriever and DocumentService | Permitted evidence, source versions and document administration | C2, C8 |
+| M4 GenerationAdapter | Provider translation, budgets, normalized failures and shared breaker coordination | C3 |
+| M5 AnswerValidator | Citation, access, version and runtime support checks | C10 |
+| M6 EscalationService and AgentQueueService | Registered IDs, durable requests, receipts, customer replies and agent workflow | C4, C5 |
+| M7 CustomerDirectoryAdapter | Read-only, scoped customer-data access | C7 |
+| M8 FeedbackService | Feedback, independent review, evaluation, release and rollback | C6 |
+| M9 Persistence adapters | Shared sessions, accounts, receipts, support records, configuration and breaker coordination | Supports owning modules |
 
-Hanlin's interface-contracts.md remains the shared location for endpoint paths, typed signatures, field constraints, and final error names. Proposed names here must be reconciled there before approval.
+Hanlin's interface-contracts.md defines endpoint schemas, method signatures and shared error envelopes. This document defines the integration sequences and AI policies.
 
-## 3. Shared data and authorization rules
+C4 subcontracts are:
+- C4a: register an escalation submission ID.
+- C4b: submit the confirmed escalation.
+- C4c: reconcile status using an escalation or reply submission ID.
+- C4d: register a customer reply ID.
+- C4e: submit the customer reply.
 
-Proposed flow identifiers:
+C9a supplies internal AccessContext; C9b supplies session endpoints; C9c defines controlled provisioning and permissions.
 
-- correlation_id: server-generated identifier for tracing one inquiry across components.
-- inquiry_id and answer_id: identifiers for an inquiry and any associated answer.
-- submission_id: stable identifier for one customer-confirmed escalation submission.
-- request_id: identifier of the durably saved support request.
-- source_id, section_id, and source_version: references to the exact evidence used.
-- configuration_version: identifies the prompt/retrieval/model configuration used for evaluation and traceability.
+C3 intentionally has no AccessContext parameter. Authorization occurs before generation, and identity or session context never reaches the provider.
 
-The server derives customer identity, role, and permitted document scope from authenticated context. Client-supplied customer or scope identifiers are never sufficient authorization.
+## 3. Shared authorization, identifiers and privacy
 
-Authorization applies to inquiry access, retrieval, citation resolution, escalation status, agent review, and feedback. Customer-specific records and cached results must remain isolated by the applicable customer or tenant boundary.
+### Authentication and access
 
-C7 exposes an allowlisted customer-data view. Credentials, authentication tokens, unrestricted database records, and unnecessary personal information must not enter C3 model requests.
+Use opaque server-side cookie sessions with Secure, HttpOnly and SameSite=Lax attributes. State-changing requests require a valid session-bound CSRF token.
 
-## 4. Flow A — supported inquiry
+Proposed session limits are 30 minutes of inactivity and eight hours absolute. Authenticated activity renews only inactivity expiry. Login rotates the session identifier. Logout invalidates the current session. Role or permission changes revoke existing sessions across replicas.
 
-Contracts: C1, C2, C3; C7 only when authorized customer context is necessary.
+The server derives identity, role and object scope. Browser-supplied identity, role or scope never grants access.
 
-1. The customer interface submits a question through C1.
-2. The inquiry coordinator authenticates the caller, validates the input, assigns a correlation ID, and determines permitted scope.
-3. If necessary, C7 supplies only the approved customer fields required for the inquiry. Failure to obtain required context stops that path; the application does not guess customer facts.
-4. The coordinator calls C2 with the question and server-derived scope.
-5. C2 returns ranked permitted passages with stable source, section, and version identifiers.
-6. The coordinator checks whether the evidence is sufficient for the requested answer. Missing, conflicting, stale, or irrelevant evidence may require clarification or escalation.
-7. The generation adapter receives the question, permitted passages, minimal approved context, and a request deadline through C3.
-8. The provider returns a structured candidate answer with references to supplied evidence.
-9. The output validator checks the structure, rejects unknown source IDs, verifies source resolution and current access, and applies evidence-support checks.
-10. A passing answer is returned through C1 with resolvable citations. A failed validation suppresses the candidate answer and offers clarification or escalation.
+Customers access their own records. Agents access unassigned support work and their own assignments. Document-administrator privileges do not automatically grant support-content, feedback or release access.
 
-Proposed successful output includes answer_id, answer status, answer text, source references, configuration version, and correlation_id.
+### Identifiers
 
-Source existence alone does not establish factual support. Deterministic checks can verify identifiers and access, while semantic support remains imperfect and requires evaluation against reviewed examples. A model's self-reported confidence is not proof.
-
-Retrieved documents and customer text are untrusted data. Instructions embedded in them must not override application policy or grant tools, database access, or additional permissions.
-
-Exit states: supported answer displayed; clarification requested; escalation offered; or a controlled validation/dependency error.
-
-## 5. Flow B — unsupported or complex inquiry and human handoff
-
-Contracts: C1, C4, C5.
-
-Escalation is offered when evidence is insufficient, the request requires human judgment or action, validation fails, or the customer requests human assistance.
-
-1. DeskGuide states the limitation without displaying an unsupported answer.
-2. The customer reviews and may edit the proposed escalation content. The original question is available for inclusion, but unrelated conversation history is not attached automatically.
-3. The interface explains what information will be shared and requires explicit submission.
-4. The interface assigns a submission_id for that intentional submission and reuses it for retries.
-5. C4 validates authorization and the reviewed content.
-6. The escalation service commits the support request and its idempotency record durably.
-7. Only after that commit does C4 acknowledge receipt with request_id, submission_id, saved status, and creation time.
-8. The authorized agent queue exposes the saved request through C5.
-9. An authorized agent claims and reviews it, requests further information if necessary, and records progress or resolution.
-
-Proposed stored fields include the reviewed content, authorized customer reference, escalation reason, originating inquiry reference, submission_id, timestamps, request state, and assigned agent where applicable.
-
-A saved acknowledgment means the request was recorded. It does not mean an agent has read it or guarantee a response time.
-
-Proposed agent states are queued, assigned, in_review, waiting_for_customer, and resolved. Hanlin and David must review permitted transitions and ownership rules. Concurrent claims or updates require an atomic ownership/version check; conflicting updates must not silently overwrite each other.
-
-If a separate queue broker is used, the durable request remains the source of truth. A transactional outbox or equivalent recovery mechanism must prevent a saved request from disappearing between database commit and queue publication.
-
-Exit states: customer declines submission; request acknowledged and queued; request awaits recovery; or submission fails with an accurate message.
-
-## 6. Flow C — provider timeout, quota, or service failure
-
-Contracts: C1, C3; C4 if the customer chooses escalation.
-
-The generation adapter presents a provider-neutral result to the inquiry coordinator. Proposed internal failure categories are timeout, quota_exceeded, service_unavailable, and invalid_provider_response.
-
-1. Check admission limits and the remaining request deadline before calling the provider.
-2. Bound the provider call by the remaining deadline.
-3. Map provider-specific failures into the shared internal categories.
-4. Stop waiting when the deadline expires and prevent late results from replacing the completed fallback response.
-5. Return a safe customer message and preserve the question in the current view.
-6. Offer customer-confirmed escalation through C4.
-7. Record permitted operational metadata for diagnosis.
-
-Provider failure does not trigger an unsupported answer or automatic handoff to another provider. B17 remains consolidated into B11; second-provider failover is deferred.
-
-Do not retry indefinitely. Any transient retry must fit the overall deadline, respect provider retry guidance, and remain within an agreed retry budget. Authentication/configuration failures require operator attention rather than repeated customer retries.
-
-Logs may contain correlation ID, normalized error category, duration, configuration version, and retry count. Raw provider errors, credentials, and unnecessary customer content must not be exposed to the customer.
-
-Exit states: controlled failure with escalation available, or a successful response completed within the approved retry/deadline policy.
-
-## 7. Flow D — escalation save failure and duplicate retry
-
-Contract: C4; C5 for subsequent review.
-
-| Situation | Required behavior |
+| Identifier | Rule |
 |---|---|
-| Validation fails before saving | Show field-level guidance; preserve reviewed content; do not claim receipt |
-| Save is known to fail | State that the request was not saved; allow retry with the same submission ID |
-| Save succeeds but acknowledgment is lost | Show that confirmation is pending; retry or check status using the same submission ID |
-| Same ID and same content are retried | Return the existing request and acknowledgment; do not create another request |
-| Same ID is reused with different content | Return a conflict; require a deliberate new submission or defined correction operation |
-| A separate intentional request is submitted | Create a new submission ID |
+| correlation_id | Server-generated tracing identifier |
+| inquiry_id | Server-generated inquiry reference |
+| answer_id | Server-controlled answer reference; null when no answer is returned |
+| submission_id | Server-issued, registered and bound to customer and operation; replies also bind to parent request |
+| request_id | Durably saved support request |
+| SourceRef | Exact source_id, section_id and source_version |
+| configuration_version | Versioned retrieval, prompt, model and support-policy configuration |
 
-Enforce uniqueness atomically in shared durable storage using an agreed scope such as tenant/customer plus submission_id. The idempotency record and request must commit together.
+Unused submission IDs expire 30 minutes after registration. A customer may hold at most three unused, unexpired IDs combined across escalation and reply operations.
 
-A disabled submit button helps prevent accidental clicks but is not the duplicate-prevention mechanism. Concurrent application instances must rely on shared storage constraints.
+A fourth registration returns 429 RATE_LIMITED and evicts nothing. Enforce the cap atomically across replicas. Expired IDs free their slots even before cleanup.
 
-The customer interface retains unsent content in the active view. Longer-term browser storage requires an explicit privacy decision. Idempotency-record retention must cover the agreed retry window; the final duration remains open.
+Completed receipts follow support-record retention; unused-ID expiry never removes them. Unknown, foreign or purged IDs cannot create records.
 
-Exit states: one saved request returned, an actionable validation/conflict error, a confirmed save failure, or an explicitly uncertain state pending reconciliation.
+### Provider data boundary
 
-## 8. Flow E — reviewed feedback and improvement
+C7 reads only customer_id and account_status for authorized operations. Customer-database fields never enter C3 or the provider payload.
 
-Contract: C6, with controlled changes to C2/C3 configuration.
+Generation uses the question and permitted knowledge passages, with a fixed application-controlled instruction template. Provider credentials are transport credentials held server-side, never prompt content.
 
-1. A customer submits permitted feedback linked to an answer or inquiry.
-2. C6 verifies ownership/access and validates rating, category, and optional comment fields.
-3. Store the feedback with relevant answer, source, and configuration versions.
-4. Authorized reviewers examine patterns such as unsupported claims, missing knowledge, poor retrieval, unclear wording, and excessive escalation.
-5. A reviewer proposes a bounded knowledge-source, retrieval, prompt, or configuration change.
-6. An independent authorized reviewer checks the proposal and its privacy implications.
-7. Evaluate the candidate against a fixed baseline containing supported, unsupported, ambiguous, unauthorized, and failure cases.
-8. Release an approved version with recorded changes and a rollback reference, or reject the proposal.
-9. Monitor the released version and roll back if agreed quality or safety criteria regress.
+Do not forward AccessContext, session credentials, CSRF tokens, customer records, support content or raw feedback. Correlation and configuration metadata remain internal unless an explicit provider integration requirement is reviewed.
 
-Feedback is evidence for review, not an instruction to the model and not an automatic training signal. A malicious or mistaken rating must not directly change production behavior.
+User text may itself contain personal information. The interface should discourage sensitive input; provider selection and data-use review must address this remaining exposure. General chat transcripts are not persisted.
 
-Aggregate analysis should minimize identifiers. Access controls, retention/deletion periods, and any use of interaction text in evaluation require agreement with David and the team. Raw feedback and customer conversations do not belong in the public repository.
+Retrieved instructions and customer text are untrusted data. They cannot change authorization, grant tools or override application policy.
 
-Exit states: feedback recorded; proposal awaiting review; proposal rejected; evaluated version released; or prior version restored.
+## 4. Flow A — inquiry routing and supported answers
 
-## 9. Quotas, queues, and the 10,000-customer workload
+Contracts: C1, C2, C3, C7, C9 and C10.
 
-The design must separate connected customers from active inquiry rate.
+1. Authenticate the session, validate CSRF and validate C1 input.
+2. Build trusted authorization context and assign inquiry/correlation identifiers.
+3. Validate requested_operation and set the response route before admission.
+4. Apply applicable customer limits and separately bounded route admission.
 
-For capacity planning:
+### Account-status route
 
-- Inquiry arrival rate depends on concurrent customers and assumed inquiries per customer per unit time.
-- Model-call rate depends on arrival rate and the fraction admitted to generation.
-- Approximate in-flight model calls equal model-call rate multiplied by mean model-call duration under stable conditions.
+The customer explicitly selects check_account_status. A question field must be absent.
 
-Vlad and David own the shared workload assumptions and calculations. This section supplies the AI-boundary controls:
+1. Derive customer scope server-side.
+2. Call C7 for customer_id and account_status only.
+3. Return a fixed application template with route account_status and answer_origin account_status.
+4. Make zero retrieval calls and zero model calls.
+5. If customer data is unavailable, state that status cannot be checked and offer support without guessing.
 
-- Apply per-customer/tenant limits and an aggregate generation concurrency limit.
-- Use bounded queues and queue-wait deadlines; include waiting time in the end-to-end deadline.
-- When capacity is exhausted, return a controlled busy response and retry guidance rather than accepting unlimited work.
-- Apply an agreed circuit-breaker policy during sustained provider failures.
-- Keep escalation persistence and authorized status review available independently of model generation, with their own capacity limits.
-- Prevent one customer or tenant from consuming the entire generation budget.
-- Avoid immediate mass retries after an outage.
-- If caching is introduced, key entries by authorized scope, source/configuration versions, and relevant context; invalidate on access or source changes.
-- Track queue depth, rejection rate, model latency, quota errors, timeout rate, escalation save failures, and oldest queued human request.
+Account changes require human support. General knowledge questions need no customer lookup. A C7 outage does not prevent confirmed support saving using trusted identity.
 
-Provider selection must consider sustainable request/token quotas, permitted data handling, context limits, latency, and cost. Free evaluation access does not establish suitability for the production workload.
+### General knowledge route
 
-Numerical limits and service objectives remain proposals until measured or justified and recorded in the team decision log. No 10,000-customer capacity claim is made.
+For requested_operation ask_question:
 
-## 10. Verification scenarios
+1. Recognize an explicit human request under a bounded application policy; offer support without generation.
+2. Otherwise set route ai and apply AI admission.
+3. Retrieve permitted passages through C2a.
+4. Apply the pre-generation evidence policy in Section 5.
+5. If it passes, construct C3 GenerationRequest with no customer-data or AccessContext fields.
+6. Make at most one generation call.
+7. Validate the candidate through C10, including runtime support checking.
+8. Return only a passing answer, with exact versioned citations resolvable through C2b.
+9. Suppress a failed candidate and offer clarification or customer-confirmed support.
 
-These are planned checks, not completed test results.
+Retrieval failure is service unavailability, not evidence that no source exists. Citation access is rechecked when a source is opened.
 
-| Scenario | Expected outcome | Contracts |
-|---|---|---|
-| Permitted question with supporting passages | Answer supported by permitted evidence and resolvable citations | C1–C3 |
-| Unknown, inaccessible, or removed source | Candidate suppressed or controlled source failure; no restricted content exposed | C1–C3 |
-| Insufficient/conflicting evidence | Limitation or clarification and escalation option | C1–C4 |
-| Customer requests a human | Reviewed submission and durable acknowledgment | C4–C5 |
-| Provider timeout/quota/outage | Preserved question, controlled message, no unsupported answer | C1, C3–C4 |
-| Save fails | No success acknowledgment; content retained for retry | C4 |
-| Save commits but response is lost | Same-ID retry returns the original request | C4 |
-| Concurrent duplicate submissions | Exactly one durable request for the submission ID | C4 |
-| Same ID with changed content | Explicit conflict rather than silent duplication | C4 |
-| Unauthorized agent access or conflicting claim | Access denied or version conflict | C5 |
-| Malicious instructions in source text | No policy override or unauthorized action | C2–C3 |
-| Feedback proposes a harmful change | Human review/evaluation prevents release | C6 |
-| Queue/provider capacity is exhausted | Bounded admission and controlled overload behavior | C1, C3 |
-| Required customer-data dependency fails | Controlled failure; no fabricated customer context | C7 |
+Match browser responses to inquiry_id so late results cannot overwrite a newer inquiry.
 
-Carry forward the agreed fictional evaluation set from B02 and source/fallback checks from B07/B10/B11/B12. Production-scale validation requires a separate workload-based plan; prototype results cannot establish it.
+## 5. Proposed executable evidence policy — D03 / V19 / C10
 
-## 11. Design rationale contribution
+**Proposal for team review:** a deliberately conservative, extractive prototype policy. This defines an implementable rule without assuming an unvalidated semantic model can prove factual support.
 
-Separating retrieval, generation, escalation, and feedback gives each component a focused responsibility. The inquiry coordinator depends on shared contracts rather than provider-specific response formats. The customer-data adapter enforces permitted access independently of the model.
+It limits accepted AI output to reviewed evidence wording. It does not establish general semantic correctness or measured answer quality.
 
-The main tradeoff is retaining one selected provider behind a replaceable adapter while deferring automatic failover. This reduces integration and verification effort but accepts temporary loss of AI answers during provider failure. Independent escalation preserves a useful recovery path without treating the model as the source of truth.
+### 5.1 Versioned evidence manifest
 
-Reviewed improvements introduce more delay than automatic adaptation, but preserve traceability, evaluation, and rollback. This is appropriate where customer feedback may contain errors, sensitive information, or malicious instructions.
+Maintain a reviewed manifest tied to exact source versions and the support-policy version. Each supported intent contains:
 
-This section contributes to the team's combined 500-word rationale; it is not a replacement for that deliverable or its required architecture citation.
+- A unique intent identifier.
+- Explicit normalized question aliases.
+- Required SourceRefs.
+- One approved answer text assembled from exact, contiguous source excerpts.
+- The source and character range of each excerpt.
+- Review status and any retired or conflicting-source flag.
 
-## 12. Open decisions and review requests
+Aliases, excerpts and labels must be reviewed before activation. They cannot be created automatically from user feedback or model output.
 
-- Hanlin: align component names, C1–C7 field names, endpoint/method definitions, error codes, status lookup, ownership/version checks, and agent transitions.
-- Vlad: align logical components, queue/storage boundaries, deployment design, and customer-database integration.
-- David: review permitted data, logging/retention, evidence-validation limitations, failure scenarios, and workload verification.
-- Team: agree on provider selection, evidence acceptance rules, deadlines, queue sizes, retry budget, retention periods, and release/rollback criteria.
+Normalization is Unicode NFC, trimming and collapsing whitespace. Preserve case, numbers, punctuation and negation. Do not use fuzzy or embedding similarity as an acceptance threshold in this prototype.
 
-Review privacy work in issue #8 and provider comparisons in issue #5. Link the reviewed conclusions here.
+The manifest contains permitted knowledge content only, with no customer records or interaction transcripts.
 
-Record approved decisions in decisions.md and actual authored/reviewed work in contributions.md. Keep issue #13 open until its acceptance criteria have been reviewed and completion evidence recorded.
+### 5.2 Pre-generation evidence sufficiency
+
+Inputs: question, authorized retrieved passages and the active reviewed manifest.
+
+A question is sufficient only when:
+1. Its normalized form exactly matches an alias for exactly one active intent.
+2. Every required source/version is present in the authorized retrieved set.
+3. All required excerpts still match their source character ranges.
+4. No required source is retired, conflicting or inaccessible.
+5. The full required evidence fits the provider input budget.
+
+Thresholds:
+- Exactly one matching intent.
+- 100% of required references and excerpts present.
+- Zero unresolved access, version or conflict conditions.
+
+No match, multiple matches, missing evidence or an unreviewed intent prevents generation. Offer clarification or support.
+
+If the manifest or check cannot run, fail closed and report the check as unavailable. Do not treat an infrastructure error as a genuinely unsupported question for performance accounting.
+
+### 5.3 Runtime answer support
+
+The coordinator selects the expected approved answer before C3 and binds that selection to the inquiry. It does not infer the intended answer from the model's output.
+
+C10 first performs its structural checks: citation membership, exact versions, access, resolution, output format and at least one citation.
+
+The configured EvidenceSupportPolicy receives only candidate text and cited passage texts. It checks:
+1. Normalized candidate text exactly equals the approved answer selected for this inquiry.
+2. Every approved excerpt is still present in the cited evidence.
+3. No additional wording, number, instruction or qualification was introduced.
+
+Acceptance threshold is 100% approved-text match, with zero additional content. The coordinator separately verifies that cited references cover the selected manifest entry.
+
+A text mismatch returns unsupported_content. When precise unsupported spans cannot be isolated, identify the whole candidate as unsupported. A missing policy, manifest, timeout or checker error returns support_check_unavailable.
+
+No additional provider call is made for either check. Model confidence is ignored. A failed candidate is suppressed; generation is not retried.
+
+### 5.4 Limits and review conditions
+
+Exact extraction can still reproduce incorrect or misleading source material. Independent source review and B12 manual evaluation remain necessary.
+
+The policy intentionally rejects paraphrases and unlisted questions, reducing coverage. A future semantic policy requires a new version, reviewed thresholds, adversarial evaluation and explicit provider/deadline accounting.
+
+The manifest, aliases and source labels have not been supplied or tested in this revision. Until configured and reviewed, the rule remains unavailable and AI answers fail closed. This is not completed supported-answer functionality or proof of meeting the service target.
+
+## 6. Flow B — confirmed human handoff and replies
+
+Contracts: C4a–C4e and C5.
+
+### New support request
+
+1. Explain the limitation or acknowledge the human request.
+2. Let the customer review/edit the content and optional note.
+3. Explain sharing and require explicit consent.
+4. Register a server-issued escalation ID through C4a.
+5. Submit the reviewed content through C4b with the same ID and consent_to_share true.
+6. Validate ownership, operation, expiry and content.
+7. Atomically save the request, complete the receipt and enforce uniqueness.
+8. Acknowledge only after durable commit, returning request_id and submission_id.
+9. Make the request available to authorized agents through C5.
+
+Registration alone creates no human-visible support request. An acknowledgement means saved, not read by an agent, and promises no human response time.
+
+### Agent workflow
+
+An agent sees unassigned requests and their own assignments only.
+
+Permitted progression:
+- queued → assigned through atomic claim.
+- assigned → in_review.
+- in_review → waiting_for_customer with a customer-visible message.
+- waiting_for_customer → in_review through a valid customer reply, retaining the owner, or the assigned agent.
+- in_review → resolved.
+- assigned, in_review or waiting_for_customer → queued through owner release with release_reason; clear ownership.
+- resolved is terminal.
+
+State changes require atomic ownership/version checks. Conflicts never silently overwrite another update.
+
+### Customer reply
+
+1. Customer opens their own waiting_for_customer request.
+2. C4d registers a reply submission ID bound to customer, operation and parent request.
+3. C4e submits message and expected_version.
+4. In one transaction, check ownership/state/version, save the reply, complete its receipt, retain the assigned agent, move to in_review and increment version.
+5. A same-ID/same-payload replay returns the original reply without another state change.
+6. A late reply or resolution race cannot reopen a resolved request.
+
+Attachments, notification email, live chat and reopening are outside this draft.
+
+## 7. Flow C — provider failures and deadlines
+
+Contracts: C1 and C3; C4 only after customer confirmation.
+
+Provider-neutral categories:
+- timeout.
+- quota_exceeded.
+- service_unavailable.
+- invalid_provider_response.
+- circuit_open.
+- provider_configuration_error.
+
+Before calling the provider, check admission, quota budget, breaker state and remaining time.
+
+**V17:** zero automatic generation retries. SDK or transport retry defaults must be disabled or accounted for so they cannot silently create extra generation attempts. Automatic second-provider failover remains deferred.
+
+**V28 confirmation:**
+- Overall hard deadline: 20 seconds from application receipt.
+- Provider wait: at most 12 seconds.
+- Fallback reserve: one second.
+- Shorten every dependency wait to fit the remaining budget.
+- Stop dependency waiting by approximately second 19.
+- Return fallback immediately when failure is known.
+
+| Condition | Outcome |
+|---|---|
+| Aggregate admission unavailable | Immediate 503 SERVICE_BUSY with Retry-After; no queue |
+| Admitted inquiry encounters a provider failure, including circuit_open | Controlled 200 temporarily_unavailable with support offered |
+| C10 support or structural check fails | Controlled clarification/escalation outcome; candidate suppressed |
+| Overall deadline expires and a response can still be sent | 504 DEADLINE_EXCEEDED |
+
+A breaker denial discovered during AI admission may use the admission 503 path; a C3 circuit_open result after admission uses the controlled 200 path. Hanlin and Vlad should confirm this distinction because Draft 3.2 mentions both mappings.
+
+Late results cannot replace a completed response or create a support request. Browser question text remains in the active view. No persistence across reload is promised.
+
+A controlled 200 fallback is not a supported AI answer and remains a miss for an otherwise-eligible inquiry.
+
+## 8. Flow D — uncertain saving and duplicate-safe recovery
+
+| Situation | Behavior |
+|---|---|
+| Validation fails | Preserve content; show safe field guidance; no receipt claimed |
+| Save definitely failed | 503 DEPENDENCY_UNAVAILABLE; state nothing saved; same-ID retry while valid |
+| Commit outcome unknown | 503 SAVE_OUTCOME_UNCERTAIN; do not claim nothing saved |
+| Response lost after commit | Reconcile through C4c or same-ID/same-payload retry |
+| Completed receipt and same payload | Replay original result; no new request/reply |
+| Completed receipt and changed payload | 409 CONFLICT |
+| Expired unused ID | 410 SUBMISSION_ID_EXPIRED; cannot commit |
+| Unknown, foreign, wrong-operation or purged ID | 404 NOT_FOUND; cannot create records |
+| Fourth unused-ID registration | 429 RATE_LIMITED; no eviction |
+| Deliberate new submission | New server registration and customer confirmation |
+
+For uncertain outcomes, preserve the original ID and payload. Never automatically register a replacement and resubmit.
+
+Receipt lookup precedes unused-expiry handling for completed submissions. Completed receipts remain replayable within their retention even after the original unused-ID validity period.
+
+Request/reply data and its receipt commit together in shared storage. A disabled button is not duplicate protection.
+
+If a queue broker is introduced, use a transactional outbox or equivalent recovery mechanism. Shared durable request storage remains authoritative.
+
+## 9. Flow E — feedback, release and rollback
+
+Contracts: C6, C8 and controlled M3/M4 configuration changes.
+
+1. Customer submits inquiry_id, rating and optional permitted category/comment.
+2. C6 verifies ownership and derives outcome, route and configuration from trusted metadata.
+3. Feedback is accepted even when no answer exists; no client answer_id is required.
+4. A staff member with reviewer permission examines permitted feedback.
+5. Propose a bounded knowledge, retrieval, prompt or configuration change.
+6. A different qualified reviewer approves it for evaluation or rejects it.
+7. Evaluate the exact candidate version against the locked B12 baseline.
+8. Record baseline version, source versions, evaluation report and rollback reference.
+9. A designated release_authorizer who is not the change author authorizes the exact reviewed and evaluated version.
+10. Apply approved knowledge changes through C8/M3 and generation configuration through M4.
+11. Monitor and restore a previously approved version when rollback is required, recording the reason.
+
+An evaluated version is immutable. Any edit requires a new version, independent review and evaluation.
+
+Vlad is primary release authorizer. David declined the backup role. Hanlin indicated availability in the later team email; the final designation and permission assignment must be recorded by Vlad. If no available authorizer is independent, designate another qualified non-author before release.
+
+A qualified independent reviewer may also authorize release; a third mandatory approver is not required.
+
+Feedback cannot directly retrain the model or release changes. Raw customer feedback is not copied into public documents, source material or evaluation summaries.
+
+## 10. Proposed circuit-breaker details — D14 / V18
+
+These rules complete the design proposal and require team review and David's validation.
+
+### Scope and coordination
+
+Key breaker state by provider, exact model and credential-configuration version. Store shared state in PostgreSQL through M9.
+
+Persist state, epoch, next permitted trial time and trial lease ownership. Use atomic short transactions for admission and state updates. Never hold a database lock during a provider call.
+
+Each admitted provider call receives a unique call ID and breaker epoch. Record a completion at most once. State changes compare the current epoch so obsolete results cannot mutate newer state.
+
+If shared coordination cannot be obtained, fail closed to controlled unavailability. Do not fall back to independent per-replica unlimited calls.
+
+### Qualifying outcomes
+
+Count as qualifying failures:
+- Provider/network timeout after a dispatched call.
+- Connection failure.
+- Provider 5xx.
+- A transient provider 429.
+- Malformed, truncated or otherwise off-contract provider output.
+
+A valid provider response declining to answer counts as transport success, not proof of answer support.
+
+Do not count:
+- Invalid or unauthorized customer requests.
+- Insufficient evidence.
+- C10 semantic rejection.
+- Admission rejection.
+- Cancellation before dispatch.
+- Shared-state failures before dispatch.
+
+Credential/configuration errors and exhausted daily/monthly quota enter a separate disabled-until-corrected-or-reset condition. They do not trigger routine 30-second probes. Respect a longer provider Retry-After or documented reset time.
+
+### Prototype counting
+
+While closed, open on three consecutive qualifying failures whose completion times fit within 60 seconds.
+
+A successful provider call resets the sequence. A failure outside the retained 60-second sequence starts a new sequence. Use shared database time and a defined transaction order for concurrent completions.
+
+### Production candidate counting
+
+While closed:
+1. Store one outcome per completed provider call for the current epoch.
+2. Use database-recorded completion times.
+3. Retain outcomes in the rolling interval (now minus 10 seconds, now].
+4. Compute total completed provider calls N and qualifying failures F.
+5. Open only if N is at least 20 and F/N is at least 0.50.
+
+Successful calls contribute to N and do not reset the window. Completions from older epochs are excluded.
+
+These thresholds are provisional, not validated production settings.
+
+### Opening and recovery
+
+On opening, atomically advance the epoch and set the next trial time to at least 30 seconds later, extended by applicable quota guidance.
+
+Already-dispatched calls may finish for their original inquiries within their deadlines. Their old-epoch outcomes cannot close the breaker or modify the new window.
+
+After cooldown:
+1. One newly admitted inquiry acquires the shared recovery trial using an atomic lease.
+2. The lease lasts 20 seconds and carries a new epoch.
+3. Other inquiries receive circuit_open; none wait in an AI queue.
+4. A successful, well-formed provider response under the current live lease closes the breaker.
+5. Closing advances the epoch, clears prototype counters and production-window history, and removes the lease.
+6. A qualifying trial failure reopens it with a new cooldown.
+7. A configuration or exhausted-quota result applies the corresponding disabled condition.
+8. An expired or abandoned lease reopens with a cooldown and invalidates that epoch.
+9. A late trial result cannot close a newer epoch.
+
+A half-open call still uses the at-most-12-second provider wait and the inquiry's remaining deadline; the lease does not extend either deadline.
+
+A recovery success concerns provider availability only. C10 must still validate the candidate before any answer is shown.
+
+Failed customer inquiries are never automatically resubmitted.
+
+## 11. Provider budgets, workload and honest measurement
+
+### Working budget
+
+Follow the proposed V30 ceiling of 4,096 total input tokens and 512 output tokens, subject to exact-model verification.
+
+Count instructions, question, evidence and provider framing in the input budget. Do not silently alter an oversized question.
+
+Select permitted evidence that fits. If any manifest-required evidence is omitted, rerun sufficiency and fail closed rather than generating from an incomplete required set.
+
+Prototype concurrency is up to five only when the account's request and token quotas permit it. A concurrency ceiling alone does not enforce requests-per-minute or token limits.
+
+No AI waiting queue is permitted. Capacity exhaustion produces immediate admission rejection. Support save/status have independent bounds.
+
+### Workload assumptions
+
+| Scenario | Proposed offered load |
+|---|---|
+| Baseline | 166.67 inquiries/second for 10 minutes |
+| Peak | 333.33 inquiries/second for 2 minutes |
+| Overload | 10,000 arrivals within one second |
+
+These derive from 10,000 sessions averaging one inquiry per minute; they are planning assumptions.
+
+At generation fraction f and one generation call per admitted AI inquiry:
+- Baseline provider demand is approximately 10,000 × f calls/minute.
+- Peak demand is approximately 20,000 × f calls/minute.
+- Additional provider-based checks would increase demand; this proposed evidence policy adds none.
+
+Do not choose f merely to fit an available quota. Justify it using independently labeled workload composition.
+
+Production request/token quotas, concurrency and cost remain unresolved. Simulated application-load tests cannot establish live-provider capacity.
+
+### Service targets
+
+AI: at least 95% of eligible inquiries return supported answers within 15 seconds, pending evidence.
+
+Fix synthetic eligibility and expected outcomes before testing. Busy outcomes, timeouts, validation failures and fallbacks remain misses for otherwise-eligible inquiries. Do not relabel a failed question to improve the denominator.
+
+Report account-status operations, explicit human requests and genuinely unsupported questions separately.
+
+Support saving: at least 95% of valid confirmed submissions are durably saved with acknowledgement ready within two seconds from application receipt.
+
+Count each intended submission once. Retries retain the original ID and original first-submit timing. Slow saves, uncertain commits, definite failures and capacity rejection are misses. Measure ID registration separately. Late reconciliation cannot convert a miss into a timely success.
+
+### Provider evidence still required — D13 / V15 / V30
+
+Evaluate Cohere first and compare Groq before selecting an exact model. No provider/model is selected by this revision.
+
+The final evidence record must identify:
+- Exact model, account tier, access date and official policy sources.
+- Request and token quotas, burst/concurrency limits and reset guidance.
+- Input/output bounds and tokenizer.
+- Data retention, training use, deletion and available privacy settings.
+- Measured latency with the intended prompt/evidence sizes.
+- Baseline/peak capacity and cost proposal.
+
+Vlad's supplied quota figures are planning references, not independently verified account entitlements in this revision. Free evaluation access does not demonstrate production suitability. No purchase or activation is authorized by this document.
+
+## 12. Retention and logging
+
+| Data | Proposed retention |
+|---|---|
+| General chat transcripts | Not persisted |
+| Minimal inquiry metadata and linked feedback | 30 days from inquiry creation |
+| Sanitized diagnostic logs | 7 days |
+| Confirmed support content, replies and completed receipts | While open, plus 30 days after resolution |
+| Minimal support-action audit records | Follow the support request |
+| Evaluation/release summaries | Active and retained rollback versions, then 30 days after retirement |
+| Encrypted daily backups | 7-day rotation |
+
+Block access at expiry. Purge expired live records at the next daily cleanup within 24 hours. Review old unresolved requests rather than automatically deleting them.
+
+Remove linked feedback with expired inquiry metadata. Keep raw conversations and feedback out of audit/evaluation summaries.
+
+Track live deletion separately from backup expiry. Reapply current expiry rules and recorded deletions before restored data becomes accessible.
+
+Diagnostic logs may contain correlation_id, normalized error category, duration and configuration_version. Do not log raw questions, answers, passages, notes, feedback, session identifiers, CSRF tokens, credentials, direct customer identifiers or raw provider errors.
+
+Any permitted audit identity must use the separately reviewed access-controlled audit policy. Provider-held retention remains unresolved until provider evidence is reviewed.
+
+## 13. Planned verification
+
+No test has been executed for this revision.
+
+| Scenario | Expected result |
+|---|---|
+| Explicit account-status selection | Fixed response; zero retrieval/model calls |
+| Forged identity or role | No scope expansion |
+| Missing CSRF, expired/revoked session | Contract-defined rejection |
+| Supported manifest intent and exact approved answer | Pass only with valid current citations |
+| Correct citations plus added unsupported wording | Candidate suppressed |
+| Missing manifest, ambiguous alias or checker timeout | Fail closed; no unverified answer |
+| Provider timeout/configuration/quota failure | Safe mapped outcome; zero automatic retries |
+| AI admission exhausted | Immediate 503; no waiting queue |
+| Overall deadline exceeded | 504 when deliverable; late result ignored |
+| Fourth unused ID across escalation/reply | 429; no eviction |
+| Expired, unknown or foreign ID | No new record |
+| Commit succeeds but acknowledgement is lost | Same-ID reconciliation; one saved request |
+| Concurrent same-ID submits | Exactly one durable request and receipt |
+| Changed-payload retry | 409 |
+| Duplicate customer reply | One stored reply; no repeated transition |
+| Reply races resolution | Resolved request never revived |
+| Valid reply while waiting | in_review with original agent retained |
+| Agent releases from any owned state | Reason required; queued with ownership cleared |
+| Other agent or administrator reads support content | Denied under contract scope |
+| C7 outage during confirmed support saving | Save remains available with trusted identity |
+| Malicious source instructions | No unauthorized action or policy override |
+| Feedback on failed inquiry | Accepted through inquiry_id where permitted |
+| Author attempts own release | Denied |
+| Edit after evaluation | New version requires review/evaluation |
+| Production window has 19 completions | Does not open |
+| At least 20 completions, failure fraction at/above 50% | Opens |
+| Production success among failures | Counts in window; does not reset it |
+| Two replicas attempt recovery | Exactly one shared trial |
+| Expired lease or stale trial result | Cannot mutate newer breaker state |
+| Exhausted long-period quota | No routine 30-second probing |
+| Expiry, cleanup and backup restoration | Expired/deleted content remains inaccessible |
+| Load/performance accounting | Misses retained; retries do not restart timing |
+
+Preserve B12's 12 supported, four unsupported and four ambiguous cases, with independently reviewed labels and source versions. Retain its quality gates separately from production service targets.
+
+David's N01–N15 cases should be cross-referenced against this table during the final combined review; this revision does not claim that comparison has been completed.
+
+## 14. Rationale contribution and remaining review
+
+Separating authorization, retrieval, generation, validation, support saving and feedback gives each module a focused responsibility. Provider-specific behavior remains inside M4; other components depend on shared contracts.
+
+A modular replicated application reduces deployment and operational complexity for junior developers compared with independently deployed services. Shared persistence is necessary for cross-replica sessions, duplicate protection and breaker coordination.
+
+Keeping one provider behind a replaceable adapter reduces integration effort but accepts temporary AI unavailability. Independent support persistence preserves a useful recovery path.
+
+The conservative extractive evidence policy sacrifices answer coverage and paraphrasing flexibility for an explicit, inspectable acceptance rule. Its usefulness still requires reviewed fixtures and evaluation.
+
+This is input to the combined 500-word rationale, not a replacement for that deliverable or its authoritative citation.
+
+### Remaining decisions
+
+- **Collins / Hanlin / David:** review the proposed manifest-based evidence rule and C10 integration; populate and evaluate the manifest before claiming supported-answer functionality.
+- **Collins / David:** review breaker qualifying outcomes, atomic counting, epochs, recovery resets and lease expiry.
+- **Collins:** supply exact-model provider quota, policy, retention, latency and cost evidence.
+- **Hanlin / Vlad:** confirm the admission-stage versus C3 circuit_open mapping; clarify account-status answer_id semantics if necessary.
+- **Vlad:** record the independent backup release-authorizer designation and reconcile final diagrams/contracts/rationale.
+- **Team:** approve the same identified final versions. Production capacity and service targets remain unproven.
+
+Record actual authored changes and completed reviews in contributions.md without overwriting teammates' existing evidence. Keep unresolved findings and final sign-off open. Keep issue #13 open until its acceptance criteria and completion evidence have been reviewed.
+
+**Preparation note:** This revision was prepared with AI assistance for Collins's technical review. Follow course attribution requirements in the final submission.
