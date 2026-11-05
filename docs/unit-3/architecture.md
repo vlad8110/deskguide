@@ -12,7 +12,7 @@ Status: [November 2 proposed decisions](proposed-decisions.md) available for tea
 | M2 Application/access control | Validation, permissions, bounded admission and orchestration | C9 verified access context; cookie sessions and CSRF |
 | M3 Knowledge/retrieval | Approved source versions, retrieval and document administration | C2 retrieval/sources; C8 administration |
 | M4 AI adapter | Permitted model input, bounded generation and shared breaker | C3 generation; separate prototype/production breaker proposals; no internal access context or customer-database fields sent to the provider |
-| M5 Evidence/source validation | Candidate structure, source identity/version/access and evidence policy | C10 runtime validation; B12 manual evaluation remains offline |
+| M5 Evidence/source validation | Pre-generation evidence readiness and inquiry-bound expectation; post-generation candidate, source/version/access and exact approved-answer checks | C10 prepare_evidence before C3 and validate before display; B12 manual evaluation remains offline |
 | M6 Support/agent workflow | Registered IDs, atomic save/replay, ownership and state transitions | C4/C5; acknowledgement only after durable commit |
 | M7 Customer-data adapter | Read-only authorized customer_id/account_status lookup | C7; deterministic account-status response without AI |
 | M8 Feedback/improvement | Inquiry-linked feedback, independent review, evaluated releases and rollback | C6; Vlad primary; Hanlin backup; non-author release permission; changes through M3/C8 or M4 |

@@ -1,10 +1,10 @@
 # Unit 3 Design Decisions and Review Log
 
-Coordinator: Vladimyr Merci, Lead Architect. Updated: November 3, 2026. Revision 13.
+Coordinator: Vladimyr Merci, Lead Architect. Updated: November 5, 2026. Revision 14.
 
 I have worked through the open architecture questions and collected my proposed solutions here. Please review the items assigned to your role, flag concerns, and provide the requested clarification or evidence. I will reconcile the replies before assembling the final specification.
 
-**Status: Working proposals for team review.** Read the [complete revised proposed decisions](proposed-decisions.md). **Responses are due Tuesday, November 3, 2026, at 10:00 a.m. Eastern** in your existing issue or section PR so I can prepare the final revision. The [rationale draft](design-rationale.md) remains pending final alignment.
+**Status: November 5 C3 awaits combined-version review.** Read the [current review request](final-review-request.md) and [PR #16/#18 reconciliation](review-reconciliation-nov5.md). The November 3 response/submission dates below are historical planning dates; no new deadline is assigned by this revision.
 
 ## 1. Sources and inspected revisions
 
@@ -14,7 +14,7 @@ I have worked through the open architecture questions and collected my proposed 
 | [Collins's integration flows, PR #16](https://github.com/vlad8110/deskguide/pull/16) | `0099cd842ff02463f6ad6adf5ff4e887fb501280` | Extractive evidence manifest, shared-breaker counting/recovery, revised routing and provider research; proposals, not test results |
 | [Hanlin's contracts, PR #17](https://github.com/vlad8110/deskguide/pull/17) | Draft 3.2, `253be0deb5f3f96b75373de9925e4df8d4035d97` | Registered IDs/receipts, C1 selector, C1–C10, sessions, release permissions and denominator-aware measurements |
 | [Collins's review of Hanlin's draft](https://github.com/vlad8110/deskguide/pull/17#pullrequestreview-5725100910) | `95875135e8940f4ec44e7b431c1c9c0504fccf55`, October 31 | Specific authorization-context, semantic-support, feedback and timeout questions; COMMENTED review, not approval |
-| [David's verification package, PR #18](https://github.com/vlad8110/deskguide/pull/18) | `9aa7a493dc5c4ff922d4ce2ace8744b3283a0a2b` | Revised verification package, N01–N15 and proposed B12 fixture manifest; execution and final approval pending |
+| [David's verification package, PR #18](https://github.com/vlad8110/deskguide/pull/18) | `d3295e7f341a26812620e66a0878ec554291625e` | Latest V01/V02/X01 and XR06/XR13 sequence corrections, N01–N15 and proposed B12 fixture manifest; execution and final approval pending |
 | [David's review of the proposals](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5725784156) | Review of `13b635fc743ef4f3cc9b1318adcfa0bdcb3a1405`, October 31 | Workload interpretation accepted; capacity, expiry, session, ownership, grounding and breaker details remain open |
 | [David's revised-architecture review](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5730726420) | November 1, review of the revised architecture/diagrams | State-name mismatch, registered IDs, session/retention proposals, fixed eligibility labels and recovery checks |
 | [David's Draft 3.1 review](https://github.com/vlad8110/deskguide/pull/17#pullrequestreview-5738959296) | November 2, review of `0e7f855` | Conditional acceptance of 30-minute/eight-hour sessions and 30-minute unused IDs; save-metric, retention, evidence and breaker follow-up |
@@ -22,7 +22,7 @@ I have worked through the open architecture questions and collected my proposed 
 | [David's provider comparison, issue #5](https://github.com/vlad8110/deskguide/issues/5#issuecomment-6590430685) | November 2, 5:47:19 p.m. Eastern | Official provider-policy research; actual tier/model, configured controls, capacity and provider choice remain open |
 | [Assignment requirements](assignment-requirements.md) | Course instructions linked there | Diagram, typed contracts, 500-word rationale; 10,000 concurrent users without a specified inquiry frequency or latency target |
 
-The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. The local [complete architecture review document](architecture-first-draft/architecture-review.md) and written sections reflect the November 2 shared wording with the accepted-backup correction. The local [two-page diagram and PNGs](architecture-first-draft/README.md#diagrams) include the backup and connection corrections. Shared-source alignment and final team agreement remain pending.
+The [shared Google Doc](https://docs.google.com/document/d/1wdhA6LgOib5h5mo8p6onD87kleM75OCan0gPUZMNuC4/edit) and [shared draw.io diagram](https://app.diagrams.net/#G1E3yDdOnoZSku1W8ejSJnkibDA3NcrGXO) remain the editable architecture review sources. The [complete architecture review document](architecture-first-draft/architecture-review.md), walkthrough and [two-page diagram with PNGs](architecture-first-draft/README.md#diagrams) include the November 3 A3b correction and accepted backup. The shared Doc revision and draw.io modification time were unchanged when rechecked November 5. Final combined-version approval remains pending.
 
 ## 2. Established direction and approval boundaries
 
@@ -415,3 +415,12 @@ Vlad selected the following direction on November 3: adopt the narrow extractive
 The combined candidate contains Hanlin's 253be0d contracts, Collins's 0099cd8 flows and David's 9aa7a49 verification material with coordinator alignment. C10 now defines an immutable inquiry-bound expectation, exact-match policy and canonical excerpt offsets. C3/C1 distinguish provider availability from answer quality and admission denial from admitted failure. Hanlin is recorded as backup. See the [final review request](final-review-request.md) for the candidate identifier and remaining evidence. Earlier requests to define these interfaces are addressed by this candidate; owner review is still required.
 
 | 13 | 2026-11-03 | Shared draw.io component/production pages and both PNGs aligned to Draft 3.3 contracts; November 3 C2 review candidate | All member approvals remain pending for the revised version; shared Google Doc text/image reconciliation remains separate |
+
+
+| 14 | 2026-11-05 | C3 includes the shared-source A3b/M5 correction and David’s latest V01/V02/X01 and XR06/XR13 wording; PR #16/#18 source revisions and integration recommendations reconciled | David and Collins confirmed the specific flow; exact combined-version approval, reviewed fixtures and executed validation remain pending |
+
+### November 5 — combined sequence and verification reconciliation
+
+David [confirmed the specific pre-generation/validation-order finding resolved](https://github.com/vlad8110/deskguide/pull/15#issuecomment-6618357810) at the design-documentation level on November 3. Collins [confirmed consistency with his AI flow](https://github.com/vlad8110/deskguide/pull/15#issuecomment-6618837185). Neither statement approves the complete final package.
+
+The current walkthrough and M5 diagram show C2 → C10 prepare_evidence → ready only → C3 → C10 validate → display. Failed, insufficient or unavailable prechecks make zero provider calls and do not automatically save support. The combined verification plan now retains David’s latest sequence cases alongside the newer expectation, availability and response-stage checks. See the [reconciliation and remaining actions](review-reconciliation-nov5.md). Collins’s source branch is unchanged at 0099cd8; David’s is unchanged at d3295e7. Their original source commits and contributions are preserved.

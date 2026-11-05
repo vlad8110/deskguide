@@ -45,8 +45,8 @@ Use stable, typed error responses carrying a correlation ID but no internal stac
 
 | ID | Requirement | Scenario and expected result | Method / coordinating owner |
 | --- | --- | --- | --- |
-| V01 | R1 | Authorized supported inquiry yields permitted retrieved passage and validated source ID/version | C/M/E; Collins + Hanlin |
-| V02 | R1/R2 | Unsupported query yields an honest limitation and customer-initiated agent option, no invented answer | C/M/E; Collins + David |
+| V01 | R1 | Authorized supported inquiry first passes C10 `prepare_evidence` on permitted C2 retrieval **before** any C3 provider call, then passes C10 post-generation citation/source/version/answer support checks **before** display; failed gates never publish a candidate | C/M/E; Collins + Hanlin; David checks sequence |
+| V02 | R1/R2 | Unmatched/ambiguous/unsupported query or unavailable **pre-generation** evidence gate prevents C3 call, returns honest limitation/clarification or customer-initiated agent option, and creates no support request without confirmation | C/M/E; Collins + David |
 | V03 | R1/R5 | Stale, missing, or other-tenant source ID is rejected before display | M/E; David + Collins |
 | V04 | R1/R6 | Hostile source text instructing model to ignore policies, change roles or exfiltrate data is handled as untrusted text | M/E; David + Collins |
 | V05 | R1 | Empty, oversized, malformed, HTML/script or SQL-bearing input is validated and safely rendered; no injection or unauthorized provider call | C/M; Hanlin + David |
@@ -130,7 +130,7 @@ The current published architecture, interface and AI files are **working framewo
 
 | Ref | Required match | Status |
 | --- | --- | --- |
-| X01 | C1 question/answer points to C2 source IDs, C3 provider adapter and supported/unsupported paths in diagram | Pending teammates' detailed drafts |
+| X01 | C1 → C2 retrieval → **C10 `prepare_evidence` (M5, before C3)** → C3 generation → **C10 `validate` (M5, after C3)** → C1 display must be explicit in both written walkthrough and component diagram; each failed gate produces controlled fallback without unapproved C3 calls or unsupported display | Sequence corrected in A3b and the component diagram; [David confirmed his specific finding resolved](https://github.com/vlad8110/deskguide/pull/15#issuecomment-6618357810). Combined-version approval and execution remain pending. |
 | X02 | C4 confirmed escalation -> durable save -> ack -> C5 agent view, including duplicate/unknown commit | Pending |
 | X03 | C7 customer adapter shows trusted customer identity, minimal fields, denied access and outage path | Pending |
 | X04 | C6 feedback identifies answer/version, reviewer gate, regression and rollback | Pending |

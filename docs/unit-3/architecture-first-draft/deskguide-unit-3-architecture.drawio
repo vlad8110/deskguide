@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <mxfile host="app.diagrams.net" pages="2">
   <diagram name="Component architecture" id="wWP11JurJD5BluBIdK9H">
-    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1180" pageHeight="900" math="0" shadow="0">
+    <mxGraphModel dx="933" dy="1209" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1180" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -19,7 +20,7 @@
         <mxCell id="hwXAEPP3mjso2QIhsSkL-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M4 | AI provider adapter&lt;br&gt;C3 | Bounded calls / shared breaker&lt;br&gt;No automatic generation retry" vertex="1">
           <mxGeometry height="80" width="230" x="640" y="390" as="geometry" />
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M5 | Evidence + source validation&lt;br&gt;C10 | Inquiry-bound expectation&lt;br&gt;Exact approved answer / fail closed" vertex="1">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M5 | Evidence + source validation&lt;br&gt;1. prepare_evidence before C3&lt;br&gt;2. validate after C3 / before display" vertex="1">
           <mxGeometry height="80" width="230" x="350" y="390" as="geometry" />
         </mxCell>
         <mxCell id="hwXAEPP3mjso2QIhsSkL-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M6 | Support + agent workflow&lt;br&gt;Registered ID / confirm / durable save&lt;br&gt;Owner + waiting_for_customer" vertex="1">
@@ -68,7 +69,7 @@
             <mxPoint x="960" y="190" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="hwXAEPP3mjso2QIhsSkL-23" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-6" value="C10 | Expected evidence&lt;br&gt;Candidate / validation result">
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-23" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-6" value="C10 | 1 prepare_evidence&lt;br&gt;2 validate before display">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint as="offset" />
             <mxPoint x="910" y="240" as="sourcePoint" />
@@ -169,7 +170,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="component-evidence-contract" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;C10 | Evidence expectation&lt;/b&gt;&lt;br&gt;M2 binds inquiry + policy/manifest version before C3.&lt;br&gt;Approved answer + exact source references / excerpt spans.&lt;br&gt;One reviewed alias; all required authorized evidence.&lt;br&gt;100% normalized answer match; no added wording.&lt;br&gt;Missing manifest/check or failed validation: suppress answer." vertex="1">
+        <mxCell id="component-evidence-contract" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;C10 | Evidence checks&lt;br&gt;C2 retrieval → prepare_evidence → [ready] C3 → validate → display.&lt;br&gt;M2 binds inquiry + reviewed policy/manifest + exact source spans before C3.&lt;br&gt;Failed/unavailable precheck: zero C3 calls; no automatic support save.&lt;br&gt;Controlled clarification, support option or unavailability on precheck failure.&lt;br&gt;Postcheck: 100% approved-answer match + all required refs; else suppress.&lt;/b&gt;" vertex="1">
           <mxGeometry height="155" width="560" x="10" y="1045" as="geometry" />
         </mxCell>
         <mxCell id="component-boundaries" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Outbound / outcomes&lt;/b&gt;&lt;br&gt;Question + every passage must be eligible before C3.&lt;br&gt;Fictional prototype only; no customer/session fields to AI.&lt;br&gt;Account status: fixed answer + answer_id; zero model calls.&lt;br&gt;503 before admission; admitted C3 failure: 200 unavailable.&lt;br&gt;Hard deadline: 504; eligible no-answer outcomes are misses." vertex="1">

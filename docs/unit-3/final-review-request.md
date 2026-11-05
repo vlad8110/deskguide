@@ -1,10 +1,12 @@
-# Combined design review — November 3 C2
+# Combined design review — November 5 C3
 
 Coordinator: Vladimyr Merci. Status: awaiting team review.
 
-Candidate content fingerprint: `ae063cb36ed7bf75da64c54ab779c014f3c718562c36dd9ab495b00414ef781a`.
+Candidate content fingerprint: `5a2040a0e659ac256b2e61ea355ba5b59c01b743e643cb068d52ff06c1014381`.
 
-Please review the [contracts](interface-contracts.md), [AI flows](ai-integration.md), [architecture and diagrams](architecture-first-draft/README.md), [rationale](design-rationale.md) and [verification alignment](david-verification-alignment-nov2.md). Reply with your decision on **November 3 C2** and the exact published commit: approve, or list the specific correction needed. A changed deliverable needs renewed review.
+Please review the [contracts](interface-contracts.md), [AI flows](ai-integration.md), [architecture and diagrams](architecture-first-draft/README.md), [rationale](design-rationale.md) and [verification alignment](david-verification-alignment-nov2.md), including the [PR #16/#18 reconciliation](review-reconciliation-nov5.md). Reply with your decision on **November 5 C3** and the exact published commit: approve, or list the specific correction needed. A changed deliverable needs renewed review.
+
+This revision adds the shared-source A3b/diagram correction and David’s latest V01/V02/X01 and XR06/XR13 sequence wording. C10 prepares the evidence before C3 and validates the candidate afterward; a failed or unavailable precheck invokes no provider and never saves support automatically. David and Collins confirmed this specific flow on November 3; their confirmations do not approve the complete combined package.
 
 | Member | Review focus | Combined-version approval |
 | --- | --- | --- |

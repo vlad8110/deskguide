@@ -14,7 +14,7 @@ Follow the [Week 3 delivery schedule](week-3-delivery-schedule.md) for section d
 
 The [Design Decisions and Review Log](design-decisions-and-review-log.md) consolidates D01–D23, the source of each concern, proposed solutions, owners, evidence requests and approval status. Review your assigned items and the [500-word rationale draft](design-rationale.md). Team agreement is pending.
 
-The [architecture source snapshots](architecture-first-draft/README.md) contain the November 2 written draft and corrected two-page diagram with PNG previews. The [November 2 proposed decisions](proposed-decisions.md) are the current review direction; written-source and final-version alignment remain pending.
+The [November 5 C3 review request](final-review-request.md) identifies the corrected architecture, C10 flow and current verification material. See the [PR #16/#18 reconciliation](review-reconciliation-nov5.md) for remaining evidence and integration recommendations. The shared sources retain the November 3 correction; combined-version approval remains pending.
 
 1. Read [requirements](assignment-requirements.md) and [the kickoff](team-kickoff.md).
 2. Confirm your assigned issue, availability, and blockers in GitHub.
