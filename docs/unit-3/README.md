@@ -10,6 +10,12 @@ Follow the [Week 3 delivery schedule](week-3-delivery-schedule.md) for section d
 
 ## Start here
 
+**Team response cutoff: Tuesday, November 3, 2026, at 10:00 a.m. Eastern.** Review the [complete revised proposed decisions](proposed-decisions.md) and provide remaining feedback/evidence in your existing issue or section PR by then. I will prepare the final revision after the cutoff.
+
+The [Design Decisions and Review Log](design-decisions-and-review-log.md) consolidates D01–D23, the source of each concern, proposed solutions, owners, evidence requests and approval status. Review your assigned items and the [500-word rationale draft](design-rationale.md). Team agreement is pending.
+
+The [November 6 C4 correction request](final-review-request.md) addresses David’s C1 example finding from his November 5 C3 review. See the [pending-review resolution](pending-review-resolution-nov6.md) for addressed findings and outstanding owner decisions, and the [PR #16/#18 reconciliation](review-reconciliation-nov5.md) for integration recommendations. The shared architecture sources retain the November 3 correction; combined-version approval remains pending.
+
 1. Read [requirements](assignment-requirements.md) and [the kickoff](team-kickoff.md).
 2. Confirm your assigned issue, availability, and blockers in GitHub.
 3. Follow [the work plan](work-plan.md), edit your section on a branch, and open a pull request for review.
@@ -21,9 +27,10 @@ Follow the [Week 3 delivery schedule](week-3-delivery-schedule.md) for section d
 | [Interface contracts](interface-contracts.md) | Hanlin | Collins and David |
 | [AI integration](ai-integration.md) | Collins | Hanlin and David |
 | [Design rationale](design-rationale.md) | Vlad assembles; everyone contributes | Whole team |
+| [Design Decisions and Review Log](design-decisions-and-review-log.md) | Vlad coordinates; named item owners respond | Whole team |
 | [Verification and review](verification-plan.md) | David | Whole team |
 
-All current assignment files, decisions, task updates, and reviews belong in this repository. Existing course documents and issues remain historical context. The prior SQLite/local-prototype scope does not establish compliance with this production design. No deployment, paid service, real customer data, or performance result is authorized or claimed by these planning files.
+GitHub is the coordination hub for assignment files, decisions, task updates and review records. The shared Google Doc and draw.io file remain the editable architecture sources. Repository copies are snapshots. The Flask/SQLite prototype and the production capacity design remain separate.
 
 [Assignment instructions](https://leocontent.umgc.edu/content/umuc/tus/cmsc/cmsc495/2268/unit-3/unit-3-assignment-1-instructions.html?ou=1541050) · [LEO submission and rubric](https://learn.umgc.edu/d2l/le/lessons/1541050/topics/37352126)
 

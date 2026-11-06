@@ -21,6 +21,14 @@ Use GitHub Issues, Markdown documents and pull requests as the single coordinati
 
 The coordinator reviews the weekly requirements early, helps divide tasks, collects updates, organizes the final review, and confirms who submits agreed-upon team work. Individual quizzes and critiques remain each member’s responsibility.
 
+## Local work and shared review sources
+
+Use a local clone for repository work. GitHub Desktop provides the Changes and History views, commits and explicit push controls. Fetch the current remote state before starting, review local changes and reconcile others' work before publishing.
+
+Vlad's workflow is to make and review changes on his computer first. A commit records changes locally; a push publishes committed changes to GitHub. Commit or publish his work only when he explicitly requests that action. Do not enable automatic publishing.
+
+For the [Unit 3 architecture draft](docs/unit-3/architecture-first-draft/README.md), the Google Doc and shared draw.io file are the editable review sources. Repository Markdown, draw.io and PNG files are snapshots. Reconcile shared edits and refresh the local snapshots before committing a revision. Use PNG previews during review; create the PDF for final submission.
+
 ## Development approval
 
 Planning can proceed now. Application development begins only after instructor approval of the pitch. Do not add a paid service without team agreement. Do not commit working credentials, in this public repository.

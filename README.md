@@ -30,6 +30,8 @@ Python and Flask; HTML, CSS, and JavaScript; SQLite; local document retrieval; o
 
 Read the [Unit 3 hub](docs/unit-3/README.md) for the current 10,000-customer design assignment, Tuesday deadline, owners and GitHub coordination workflow. Vlad remains the coordinator unless he explicitly delegates a temporary handoff. Earlier prototype planning below remains historical context.
 
+Vlad's [architecture first draft](docs/unit-3/architecture-first-draft/README.md) is available for team review, with the editable Google Doc, shared draw.io diagram, PNG preview and Markdown copies. PDFs are reserved for final submission.
+
 ## Start here
 
 1. Read [the collaboration guide](CONTRIBUTING.md).
@@ -44,7 +46,7 @@ Setup commands and test instructions will be added when implementation dependenc
 | Location | Contents |
 | --- | --- |
 | GitHub | Code, tests, interface definitions, diagrams, technical notes, and tasks |
-| Google Docs and Drive | Earlier course artifacts; active assignment sources and final exports now belong in GitHub |
+| Google Docs and Drive | Editable Unit 3 architecture review document and shared draw.io diagram; linked from GitHub with repository snapshots |
 | Email | Optional notification only; decisions and coordination are recorded in GitHub |
 
 ## Folder layout
@@ -58,6 +60,8 @@ sample_documents/   Fictional source material only
 ```
 
 Keep API keys, `.env` files, real workplace records, personal information, and live databases out of Git. Use `.env.example` only for placeholders.
+
+Work from a local clone using GitHub Desktop or your editor. Review local changes before committing and pushing; see the [collaboration guide](CONTRIBUTING.md). Shared Google Doc and diagram edits must be reconciled explicitly before updating their repository snapshots.
 
 ## Backlog and implementation tracking
 
