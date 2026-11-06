@@ -439,7 +439,7 @@ Supported answer:
   "status": "answered",
   "route": "ai",
   "answer_origin": "ai_generated",
-  "answer": "Install the Acme VPN client, sign in with your demo account, and select the 'Campus' profile.",
+  "answer": "Install the Acme VPN client, sign in, and select the Campus profile.",
   "sources": [{
     "ref": { "source_id": "DOC-003", "section_id": "s2", "source_version": "3" },
     "title": "VPN Setup Guide",

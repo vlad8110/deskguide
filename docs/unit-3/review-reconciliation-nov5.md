@@ -2,6 +2,8 @@
 
 Coordinator: Vladimyr Merci. Review candidate: November 5 C3. Combined-version approval remains pending.
 
+November 6 update: David subsequently submitted a [CHANGES_REQUESTED review](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5789994604) of C3 for the C1 answer/source example. The [current resolution record](pending-review-resolution-nov6.md) tracks the C4 correction and remaining owner decisions. The observations below describe the earlier reconciliation.
+
 ## Source revisions
 
 | Source | Current head inspected | Disposition in the combined candidate |

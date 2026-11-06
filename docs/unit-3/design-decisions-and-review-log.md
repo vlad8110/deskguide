@@ -1,10 +1,10 @@
 # Unit 3 Design Decisions and Review Log
 
-Coordinator: Vladimyr Merci, Lead Architect. Updated: November 5, 2026. Revision 14.
+Coordinator: Vladimyr Merci, Lead Architect. Updated: November 6, 2026. Revision 15.
 
 I have worked through the open architecture questions and collected my proposed solutions here. Please review the items assigned to your role, flag concerns, and provide the requested clarification or evidence. I will reconcile the replies before assembling the final specification.
 
-**Status: November 5 C3 awaits combined-version review.** Read the [current review request](final-review-request.md) and [PR #16/#18 reconciliation](review-reconciliation-nov5.md). The November 3 response/submission dates below are historical planning dates; no new deadline is assigned by this revision.
+**Status: November 6 C4 corrects the C1 example after David’s November 5 CHANGES_REQUESTED review of C3.** Read the [current review request](final-review-request.md), [pending-review resolution](pending-review-resolution-nov6.md) and [PR #16/#18 reconciliation](review-reconciliation-nov5.md). The November 3 response/submission dates below are historical planning dates; no new deadline is assigned by this revision.
 
 ## 1. Sources and inspected revisions
 
@@ -424,3 +424,16 @@ The combined candidate contains Hanlin's 253be0d contracts, Collins's 0099cd8 fl
 David [confirmed the specific pre-generation/validation-order finding resolved](https://github.com/vlad8110/deskguide/pull/15#issuecomment-6618357810) at the design-documentation level on November 3. Collins [confirmed consistency with his AI flow](https://github.com/vlad8110/deskguide/pull/15#issuecomment-6618837185). Neither statement approves the complete final package.
 
 The current walkthrough and M5 diagram show C2 → C10 prepare_evidence → ready only → C3 → C10 validate → display. Failed, insufficient or unavailable prechecks make zero provider calls and do not automatically save support. The combined verification plan now retains David’s latest sequence cases alongside the newer expectation, availability and response-stage checks. See the [reconciliation and remaining actions](review-reconciliation-nov5.md). Collins’s source branch is unchanged at 0099cd8; David’s is unchanged at d3295e7. Their original source commits and contributions are preserved.
+
+
+### November 6 — C3 review closeout and C4 example correction
+
+David’s [November 5 review of C3](https://github.com/vlad8110/deskguide/pull/15#pullrequestreview-5789994604) verifies the evidence order, immutable expectation, response/counting boundaries, outbound/account-status routing and diagram at the design-documentation level. He requested one concrete correction before final sign-off: the C1 answer must match the shown exact source excerpt.
+
+The C4 example now matches C2a/C2b/C3. The final contracts PDF already contains that sentence on page 15; the source correction aligns the repository snapshot. Original exports remain unchanged. The published C3 request for changes remains until the corrected revision receives a renewed review; no member’s approval is inferred.
+
+Hanlin’s backup acceptance is retained. Remaining evidence is the reviewed source manifest, provider/model/account controls and quotas, owner availability and exact-version approvals. The [resolution register](pending-review-resolution-nov6.md) separates resolved wording from these pending decisions and implementation evidence.
+
+| Revision | Date | Change | Review state |
+| --- | --- | --- | --- |
+| 15 | 2026-11-06 | C4 corrects the C1 answer/source example; current review record includes David’s CHANGES_REQUESTED decision and owner closeout actions | Correction ready for review; renewed peer review pending |
