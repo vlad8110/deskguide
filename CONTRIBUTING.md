@@ -17,10 +17,18 @@ One peer review is our workflow agreement. Whether GitHub can enforce it depends
 
 ## Weekly updates
 
-Use GitHub Issues, Markdown documents and pull requests as the single coordination location. Report completed work, blockers and next steps in the relevant issue. See [Unit 3](docs/unit-3/README.md) for current owners and milestones. Vlad remains coordinator unless he explicitly delegates a temporary handoff in GitHub. Record current assignment decisions in `docs/unit-3/decisions.md`; preserve earlier decisions as history.
+Use GitHub Issues, Markdown documents and pull requests as the single coordination location. Report completed work, blockers and next steps in the relevant issue. See [module handoff](docs/unit-5/module-handoff.md) for implementation owners and acceptance checks. Vlad remains coordinator unless he explicitly delegates a temporary handoff in GitHub. Record implementation decisions in the relevant issue and completed work in [contributions](contributions.md).
 
 The coordinator reviews the weekly requirements early, helps divide tasks, collects updates, organizes the final review, and confirms who submits agreed-upon team work. Individual quizzes and critiques remain each member’s responsibility.
 
-## Development approval
+## Local work and shared review sources
 
-Planning can proceed now. Application development begins only after instructor approval of the pitch. Do not add a paid service without team agreement. Do not commit working credentials, in this public repository.
+Use a local clone for repository work. GitHub Desktop provides the Changes and History views, commits and explicit push controls. Fetch the current remote state before starting, review local changes and reconcile others' work before publishing.
+
+For the [Unit 3 architecture review](https://github.com/vlad8110/deskguide/blob/bf6e11dcf420f042c3384d5ae3cb3494d9e0d257/docs/unit-3/architecture-first-draft/README.md), the Google Doc and shared draw.io file are the editable review sources. Repository Markdown, draw.io and PNG files are snapshots. Reconcile shared edits and refresh the local snapshots before committing a revision. Use PNG previews during review; create the PDF for final submission.
+
+## Development workflow
+
+Use the agreed contracts, small branches and peer review for application development. Do not add a paid service without team agreement. Keep working credentials out of this public repository.
+
+Source files use one-line purpose descriptions. Keep detailed responsibilities in [the module handoff](docs/unit-5/module-handoff.md) and contribution records in [contributions](contributions.md); file dates and authorship are tracked by Git.
