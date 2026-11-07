@@ -10,7 +10,7 @@ Keep a one-line purpose description in each source file. Use this handoff for mo
 
 The local foundation provides startup, SQLite schema initialization, controlled account management, C9 login/session/logout, reusable authorization helpers and a browser sign-in/workspace shell. The foundation tests use isolated fictional data.
 
-The application does not yet implement the inquiry, retrieval, generation, evidence-validation, source-view, support, feedback or document-management product workflows. Existing storage tables and access helpers are integration points for that work.
+The [C1 coordinator](../inquiry-coordinator.md) now provides a customer-only inquiry endpoint, bounded prototype admission, evidence gates, controlled fallback and minimal inquiry metadata. Its service adapters are not connected; tests use fictional substitutes. Retrieval, generation, evidence-validation, source-view, support, feedback and document-management product workflows remain integration work.
 
 ## Existing files and where to connect
 
@@ -19,6 +19,7 @@ The application does not yet implement the inquiry, retrieval, generation, evide
 | [app/__init__.py](../../app/__init__.py) | Vlad: app factory, configuration, sessions and request hooks | Register business blueprints in `create_app()`. Keep inquiry orchestration and persistence logic in dedicated service modules. Preserve session, CSRF and error hooks. |
 | [app/auth.py](../../app/auth.py) | Vlad: C9 authentication; Hanlin consumes the API | Use `/v1/session/login-token` before login, `/v1/session` for session state and `/v1/session/logout` to sign out. Send same-origin cookies and `X-CSRF-Token` on state changes. |
 | [app/access.py](../../app/access.py) | Vlad: identity, roles and ownership; David verifies | Business routes use `current_access()` and appropriate role/ownership guards. Pass the trusted context to internal services. Never accept a request-supplied customer scope as authority. |
+| [app/inquiries.py](../../app/inquiries.py), [inquiry_types.py](../../app/inquiry_types.py) | Vlad: C1 orchestration and adapter boundaries | Connect Collins's services through `app.extensions["inquiry_services"]`; retain the ordered evidence gates, immutable expectation and identity-free generation request. [Integration details](../inquiry-coordinator.md). |
 | [app/accounts.py](../../app/accounts.py) | Vlad: local provisioning and permissions | Request fictional staff/customer fixtures from Vlad. Public UI must not create accounts or assign roles. Membership in the development team is separate from application permissions. |
 | [app/db.py](../../app/db.py) | Vlad: connections, initialization and migrations | Services use `get_db()` and transactions. Coordinate schema changes before editing an initialized database. UI calls services through endpoints. |
 | [app/clock.py](../../app/clock.py) | Vlad: shared time source | Use `now()` for the injectable auth/application clock and `timestamp()` for UTC API text; do not import authentication into persistence/account helpers. |
@@ -39,7 +40,7 @@ Use `@require_roles(...)` and `@require_permission(...)` as route decorators. Se
 
 ## Vladimyr Merci — application, authorization and persistence
 
-**Next deliverable:** the C1 inquiry coordinator behind `POST /v1/inquiries`.
+**Current deliverable:** the C1 coordinator behind `POST /v1/inquiries`, with endpoint tests and unconnected service boundaries. **Next:** agree adapter shapes with Collins and connect authorized retrieval/C10 before provider integration; complete the remaining workflows below.
 
 1. Agree callable inputs/outputs with Collins and browser response examples with Hanlin using the current contracts. Use the existing `AccessContext`; preserve identity derived from the session.
 2. Implement request validation, route selection, admission/deadline handling and inquiry metadata. A question request does not grant access to any customer record or source.
@@ -93,7 +94,7 @@ Use `@require_roles(...)` and `@require_permission(...)` as route decorators. Se
 
 ## Planned module locations
 
-The following names are proposed locations, not existing implementations. Agree names before parallel edits and keep each member's changes focused.
+The inquiry coordinator and integration types exist locally. Other locations below remain proposed. Agree names before parallel edits and keep each member's changes focused.
 
 | Planned location | Lead and boundary |
 | --- | --- |
