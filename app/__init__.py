@@ -188,9 +188,14 @@ def create_app(test_config=None):
 
     @app.get("/")
     def home():
+        account = (
+            {"username": g.account["username"], "role": g.account["role"]}
+            if g.account is not None
+            else None
+        )
         return render_template(
             "home.html",
-            account=g.account,
+            account=account,
             local_http=not app.config["SESSION_COOKIE_SECURE"],
         )
 

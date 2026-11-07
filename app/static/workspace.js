@@ -22,6 +22,10 @@ async function sendSessionAction(path, body, authenticated) {
   try {
     const tokenResponse = await fetch(endpoint, { credentials: "same-origin" });
     if (!tokenResponse.ok) {
+      if (authenticated && tokenResponse.status === 401) {
+        window.location.assign("/");
+        return;
+      }
       status.textContent = await sessionErrorMessage(tokenResponse);
       return;
     }

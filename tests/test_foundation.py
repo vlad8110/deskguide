@@ -5,6 +5,7 @@ import warnings
 from uuid import UUID
 
 import pytest
+from flask import template_rendered
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import JsonSessionSerializer, create_app
@@ -111,6 +112,45 @@ def test_home_and_browser_assets(client, sign_in):
     assert client.get("/static/workspace.css").status_code == 200
     sign_in(client)
     assert b"Welcome, customer-one" in client.get("/").data
+
+
+@pytest.mark.parametrize(
+    ("username", "role"),
+    [
+        ("customer-one", "customer"),
+        ("agent-one", "agent"),
+        ("admin-one", "administrator"),
+    ],
+)
+def test_home_template_receives_only_display_account_fields(
+    app, client, sign_in, username, role
+):
+    contexts = []
+
+    def capture_template(sender, template, context, **extra):
+        contexts.append(context)
+
+    sign_in(client, username)
+    with template_rendered.connected_to(capture_template, app):
+        response = client.get("/")
+
+    assert response.status_code == 200
+    assert dict(contexts[0]["account"]) == {"username": username, "role": role}
+    assert f"Welcome, {username}" in response.text
+
+
+def test_signed_out_home_template_has_no_account(app, client):
+    contexts = []
+
+    def capture_template(sender, template, context, **extra):
+        contexts.append(context)
+
+    with template_rendered.connected_to(capture_template, app):
+        response = client.get("/")
+
+    assert response.status_code == 200
+    assert contexts[0]["account"] is None
+    assert "Sign in to DeskGuide" in response.text
 
 
 def test_public_account_creation_is_unavailable(client):

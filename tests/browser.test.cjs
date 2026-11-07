@@ -105,3 +105,31 @@ test("successful logout uses the session token and redirects", async () => {
   assert.equal(page.calls[1].options.credentials, "same-origin");
   assert.deepEqual(page.redirects, ["/"]);
 });
+
+test("a stale workspace redirects after the session token fetch returns 401", async () => {
+  const page = browser([
+    jsonResponse(401, { error: { message: "Please sign in." } }),
+  ]);
+  await page.send("/v1/session/logout", {}, true);
+  assert.deepEqual(page.redirects, ["/"]);
+  assert.equal(page.calls.length, 1);
+  assert.equal(page.calls[0].url, "/v1/session");
+});
+
+test("an unauthenticated login-token failure does not redirect", async () => {
+  const page = browser([
+    jsonResponse(401, { error: { message: "Please sign in." } }),
+  ]);
+  await page.send("/v1/session/login", {}, false);
+  assert.deepEqual(page.redirects, []);
+  assert.equal(page.calls.length, 1);
+  assert.equal(page.status.textContent, "Please sign in.");
+});
+
+test("workspace token service failures stay visible without redirecting", async () => {
+  const page = browser([htmlResponse(503)]);
+  await page.send("/v1/session/logout", {}, true);
+  assert.deepEqual(page.redirects, []);
+  assert.equal(page.calls.length, 1);
+  assert.equal(page.status.textContent, "Service temporarily unavailable. Try again.");
+});
