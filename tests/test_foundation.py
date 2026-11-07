@@ -2,6 +2,8 @@
 
 import sqlite3
 import warnings
+from html.parser import HTMLParser
+from urllib.parse import urlsplit
 from uuid import UUID
 
 import pytest
@@ -112,6 +114,36 @@ def test_home_and_browser_assets(client, sign_in):
     assert client.get("/static/workspace.css").status_code == 200
     sign_in(client)
     assert b"Welcome, customer-one" in client.get("/").data
+
+
+def test_native_login_form_never_sends_credentials_in_the_url(client, caplog):
+    class SignInForm(HTMLParser):
+        attributes = None
+
+        def handle_starttag(self, tag, attrs):
+            values = dict(attrs)
+            if tag == "form" and values.get("id") == "sign-in":
+                self.attributes = values
+
+    form = SignInForm()
+    form.feed(client.get("/").text)
+    assert form.attributes is not None
+    assert form.attributes.get("method", "get").lower() == "post"
+    action = form.attributes.get("action", "/")
+    assert action == "/v1/session/login"
+    credentials = {
+        "username": "fictional-native-user",
+        "password": "Native-only-test-secret-42!",
+    }
+    response = client.open(
+        action, method=form.attributes["method"].upper(), data=credentials
+    )
+    assert urlsplit(response.request.url).query == ""
+    assert response.request.form["password"] == credentials["password"]
+    assert response.status_code == 403
+    assert response.json["error"]["code"] == "CSRF_FAILED"
+    assert credentials["password"] not in response.text + caplog.text
+    assert client.get("/v1/session").status_code == 401
 
 
 @pytest.mark.parametrize(

@@ -27,7 +27,10 @@
         <p class="eyebrow">TEAM 4</p>
         <h1>Sign in to DeskGuide</h1>
         <p>Use the account provided by your project coordinator.</p>
-        <form id="sign-in">
+        <noscript>
+          <p>Enable JavaScript to sign in to DeskGuide.</p>
+        </noscript>
+        <form id="sign-in" method="post" action="{{ url_for('auth.login') }}">
           <label for="username">Username</label>
           <input
             id="username"
