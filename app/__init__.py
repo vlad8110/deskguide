@@ -19,7 +19,7 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import generate_password_hash
 
-from . import accounts, auth, db, inquiries
+from . import accounts, auth, db, inquiries, support
 from .errors import CONTRACT_VERSION, ApiError, error_response
 
 
@@ -143,6 +143,7 @@ def create_app(test_config=None):
     accounts.init_app(app)
     app.register_blueprint(auth.bp)
     inquiries.init_app(app)
+    support.init_app(app)
 
     @app.before_request
     def prepare_request():

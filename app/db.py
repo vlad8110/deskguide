@@ -11,7 +11,10 @@ from flask.cli import with_appcontext
 from .clock import now
 
 # Append each future version's SQL file here; never edit an applied migration.
-MIGRATIONS = (Path(__file__).with_name("schema.sql"),)
+MIGRATIONS = (
+    Path(__file__).with_name("schema.sql"),
+    Path(__file__).with_name("migrations") / "002_support_details.sql",
+)
 SCHEMA_VERSION = len(MIGRATIONS)
 
 

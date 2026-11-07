@@ -10,7 +10,7 @@ Keep a one-line purpose description in each source file. Use this handoff for mo
 
 The local foundation provides startup, SQLite schema initialization, controlled account management, C9 login/session/logout, reusable authorization helpers and a browser sign-in/workspace shell. The foundation tests use isolated fictional data.
 
-The [C1 coordinator](../inquiry-coordinator.md) now provides a customer-only inquiry endpoint, bounded prototype admission, evidence gates, controlled fallback and minimal inquiry metadata. Its service adapters are not connected; tests use fictional substitutes. Retrieval, generation, evidence-validation, source-view, support, feedback and document-management product workflows remain integration work.
+The [C1 coordinator](../inquiry-coordinator.md) provides a customer-only inquiry endpoint, bounded prototype admission, evidence gates, controlled fallback and minimal inquiry metadata. Its service adapters are not connected; tests use fictional substitutes. The [C4 backend](../support-backend.md) adds confirmed support saves, registered IDs, receipt/status recovery and customer replies. Retrieval, generation, evidence-validation, source-view, agent workflow, feedback, document management and connected product screens remain integration work.
 
 ## Existing files and where to connect
 
@@ -20,6 +20,7 @@ The [C1 coordinator](../inquiry-coordinator.md) now provides a customer-only inq
 | [app/auth.py](../../app/auth.py) | Vlad: C9 authentication; Hanlin consumes the API | Use `/v1/session/login-token` before login, `/v1/session` for session state and `/v1/session/logout` to sign out. Send same-origin cookies and `X-CSRF-Token` on state changes. |
 | [app/access.py](../../app/access.py) | Vlad: identity, roles and ownership; David verifies | Business routes use `current_access()` and appropriate role/ownership guards. Pass the trusted context to internal services. Never accept a request-supplied customer scope as authority. |
 | [app/inquiries.py](../../app/inquiries.py), [inquiry_types.py](../../app/inquiry_types.py) | Vlad: C1 orchestration and adapter boundaries | Connect Collins's services through `app.extensions["inquiry_services"]`; retain the ordered evidence gates, immutable expectation and identity-free generation request. [Integration details](../inquiry-coordinator.md). |
+| [app/support.py](../../app/support.py) | Vlad: C4 registration, confirmation, status and replies | Hanlin connects the customer UI; David reviews ownership, receipt recovery, expiry and concurrency. [C4 integration details](../support-backend.md). |
 | [app/accounts.py](../../app/accounts.py) | Vlad: local provisioning and permissions | Request fictional staff/customer fixtures from Vlad. Public UI must not create accounts or assign roles. Membership in the development team is separate from application permissions. |
 | [app/db.py](../../app/db.py) | Vlad: connections, initialization and migrations | Services use `get_db()` and transactions. Coordinate schema changes before editing an initialized database. UI calls services through endpoints. |
 | [app/clock.py](../../app/clock.py) | Vlad: shared time source | Use `now()` for the injectable auth/application clock and `timestamp()` for UTC API text; do not import authentication into persistence/account helpers. |
@@ -94,7 +95,7 @@ Use `@require_roles(...)` and `@require_permission(...)` as route decorators. Se
 
 ## Planned module locations
 
-The inquiry coordinator and integration types exist locally. Other locations below remain proposed. Agree names before parallel edits and keep each member's changes focused.
+The inquiry coordinator, integration types and C4 support backend exist. Other locations below remain proposed. Agree names before parallel edits and keep each member's changes focused.
 
 | Planned location | Lead and boundary |
 | --- | --- |

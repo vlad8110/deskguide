@@ -1,6 +1,6 @@
 # Flask SQLite and access control foundation
 
-The local foundation implements application startup, schema initialization, controlled account management and C9 sessions/access controls. The browser provides working sign-in/sign-out and a signed-in workspace. The question, retrieval, AI, support and feedback product flows remain separate implementation work.
+The local foundation implements application startup, schema initialization, controlled account management and C9 sessions/access controls. The browser provides working sign-in/sign-out and a signed-in workspace. The [C1 coordinator](inquiry-coordinator.md) and [C4 support backend](support-backend.md) extend it; real retrieval/AI services, connected product screens, agent workflows and feedback remain integration work.
 
 See the [module assignments and integration handoff](unit-5/module-handoff.md) for each teammate's starting files, responsibilities, next deliverable and completion evidence. Source files have one-line purpose descriptions; [implementation contributions](../contributions.md) records completed work and review evidence.
 
@@ -95,7 +95,7 @@ Before upgrading an existing installation, stop application writers and make a v
 python -m flask --app app migrate-db
 ```
 
-For a schema change, add the next numbered SQL file under `app/migrations/` and append its path to `MIGRATIONS` in `app/db.py`. The tuple order defines version numbers and `SCHEMA_VERSION`; `schema.sql` is the version-1 bootstrap and must remain unchanged once released. Add upgrade/preservation and rollback tests before accepting a migration. No additional version is registered until it has a real schema change.
+For a schema change, add the next numbered SQL file under `app/migrations/` and append its path to `MIGRATIONS` in `app/db.py`. The tuple order defines version numbers and `SCHEMA_VERSION`; `schema.sql` is the version-1 bootstrap and must remain unchanged once released. Add upgrade/preservation and rollback tests before accepting a migration. Version 2 adds reviewed support notes, optional inquiry links and reply receipt identity through `002_support_details.sql`.
 
 The runner holds a SQLite write lock, rechecks the version and applies every pending step in one transaction. A failure rolls back both schema/data changes and the version. Migration files cannot issue transaction-control statements or PRAGMAs; the runner owns those. A database newer than the code is rejected, and a current database is a no-op. `init-db` never silently upgrades an initialized older database. Examples of these paths are in [migration tests](../tests/test_migrations.py).
 
@@ -109,7 +109,7 @@ The runner holds a SQLite write lock, rechecks the version and applies every pen
 | submission_registrations, support_requests, support_replies, submission_receipts | Registered intents, durable support/replies and uniqueness constraints |
 | feedback | Inquiry-owned feedback, including inquiries with no answer |
 
-Foreign keys bind a request’s customer to the registered submission and feedback’s customer to the inquiry. The unique submission key prevents a second request for the same registration. These constraints support the future services; they do not implement the complete C4/C5 state machine, receipt replay, expiry/three-ID admission, retention cleanup or endpoints.
+Foreign keys bind a request’s customer to the registered submission and feedback’s customer to the inquiry. The unique submission key prevents a second request for the same registration. [C4](support-backend.md) now implements registration, confirmation, receipt replay, expiry/three-ID admission, customer replies and support cleanup. C5 agent claim/transition endpoints remain separate work.
 
 | Module | Integration point |
 | --- | --- |

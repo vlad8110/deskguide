@@ -9,42 +9,84 @@ from app import create_app, db
 
 def pending_versions(monkeypatch, tmp_path, *scripts):
     files = list(db.MIGRATIONS)
+    previous = len(files)
     for version, script in enumerate(scripts, start=len(files) + 1):
         path = tmp_path / f"{version:03d}_test.sql"
         path.write_text(script)
         files.append(path)
     monkeypatch.setattr(db, "MIGRATIONS", tuple(files))
     monkeypatch.setattr(db, "SCHEMA_VERSION", len(files))
+    return previous
 
 
 def test_migration_noop_preserves_existing_accounts(app):
     result = app.test_cli_runner().invoke(args=["migrate-db"])
-    assert result.exit_code == 0 and "already at version 1" in result.output
+    assert (
+        result.exit_code == 0
+        and f"already at version {db.SCHEMA_VERSION}" in result.output
+    )
     with app.app_context():
         assert db.get_db().execute("SELECT count(*) FROM users").fetchone()[0] == 5
 
 
+def test_support_upgrade_preserves_version_one_records(tmp_path):
+    database = tmp_path / "version-one.sqlite3"
+    with sqlite3.connect(database) as connection:
+        connection.executescript(db.MIGRATIONS[0].read_text())
+        connection.execute("PRAGMA user_version=1")
+        connection.execute(
+            "INSERT INTO customers VALUES ('legacy-customer','Fictional','active')"
+        )
+        connection.execute(
+            "INSERT INTO submission_registrations (submission_id,customer_id,operation,state,registered_at,expires_at) VALUES ('legacy-id','legacy-customer','escalation','completed',1,1801)"
+        )
+        connection.execute(
+            "INSERT INTO support_requests (request_id,submission_id,customer_id,content,reason,created_at) VALUES ('legacy-request','legacy-id','legacy-customer','Reviewed legacy content','human_requested',1)"
+        )
+        connection.execute(
+            "INSERT INTO submission_receipts (submission_id,request_id,payload_fingerprint,committed_at) VALUES ('legacy-id','legacy-request','legacy-fingerprint',1)"
+        )
+    app = create_app({"TESTING": True, "DATABASE": str(database)})
+    assert app.test_client().get("/health").status_code == 503
+    with app.app_context():
+        assert db.migrate_db() == (1, 2)
+        row = (
+            db.get_db()
+            .execute("SELECT content,note,inquiry_id FROM support_requests")
+            .fetchone()
+        )
+        assert tuple(row) == ("Reviewed legacy content", None, None)
+        receipt = (
+            db.get_db()
+            .execute("SELECT payload_fingerprint,reply_id FROM submission_receipts")
+            .fetchone()
+        )
+        assert tuple(receipt) == ("legacy-fingerprint", None)
+        assert db.get_db().execute("PRAGMA foreign_key_check").fetchall() == []
+    assert app.test_client().get("/health").status_code == 200
+
+
 def test_pending_versions_apply_in_order_and_keep_data(app, monkeypatch, tmp_path):
-    pending_versions(
+    base = pending_versions(
         monkeypatch,
         tmp_path,
         "ALTER TABLE customers ADD COLUMN plan TEXT NOT NULL DEFAULT 'starter';",
         "CREATE INDEX customer_plan ON customers(plan);",
     )
     with app.app_context():
-        assert db.migrate_db() == (1, 3)
+        assert db.migrate_db() == (base, base + 2)
         connection = db.get_db()
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 3
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == base + 2
         assert connection.execute("SELECT count(*) FROM users").fetchone()[0] == 5
         assert (
             connection.execute("SELECT plan FROM customers").fetchone()[0] == "starter"
         )
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
-        assert db.migrate_db() == (3, 3)
+        assert db.migrate_db() == (base + 2, base + 2)
 
 
 def test_failed_upgrade_rolls_back_all_pending_versions(app, monkeypatch, tmp_path):
-    pending_versions(
+    base = pending_versions(
         monkeypatch,
         tmp_path,
         "ALTER TABLE customers ADD COLUMN plan TEXT;",
@@ -54,7 +96,7 @@ def test_failed_upgrade_rolls_back_all_pending_versions(app, monkeypatch, tmp_pa
         connection = db.get_db()
         with pytest.raises(sqlite3.Error):
             db.migrate_db()
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == base
         assert "plan" not in {
             r[1] for r in connection.execute("PRAGMA table_info(customers)")
         }
@@ -74,7 +116,7 @@ def test_failed_upgrade_rolls_back_all_pending_versions(app, monkeypatch, tmp_pa
 def test_migrations_cannot_override_transaction_or_version(
     app, monkeypatch, tmp_path, control
 ):
-    pending_versions(
+    base = pending_versions(
         monkeypatch,
         tmp_path,
         "CREATE TABLE temporary_change (id INTEGER); " + control,
@@ -83,7 +125,7 @@ def test_migrations_cannot_override_transaction_or_version(
         connection = db.get_db()
         with pytest.raises(sqlite3.DatabaseError):
             db.migrate_db()
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == base
         assert (
             connection.execute(
                 "SELECT name FROM sqlite_master WHERE name='temporary_change'"
@@ -104,23 +146,29 @@ def test_newer_database_is_never_downgraded(app):
 
 
 def test_initialized_database_requires_explicit_upgrade(app, monkeypatch, tmp_path):
-    pending_versions(monkeypatch, tmp_path, "CREATE TABLE future_feature (id INTEGER);")
+    base = pending_versions(
+        monkeypatch, tmp_path, "CREATE TABLE future_feature (id INTEGER);"
+    )
     with app.app_context():
         with pytest.raises(RuntimeError, match="migrate-db"):
             db.init_db()
     assert app.test_client().get("/health").status_code == 503
     result = app.test_cli_runner().invoke(args=["migrate-db"])
-    assert result.exit_code == 0 and "from version 1 to 2" in result.output
+    assert (
+        result.exit_code == 0 and f"from version {base} to {base + 1}" in result.output
+    )
     assert app.test_client().get("/health").status_code == 200
 
 
 def test_new_database_initializes_through_all_versions(monkeypatch, tmp_path):
-    pending_versions(monkeypatch, tmp_path, "CREATE TABLE future_feature (id INTEGER);")
+    base = pending_versions(
+        monkeypatch, tmp_path, "CREATE TABLE future_feature (id INTEGER);"
+    )
     app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "fresh.sqlite3")})
     result = app.test_cli_runner().invoke(args=["init-db"])
     assert result.exit_code == 0
     with app.app_context():
-        assert db.get_db().execute("PRAGMA user_version").fetchone()[0] == 2
+        assert db.get_db().execute("PRAGMA user_version").fetchone()[0] == base + 1
         assert db.is_schema_ready()
 
 
