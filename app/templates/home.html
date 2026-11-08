@@ -1,0 +1,60 @@
+{# DeskGuide sign-in and workspace layout. #}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DeskGuide</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='workspace.css') }}" />
+    <script src="{{ url_for('static', filename='workspace.js') }}" defer></script>
+  </head>
+  <body>
+    <header>
+      <a href="/" class="brand">DeskGuide</a>
+      <span>Local alpha workspace</span>
+    </header>
+    <main>
+      {% if account %}
+        <p class="eyebrow">YOUR WORKSPACE</p>
+        <h1>Welcome, {{ account['username'] }}</h1>
+        <p>You are signed in as <strong>{{ account['role'] }}</strong>.</p>
+        <p class="notice">
+          The question, source and support screens are not available yet.
+        </p>
+        <button id="sign-out" type="button">Sign out</button>
+      {% else %}
+        <p class="eyebrow">TEAM 4</p>
+        <h1>Sign in to DeskGuide</h1>
+        <p>Use the account provided by your project coordinator.</p>
+        <noscript>
+          <p>Enable JavaScript to sign in to DeskGuide.</p>
+        </noscript>
+        <form id="sign-in" method="post" action="{{ url_for('auth.login') }}">
+          <label for="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            autocomplete="username"
+            maxlength="64"
+            required
+          />
+          <label for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            maxlength="128"
+            required
+          />
+          <button type="submit">Sign in</button>
+        </form>
+      {% endif %}
+      <p id="status" role="status" aria-live="polite"></p>
+      {% if local_http %}
+        <p class="local-note">Local demonstration on this computer.</p>
+      {% endif %}
+    </main>
+  </body>
+</html>

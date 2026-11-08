@@ -1,0 +1,143 @@
+/* Styles for the DeskGuide sign-in and workspace. */
+
+/* Base colors and page sizing. */
+:root {
+  color-scheme: light;
+  font-family: system-ui, sans-serif;
+  color: #142438;
+  background: #f3f5f8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Header and branding. */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.4rem 6%;
+  background: #132942;
+  color: #fff;
+  gap: 1rem;
+}
+
+.brand {
+  font-size: 1.4rem;
+  font-weight: 750;
+  text-decoration: none;
+  color: inherit;
+}
+
+header span {
+  font-size: 0.9rem;
+  color: #d6e1ed;
+}
+
+/* Workspace content and text. */
+main {
+  margin: 5rem auto;
+  padding: 2.6rem;
+  width: min(92%, 540px);
+  border: 1px solid #d8e0e9;
+  border-radius: 12px;
+  background: #fff;
+}
+
+h1 {
+  font-size: 1.9rem;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  margin-top: 0.7rem;
+}
+
+p {
+  line-height: 1.6;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  font-weight: 750;
+  color: #3c5570;
+}
+
+/* Forms, focus states and actions. */
+form {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1.8rem;
+}
+
+label {
+  font-weight: 650;
+  font-size: 0.95rem;
+}
+
+input {
+  width: 100%;
+  border: 1px solid #718298;
+  border-radius: 5px;
+  padding: 0.8rem;
+  font: inherit;
+  margin-bottom: 0.55rem;
+}
+
+input:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid #327dc5;
+  outline-offset: 3px;
+}
+
+button {
+  margin-top: 0.7rem;
+  padding: 0.85rem 1.3rem;
+  font: inherit;
+  font-weight: 650;
+  border: 0;
+  border-radius: 5px;
+  background: #173c63;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Status messages and supporting notices. */
+#status {
+  color: #9a2424;
+  min-height: 1.6rem;
+}
+
+.notice {
+  background: #eef3f8;
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.local-note {
+  font-size: 0.8rem;
+  color: #52657a;
+}
+
+/* Narrow screens. */
+@media (max-width: 500px) {
+  main {
+    margin: 2rem auto;
+    padding: 1.5rem;
+  }
+
+  header span {
+    display: none;
+  }
+
+}

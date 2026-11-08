@@ -1,6 +1,6 @@
 # Proposed requirements
 
-Instructor approval is pending. These acceptance criteria are for team review.
+These historical prototype acceptance criteria remain available for team review; use the current contract and backlog links below for implementation.
 
 - A supported question produces an answer with valid source references to fictional document passages.
 - A question without supporting evidence produces an explicit limitation and a support-request option.
