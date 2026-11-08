@@ -1,0 +1,25 @@
+{
+  "source_id": "DOC-002",
+  "source_version": "1",
+  "title": "Demo Campus Wi-Fi Guide",
+  "sections": [
+    {
+      "section_id": "s1",
+      "title": "Connecting",
+      "text": "Select the Acme-Campus demo Wi-Fi network and sign in with your demo account."
+    },
+    {
+      "section_id": "s2",
+      "title": "Guest access",
+      "text": "Visitors use the Acme-Guest demo Wi-Fi network and the guest code supplied by their host."
+    },
+    {
+      "section_id": "s3",
+      "title": "Connection troubleshooting",
+      "text": "If the demo Wi-Fi connection fails, forget the network and reconnect."
+    }
+  ],
+  "purpose": "Fictional source for DeskGuide corpus review.",
+  "classification": "synthetic",
+  "review_status": "pending_independent_review"
+}

@@ -1,0 +1,20 @@
+{
+  "purpose": "Fictional VPN source for DeskGuide corpus review.",
+  "source_id": "DOC-003",
+  "source_version": "3",
+  "title": "VPN Setup Guide",
+  "classification": "synthetic",
+  "review_status": "pending_independent_review",
+  "sections": [
+    {
+      "section_id": "s1",
+      "title": "Before you start",
+      "text": "You need an active demo account."
+    },
+    {
+      "section_id": "s2",
+      "title": "Installing the client",
+      "text": "Install the Acme VPN client, sign in, and select the Campus profile."
+    }
+  ]
+}

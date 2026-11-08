@@ -1,0 +1,25 @@
+{
+  "source_id": "DOC-001",
+  "source_version": "1",
+  "title": "Demo Password Reset Guide",
+  "sections": [
+    {
+      "section_id": "s1",
+      "title": "Starting a reset",
+      "text": "Open the demo sign-in page and select Forgot password."
+    },
+    {
+      "section_id": "s2",
+      "title": "Completing a reset",
+      "text": "Use the reset link sent to your demo email address to choose a new password."
+    },
+    {
+      "section_id": "s3",
+      "title": "Expired reset links",
+      "text": "If your reset link has expired, request a new link from the demo sign-in page."
+    }
+  ],
+  "purpose": "Fictional source for DeskGuide corpus review.",
+  "classification": "synthetic",
+  "review_status": "pending_independent_review"
+}

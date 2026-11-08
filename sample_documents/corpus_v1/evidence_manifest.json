@@ -1,0 +1,161 @@
+{
+  "purpose": "Draft exact-alias and evidence mappings for independent review.",
+  "manifest_version": "corpus-v1-draft-1",
+  "policy_version": "exact-alias-extractive-draft-1",
+  "review_status": "pending_independent_review",
+  "runtime_enabled": false,
+  "intents": [
+    {
+      "intent_id": "password_reset_start",
+      "aliases": [
+        "How do I start a demo password reset?"
+      ],
+      "approved_answer": "Open the demo sign-in page and select Forgot password.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-001",
+            "section_id": "s1",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 54,
+          "text": "Open the demo sign-in page and select Forgot password."
+        }
+      ]
+    },
+    {
+      "intent_id": "password_reset_finish",
+      "aliases": [
+        "How do I complete a demo password reset?"
+      ],
+      "approved_answer": "Use the reset link sent to your demo email address to choose a new password.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-001",
+            "section_id": "s2",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 76,
+          "text": "Use the reset link sent to your demo email address to choose a new password."
+        }
+      ]
+    },
+    {
+      "intent_id": "password_reset_expired",
+      "aliases": [
+        "What should I do if my demo reset link expires?"
+      ],
+      "approved_answer": "If your reset link has expired, request a new link from the demo sign-in page.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-001",
+            "section_id": "s3",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 78,
+          "text": "If your reset link has expired, request a new link from the demo sign-in page."
+        }
+      ]
+    },
+    {
+      "intent_id": "wifi_connect",
+      "aliases": [
+        "How do I connect to the demo campus Wi-Fi?"
+      ],
+      "approved_answer": "Select the Acme-Campus demo Wi-Fi network and sign in with your demo account.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-002",
+            "section_id": "s1",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 77,
+          "text": "Select the Acme-Campus demo Wi-Fi network and sign in with your demo account."
+        }
+      ]
+    },
+    {
+      "intent_id": "wifi_guest",
+      "aliases": [
+        "How do visitors connect to the demo Wi-Fi?"
+      ],
+      "approved_answer": "Visitors use the Acme-Guest demo Wi-Fi network and the guest code supplied by their host.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-002",
+            "section_id": "s2",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 89,
+          "text": "Visitors use the Acme-Guest demo Wi-Fi network and the guest code supplied by their host."
+        }
+      ]
+    },
+    {
+      "intent_id": "wifi_troubleshoot",
+      "aliases": [
+        "What should I try if the demo Wi-Fi connection fails?"
+      ],
+      "approved_answer": "If the demo Wi-Fi connection fails, forget the network and reconnect.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-002",
+            "section_id": "s3",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 69,
+          "text": "If the demo Wi-Fi connection fails, forget the network and reconnect."
+        }
+      ]
+    },
+    {
+      "intent_id": "vpn_prerequisite",
+      "aliases": [
+        "What do I need before setting up the demo VPN?"
+      ],
+      "approved_answer": "You need an active demo account.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-003",
+            "section_id": "s1",
+            "source_version": "3"
+          },
+          "start": 0,
+          "end": 32,
+          "text": "You need an active demo account."
+        }
+      ]
+    },
+    {
+      "intent_id": "vpn_install",
+      "aliases": [
+        "How do I set up the Campus VPN profile?"
+      ],
+      "approved_answer": "Install the Acme VPN client, sign in, and select the Campus profile.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-003",
+            "section_id": "s2",
+            "source_version": "3"
+          },
+          "start": 0,
+          "end": 68,
+          "text": "Install the Acme VPN client, sign in, and select the Campus profile."
+        }
+      ]
+    }
+  ]
+}
