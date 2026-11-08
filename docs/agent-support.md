@@ -42,6 +42,12 @@ Every claim/transition, including the C4 customer-reply transition, records acto
 
 ## Upgrade, retention and handoff
 
+### Contract confirmations pending
+
+- Hanlin: confirm owner release to `queued` from `assigned`, `in_review` and `waiting_for_customer`, requiring `release_reason` and clearing ownership. Release from the latter two states extends the earlier rule; David reviews the conflict and customer-reply races.
+- Hanlin: reconcile the C5 scope/error table with its transition examples and tests. This implementation returns 404 for another agent's private detail lookup and 409 for a known non-owner transition or second claim. Confirm that distinction before final contract acceptance.
+- David's approval and Collins's favorable review of `c35ed7f` cover C1/C4, not this C5 addition. C5 requires its own review.
+
 Migration `003_agent_workflow.sql` adds agent messages, content-free state events, reply ordering and queue indexes. Existing version-1/version-2 records are preserved; legacy replies have no invented event/version history. Back up an existing database, then run the established `migrate-db` command before starting this revision. The working database is not automatically upgraded by development.
 
 Agent and customer detail/list routes hide resolved records after 30 days. `cleanup-support` cascades their agent messages/events when purging the request, along with the existing C4 cleanup. No scheduler or backup-deletion automation is installed here.
