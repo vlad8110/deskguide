@@ -206,3 +206,83 @@ button.secondary {
 #support-status.ok {
   color: #1d6b3a;
 }
+
+/* Agent queue and request detail. */
+main.wide {
+  width: min(94%, 860px);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+select {
+  font: inherit;
+  padding: 0.7rem;
+  border: 1px solid #718298;
+  border-radius: 5px;
+  background: #fff;
+  margin-top: 0.7rem;
+}
+
+select:focus-visible {
+  outline: 3px solid #327dc5;
+  outline-offset: 3px;
+}
+
+.agent-list,
+.agent-messages {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.agent-row,
+.agent-message {
+  border: 1px solid #d8e0e9;
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+}
+
+.agent-row p,
+.agent-message p {
+  margin: 0.3rem 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.agent-row-head {
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: #3c5570;
+}
+
+.agent-message.customer_reply {
+  background: #eef3f8;
+}
+
+.agent-message.message_to_customer {
+  background: #fff;
+  border-left: 4px solid #173c63;
+}
+
+.agent-message.internal {
+  background: #fff7e0;
+  border: 1px dashed #8a6a00;
+}
+
+#agent-status {
+  min-height: 1.6rem;
+  color: #9a2424;
+}
+
+#agent-status.ok {
+  color: #1d6b3a;
+}
