@@ -8,6 +8,7 @@
     <title>DeskGuide</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='workspace.css') }}" />
     <script src="{{ url_for('static', filename='workspace.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='support.js') }}" defer></script>
   </head>
   <body>
     <header>
@@ -19,9 +20,49 @@
         <p class="eyebrow">YOUR WORKSPACE</p>
         <h1>Welcome, {{ account['username'] }}</h1>
         <p>You are signed in as <strong>{{ account['role'] }}</strong>.</p>
-        <p class="notice">
-          The question, source and support screens are not available yet.
-        </p>
+        {% if account['role'] == 'customer' %}
+          <p class="notice">
+            The question and source screens are not available yet. You can contact
+            support below.
+          </p>
+          <section id="support" aria-labelledby="support-heading" hidden>
+            <h2 id="support-heading">Contact support</h2>
+            <form id="support-form" method="post" action="/" novalidate>
+              <label for="support-content">What do you need help with?</label>
+              <textarea id="support-content" name="content" rows="5" maxlength="1000"
+                required></textarea>
+              <label for="support-note">Anything else we should know? (optional)</label>
+              <textarea id="support-note" name="note" rows="3" maxlength="2000"></textarea>
+              <button type="submit">Review request</button>
+            </form>
+            <div id="support-review" hidden>
+              <h3>Review before sending</h3>
+              <p>This is exactly what support will receive.</p>
+              <p class="review-box" id="support-preview-content"></p>
+              <p class="review-box" id="support-preview-note"></p>
+              <label class="consent" for="support-consent">
+                <input id="support-consent" type="checkbox" />
+                I agree to share this with DeskGuide support.
+              </label>
+              <div class="actions">
+                <button id="support-send" type="button">Send to support</button>
+                <button id="support-edit" type="button" class="secondary">Edit</button>
+              </div>
+            </div>
+            <div id="support-done" hidden>
+              <p class="notice" id="support-saved"></p>
+              <p>An agent has not read it yet, and we cannot promise a response time.</p>
+              <button id="support-another" type="button" class="secondary">
+                Send another request
+              </button>
+            </div>
+            <p id="support-status" role="status" aria-live="polite"></p>
+          </section>
+        {% else %}
+          <p class="notice">
+            The question, source and support screens are not available yet.
+          </p>
+        {% endif %}
         <button id="sign-out" type="button">Sign out</button>
       {% else %}
         <p class="eyebrow">TEAM 4</p>
