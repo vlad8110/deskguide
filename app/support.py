@@ -84,7 +84,7 @@ def _conflict(message="This request changed. Please reload and try again."):
 
 
 @contextmanager
-def _transaction(*, saving=False):
+def _transaction(*, saving=False, agent_update=False):
     connection = get_db()
     committing = False
     try:
@@ -100,7 +100,9 @@ def _transaction(*, saving=False):
             rollback_failed = True
         if isinstance(error, ApiError):
             raise
-        if not isinstance(error, sqlite3.Error) and not (saving and committing):
+        if not isinstance(error, sqlite3.Error) and not (
+            (saving or agent_update) and committing
+        ):
             raise
         uncertain = saving and (committing or rollback_failed)
         category = "SAVE_OUTCOME_UNCERTAIN" if uncertain else "DEPENDENCY_UNAVAILABLE"
@@ -111,6 +113,8 @@ def _transaction(*, saving=False):
         )
         if uncertain:
             message = "We could not confirm whether this was saved. Check its status using the same submission ID."
+        elif agent_update and (committing or rollback_failed):
+            message = "We could not confirm this update. Reload the request before trying again."
         elif saving:
             message = (
                 "The request was not saved. Please retry with the same submission ID."
@@ -129,6 +133,72 @@ def _owned_request(connection, request_id, customer):
     if row is None:
         _not_found()
     return row
+
+
+def record_state_event(connection, row, to_state, operation, *, reason_given=False):
+    context = current_access()
+    connection.execute(
+        "INSERT INTO support_state_events "
+        "(event_id,request_id,actor_id,actor_role,operation,from_state,to_state,version,reason_given,correlation_id,created_at) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        (
+            str(uuid4()),
+            row["request_id"],
+            context.subject_id,
+            context.role,
+            operation,
+            row["state"],
+            to_state,
+            row["version"] + 1,
+            int(reason_given),
+            context.correlation_id,
+            now(),
+        ),
+    )
+
+
+def request_details(connection, row, *, agent=False):
+    """Return reviewed request text and messages only after caller authorization."""
+    result = dict(
+        request_id=row["request_id"],
+        state=row["state"],
+        version=row["version"],
+        content=row["content"],
+        note=row["note"],
+        reason=row["reason"],
+        created_at=timestamp(row["created_at"]),
+        messages=[],
+    )
+    messages = [
+        dict(
+            message_id=r["reply_id"],
+            kind="customer_reply",
+            content=r["content"],
+            created_at=timestamp(r["created_at"]),
+            version=r["request_version"],
+        )
+        for r in connection.execute(
+            "SELECT reply_id,content,created_at,request_version FROM support_replies WHERE request_id=?",
+            (row["request_id"],),
+        )
+    ]
+    sql = "SELECT message_id,kind,content,created_at,request_version FROM support_agent_messages WHERE request_id=?"
+    if not agent:
+        sql += " AND kind='message_to_customer'"
+    messages.extend(
+        dict(
+            message_id=r["message_id"],
+            kind=r["kind"],
+            content=r["content"],
+            created_at=timestamp(r["created_at"]),
+            version=r["request_version"],
+        )
+        for r in connection.execute(sql, (row["request_id"],))
+    )
+    result["messages"] = sorted(
+        messages, key=lambda m: (m["created_at"], m["version"] or 0, m["message_id"])
+    )
+    return result
 
 
 def _registration(connection, submission_id, customer, *, operation=None, parent=None):
@@ -455,7 +525,7 @@ def submit_reply(request_id):
                 )
             reply_id = str(uuid4())
             connection.execute(
-                "INSERT INTO support_replies (reply_id,request_id,submission_id,author_id,content,created_at) VALUES (?,?,?,?,?,?)",
+                "INSERT INTO support_replies (reply_id,request_id,submission_id,author_id,content,created_at,request_version) VALUES (?,?,?,?,?,?,?)",
                 (
                     reply_id,
                     request_id,
@@ -463,12 +533,14 @@ def submit_reply(request_id):
                     current_access().subject_id,
                     canonical["message"],
                     now(),
+                    row["version"] + 1,
                 ),
             )
             connection.execute(
                 "UPDATE support_requests SET state='in_review',version=version+1 WHERE request_id=?",
                 (request_id,),
             )
+            record_state_event(connection, row, "in_review", "customer_reply")
             _record_receipt(
                 connection, registration, canonical, request_id, reply_id=reply_id
             )
@@ -480,6 +552,22 @@ def submit_reply(request_id):
         state=row["state"],
         version=row["version"],
     ), status
+
+
+@bp.get("/requests/<request_id>")
+@require_roles("customer")
+def customer_request_details(request_id):
+    _uuid(request_id, "request_id")
+    connection = get_db()
+    try:
+        connection.execute("BEGIN")
+        row = _owned_request(connection, request_id, current_access().customer_scope)
+        result = request_details(connection, row)
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    return _envelope(**result)
 
 
 @click.command("cleanup-support")

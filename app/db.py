@@ -14,6 +14,7 @@ from .clock import now
 MIGRATIONS = (
     Path(__file__).with_name("schema.sql"),
     Path(__file__).with_name("migrations") / "002_support_details.sql",
+    Path(__file__).with_name("migrations") / "003_agent_workflow.sql",
 )
 SCHEMA_VERSION = len(MIGRATIONS)
 

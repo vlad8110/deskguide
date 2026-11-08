@@ -48,10 +48,12 @@ Migration [002_support_details.sql](../app/migrations/002_support_details.sql) a
 
 Use the established local profile when starting Flask locally. Back up an existing database first. The migration is tested against a temporary version-1 database; project development does not automatically migrate the working database.
 
+[C5](agent-support.md) adds migration 3 for agent messages/audit and C4 reply ordering; run all pending migrations before using the current revision. The new owning-customer detail endpoint `GET /v1/escalations/requests/{request_id}` returns state/version and visible messages for the reply screen. It omits internal resolution notes.
+
 Open requests and their receipts are retained. Resolved requests become inaccessible through C4 after 30 days. `cleanup-support` atomically purges expired resolved requests, replies and receipts, then expired unused registrations. Inquiry deletion sets the optional support inquiry reference to null without deleting support. Schedule cleanup daily in a deployment; no scheduler or backup-deletion automation is installed by this change. The command does not delete open requests or their completed receipts.
 
 ## Review and remaining work
 
-Hanlin connects preview/edit/cancel/confirm, same-ID retry/status and current-version reply UI. C5's agent queue, claim/state endpoints and customer detail view remain separate work; tests place requests into agent states directly. Production queue sizing, load/service-level measurement, backup restoration/deletion and independent peer review remain pending. No notification email, attachments, live chat or automatic reopening is implemented.
+Hanlin connects preview/edit/cancel/confirm, same-ID retry/status and current-version reply UI. The [C5 backend](agent-support.md) now supplies agent queue/detail/claim/state endpoints and customer details; the browser screens remain pending. Production queue sizing, load/service-level measurement, backup restoration/deletion and independent peer review remain pending. No notification email, attachments, live chat or automatic reopening is implemented.
 
 Run `.venv/bin/python -m pytest -q tests/test_support.py tests/test_migrations.py`. Tests exercise actual C4 routes with isolated fictional SQLite data, concurrent registration/submission/replies, replica recovery and injected write/commit failures.

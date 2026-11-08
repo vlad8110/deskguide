@@ -2,7 +2,7 @@
 
 DeskGuide is Team 4’s CMSC 495 capstone project: a browser application for customer-support questions using fictional workplace documents and links to supporting sources.
 
-**Status:** Flask/SQLite foundation, [C1 inquiry coordinator](docs/inquiry-coordinator.md) and [C4 support backend](docs/support-backend.md) implemented. Live AI/retrieval adapters, product screens, agent workflows and feedback remain integration work; the full alpha is not complete. Existing databases require `migrate-db` for schema version 2 before using C4.
+**Status:** Flask/SQLite foundation, [C1 inquiry coordinator](docs/inquiry-coordinator.md), [C4 support backend](docs/support-backend.md) and [C5 agent workflow](docs/agent-support.md) implemented. Live AI/retrieval adapters, product screens and feedback remain integration work; the full alpha is not complete. Existing databases require `migrate-db` for schema version 3 before using this revision.
 
 ## Team
 

@@ -49,7 +49,7 @@ def test_support_upgrade_preserves_version_one_records(tmp_path):
     app = create_app({"TESTING": True, "DATABASE": str(database)})
     assert app.test_client().get("/health").status_code == 503
     with app.app_context():
-        assert db.migrate_db() == (1, 2)
+        assert db.migrate_db() == (1, db.SCHEMA_VERSION)
         row = (
             db.get_db()
             .execute("SELECT content,note,inquiry_id FROM support_requests")
@@ -64,6 +64,58 @@ def test_support_upgrade_preserves_version_one_records(tmp_path):
         assert tuple(receipt) == ("legacy-fingerprint", None)
         assert db.get_db().execute("PRAGMA foreign_key_check").fetchall() == []
     assert app.test_client().get("/health").status_code == 200
+
+
+def test_agent_upgrade_preserves_version_two_messages_and_receipts(tmp_path):
+    database = tmp_path / "version-two.sqlite3"
+    with sqlite3.connect(database) as connection:
+        for migration in db.MIGRATIONS[:2]:
+            connection.executescript(migration.read_text())
+        connection.execute("PRAGMA user_version=2")
+        connection.execute(
+            "INSERT INTO customers VALUES ('old-customer','Fictional','active')"
+        )
+        connection.execute(
+            "INSERT INTO users VALUES ('old-user','old-user','fictional-hash','customer','old-customer',1,1,1)"
+        )
+        connection.execute(
+            "INSERT INTO submission_registrations (submission_id,customer_id,operation,state,registered_at,expires_at) VALUES ('old-submit','old-customer','escalation','completed',1,1801)"
+        )
+        connection.execute(
+            "INSERT INTO support_requests (request_id,submission_id,customer_id,content,note,reason,created_at) VALUES ('old-request','old-submit','old-customer','Reviewed support','Reviewed note','human_requested',1)"
+        )
+        connection.execute(
+            "INSERT INTO submission_registrations (submission_id,customer_id,operation,parent_request_id,state,registered_at,expires_at) VALUES ('old-reply-submit','old-customer','reply','old-request','completed',2,1802)"
+        )
+        connection.execute(
+            "INSERT INTO support_replies VALUES ('old-reply','old-request','old-reply-submit','old-user','Reviewed reply',2)"
+        )
+        connection.execute(
+            "INSERT INTO submission_receipts VALUES ('old-reply-submit','old-request','comparison-value',2,'old-reply')"
+        )
+    app = create_app({"TESTING": True, "DATABASE": str(database)})
+    with app.app_context():
+        assert db.migrate_db() == (2, 3)
+        connection = db.get_db()
+        assert tuple(
+            connection.execute("SELECT content,note FROM support_requests").fetchone()
+        ) == ("Reviewed support", "Reviewed note")
+        assert tuple(
+            connection.execute(
+                "SELECT content,request_version FROM support_replies"
+            ).fetchone()
+        ) == ("Reviewed reply", None)
+        assert (
+            connection.execute("SELECT reply_id FROM submission_receipts").fetchone()[0]
+            == "old-reply"
+        )
+        assert (
+            connection.execute("SELECT COUNT(*) FROM support_state_events").fetchone()[
+                0
+            ]
+            == 0
+        )
+        assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
 
 
 def test_pending_versions_apply_in_order_and_keep_data(app, monkeypatch, tmp_path):
