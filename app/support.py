@@ -311,7 +311,11 @@ def _register(operation, parent=None):
         if parent:
             row = _owned_request(connection, parent, customer)
             if row["state"] != "waiting_for_customer":
-                _conflict("This request is not waiting for a customer reply.")
+                raise ApiError(
+                    409,
+                    "NOT_WAITING_FOR_CUSTOMER",
+                    "This request is not waiting for a customer reply. Reload its status.",
+                )
         else:
             _capacity(connection)
         pending = connection.execute(
@@ -340,6 +344,7 @@ def _register(operation, parent=None):
     )
     if parent:
         result["request_id"] = parent
+        result["version"] = row["version"]
     return _envelope(**result), 201
 
 
@@ -464,7 +469,9 @@ def submission_status(submission_id):
         if receipt:
             row = _owned_request(connection, receipt["request_id"], customer)
         elif registration["parent_request_id"]:
-            _owned_request(connection, registration["parent_request_id"], customer)
+            row = _owned_request(
+                connection, registration["parent_request_id"], customer
+            )
         state = (
             "completed"
             if receipt
@@ -482,6 +489,7 @@ def submission_status(submission_id):
             saved=receipt is not None,
             request_id=row["request_id"] if row else registration["parent_request_id"],
             state=row["state"] if row else None,
+            version=row["version"] if row else None,
             created_at=timestamp(receipt["committed_at"]) if receipt else None,
             expires_at=None if receipt else timestamp(registration["expires_at"]),
         )
@@ -519,9 +527,17 @@ def submit_reply(request_id):
             status = 200
         else:
             _check_unused(registration)
-            if row["state"] != "waiting_for_customer" or row["version"] != version:
-                _conflict(
-                    "This request is no longer waiting for this reply. Reload its status."
+            if row["state"] != "waiting_for_customer":
+                raise ApiError(
+                    409,
+                    "NOT_WAITING_FOR_CUSTOMER",
+                    "This request is not waiting for a customer reply. Reload its status.",
+                )
+            if row["version"] != version:
+                raise ApiError(
+                    409,
+                    "STALE_VERSION",
+                    "This request changed. Reload its status and review your reply before submitting again.",
                 )
             reply_id = str(uuid4())
             connection.execute(

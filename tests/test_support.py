@@ -82,6 +82,7 @@ def test_registration_is_not_a_support_save(app, customer, clock):
     assert body["registration_state"] == "unused" and body["operation"] == "escalation"
     state = customer[0].get("/v1/escalations/" + body["submission_id"]).json
     assert state["saved"] is False and state["request_id"] is None
+    assert state["version"] is None
     assert state["expires_at"] == body["expires_at"]
     assert counts(app)["support_requests"] == counts(app)["submission_receipts"] == 0
     with app.app_context():
@@ -772,3 +773,77 @@ def test_reply_racing_resolution_never_revives_terminal_request(
             .fetchone()[0]
             == "resolved"
         )
+
+
+def test_reply_ui_reads_current_version_without_request_content(app, customer, waiting):
+    rid, original = waiting
+    registration = reply_registration(customer, rid)
+    assert registration.json["version"] == 4
+    sid = registration.json["submission_id"]
+    unused = customer[0].get("/v1/escalations/" + sid).json
+    assert unused["saved"] is False
+    assert unused["state"] == "waiting_for_customer" and unused["version"] == 4
+    body = dict(
+        submission_id=sid, message="Reviewed reply", expected_version=unused["version"]
+    )
+    assert post(customer, f"/v1/escalations/{rid}/replies", body).status_code == 201
+    for registered_id in (sid, original["submission_id"]):
+        status = customer[0].get("/v1/escalations/" + registered_id).json
+        assert status["saved"] is True
+        assert status["state"] == "in_review" and status["version"] == 5
+        assert not {"content", "note", "messages", "assigned_agent_id"} & status.keys()
+
+
+def test_reply_ui_distinguishes_stale_state_and_payload_conflicts(
+    app, customer, waiting
+):
+    rid, _ = waiting
+    sid = reply_registration(customer, rid).json["submission_id"]
+    body = dict(submission_id=sid, message="Reviewed reply", expected_version=3)
+    stale = post(customer, f"/v1/escalations/{rid}/replies", body)
+    assert stale.status_code == 409 and stale.json["error"]["code"] == "STALE_VERSION"
+    assert stale.json["error"]["retryable"] is False
+    assert counts(app)["support_replies"] == 0
+    current = customer[0].get("/v1/escalations/" + sid).json
+    body["expected_version"] = current["version"]
+    assert post(customer, f"/v1/escalations/{rid}/replies", body).status_code == 201
+    changed = post(
+        customer, f"/v1/escalations/{rid}/replies", {**body, "message": "Different"}
+    )
+    assert changed.status_code == 409 and changed.json["error"]["code"] == "CONFLICT"
+    replay = post(customer, f"/v1/escalations/{rid}/replies", body)
+    assert replay.status_code == 200
+    assert counts(app)["support_replies"] == 1
+
+
+@pytest.mark.parametrize("state", ["queued", "assigned", "in_review", "resolved"])
+def test_reply_ui_not_waiting_takes_precedence_over_stale_version(
+    app, customer, waiting, state, clock
+):
+    rid, _ = waiting
+    sid = reply_registration(customer, rid).json["submission_id"]
+    with app.app_context():
+        with get_db() as connection:
+            connection.execute(
+                "UPDATE support_requests SET state=?,version=5,assigned_agent_id=?,resolved_at=? WHERE request_id=?",
+                (
+                    state,
+                    None if state == "queued" else "a1",
+                    clock[0] if state == "resolved" else None,
+                    rid,
+                ),
+            )
+    registration = reply_registration(customer, rid)
+    response = post(
+        customer,
+        f"/v1/escalations/{rid}/replies",
+        dict(submission_id=sid, message="Late reply", expected_version=4),
+    )
+    for result in (registration, response):
+        assert (
+            result.status_code == 409
+            and result.json["error"]["code"] == "NOT_WAITING_FOR_CUSTOMER"
+        )
+        assert result.json["error"]["retryable"] is False
+    assert counts(app)["support_replies"] == 0
+    assert customer[0].get("/v1/escalations/" + sid).json["version"] == 5

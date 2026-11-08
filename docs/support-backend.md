@@ -8,8 +8,8 @@ The customer-only C4 endpoints use the existing session, server-derived customer
 | --- | --- |
 | `POST /v1/escalations/submission-ids` | Accepts `{"operation":"escalation"}`. Registers an unused UUID for 30 minutes; creates no support request. |
 | `POST /v1/escalations` | Requires `submission_id`, `reason`, `content` and boolean `consent_to_share: true`; optional `inquiry_id` and `note`. Atomically saves the request, receipt and completed registration. |
-| `GET /v1/escalations/{submission_id}` | Returns owned registration/receipt status for escalation or reply IDs, including `saved`, request state and expiry. It does not return support content. |
-| `POST /v1/escalations/{request_id}/reply-ids` | Accepts `{"operation":"reply"}` for an owned request in `waiting_for_customer`. Binds the new ID to that request. |
+| `GET /v1/escalations/{submission_id}` | Returns owned registration/receipt status for escalation or reply IDs, including `saved`, current request state/version and expiry. `version` is null until an escalation has a saved request; unused reply IDs expose their parent request's current state/version. It does not return support content. |
+| `POST /v1/escalations/{request_id}/reply-ids` | Accepts `{"operation":"reply"}` for an owned request in `waiting_for_customer`. Binds the new ID to that request and returns its current `version` for `expected_version`. |
 | `POST /v1/escalations/{request_id}/replies` | Requires `submission_id`, `message` and positive integer `expected_version`. Saves one reply and moves `waiting_for_customer` to `in_review`, retains the assigned agent and increments the version atomically. |
 
 Every POST carries `X-CSRF-Token`. Responses include `contract_version: "0.3.3"` and a server-generated correlation ID. IDs are canonical lowercase UUID v4 strings. Request bodies reject unrecognized fields, including attempted customer/role overrides.
@@ -24,13 +24,23 @@ Every POST carries `X-CSRF-Token`. Responses include `contract_version: "0.3.3"`
 }
 ```
 
+Allowed `reason` values are `insufficient_evidence`, `human_requested`, `validation_failed`, `provider_failure`, `service_unavailable` and `action_required`.
+
 Content is 1–1,000 characters; optional notes are at most 2,000. Reply messages are 1–2,000 characters. Text is normalized to Unicode NFC and trimmed; line breaks and tabs are allowed, other control/surrogate characters are rejected. The canonical text is what is stored and compared on retries. No unrelated inquiry text or history is copied. If provided, an inquiry must be owned and unexpired on the first save.
 
 ## Confirmation, replay and failure
 
-The browser owns preview/edit/cancel. Registration alone saves only an intent. The confirmation POST must contain the text the customer reviewed and explicit consent. Cancelling requires no request: leave the ID unused to expire. The backend does not create server-side draft content or automatically submit fallback requests.
+The browser owns preview/edit/cancel. Registration alone saves only an intent. The confirmation POST must contain the text the customer reviewed and explicit consent. Cancelling requires no request: leave the ID unused to expire. An abandoned unused ID holds one of the three slots until its fixed 30-minute expiry. The backend does not create server-side draft content or automatically submit fallback requests.
 
-New saves return 201 only after commit, with a request ID and “Your request has been saved.” The acknowledgement promises neither an agent response nor a response time. Same ID and canonical payload returns 200 with the original result identity; changed payload returns 409. Replays report the request's current state (and current version for replies), without changing it. A completed reply replay remains valid after resolution but never reopens the request. A new late reply or stale version returns 409.
+New saves return 201 only after commit, with a request ID and “Your request has been saved.” The acknowledgement promises neither an agent response nor a response time. Same ID and canonical payload returns 200 with the original result identity; changed payload returns 409. Replays report the request's current state (and current version for replies), without changing it. A completed reply replay remains valid after resolution but never reopens the request. Reply failures remain HTTP 409 but use distinct codes:
+
+| Code | Meaning | Browser action |
+| --- | --- | --- |
+| `CONFLICT` | A completed ID was resent with different canonical content or expected version. | Preserve the original ID/payload for recovery; do not overwrite the completed submission. |
+| `STALE_VERSION` | The request still awaits a reply, but `expected_version` is outdated. | Reload status, show the updated request/messages, and ask the customer to review before submitting. |
+| `NOT_WAITING_FOR_CUSTOMER` | The request is no longer waiting for a reply, including resolution. Also applies when registering a reply ID. | Reload status and disable reply submission until the request is waiting again; never reopen it automatically. |
+
+State is checked before version, so a closed reply window is not reported merely as a stale version. These errors are not automatically retried. Status versions are snapshots; a subsequent state change can still yield 409. Completed same-payload replays are checked before state/version validation.
 
 Receipts retain a random per-receipt salt and a SHA-256 comparison value covering customer scope, operation, parent and canonical payload; they contain no second support-text copy. This is a salted equality check, not encryption. It is independent of ephemeral application/session secrets, so same-ID recovery works across application restarts/instances sharing the database. Legacy fingerprints without this format fail closed rather than creating a new request.
 
