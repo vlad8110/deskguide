@@ -11,6 +11,8 @@ The customer-only C4 endpoints use the existing session, server-derived customer
 | `GET /v1/escalations/{submission_id}` | Returns owned registration/receipt status for escalation or reply IDs, including `saved`, current request state/version and expiry. `version` is null until an escalation has a saved request; unused reply IDs expose their parent request's current state/version. It does not return support content. |
 | `POST /v1/escalations/{request_id}/reply-ids` | Accepts `{"operation":"reply"}` for an owned request in `waiting_for_customer`. Binds the new ID to that request and returns its current `state` and `version` for `expected_version`. |
 | `POST /v1/escalations/{request_id}/replies` | Requires `submission_id`, `message` and positive integer `expected_version`. Saves one reply and moves `waiting_for_customer` to `in_review`, retains the assigned agent and increments the version atomically. |
+| `GET /v1/escalations/requests` | Returns `items`, newest first, with `request_id`, `state`, `version` and UTC `created_at` for the signed-in customer's own retained requests. Returns an empty array when there are none. |
+| `GET /v1/escalations/requests/{request_id}` | Opens an owned retained request and returns its current state, version and customer-visible conversation. |
 
 Every POST carries `X-CSRF-Token`. Responses include `contract_version: "0.3.3"` and a server-generated correlation ID. IDs are canonical lowercase UUID v4 strings. Request bodies reject unrecognized fields, including attempted customer/role overrides.
 

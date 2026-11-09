@@ -572,6 +572,28 @@ def submit_reply(request_id):
     ), status
 
 
+@bp.get("/requests")
+@require_roles("customer")
+def list_customer_requests():
+    rows = get_db().execute(
+        "SELECT request_id, state, version, created_at FROM support_requests "
+        "WHERE customer_id=? AND (resolved_at IS NULL OR resolved_at>?) "
+        "ORDER BY created_at DESC, request_id DESC",
+        (current_access().customer_scope, now() - RETENTION),
+    )
+    return _envelope(
+        items=[
+            {
+                "request_id": row["request_id"],
+                "state": row["state"],
+                "version": row["version"],
+                "created_at": timestamp(row["created_at"]),
+            }
+            for row in rows
+        ]
+    )
+
+
 @bp.get("/requests/<request_id>")
 @require_roles("customer")
 def customer_request_details(request_id):
