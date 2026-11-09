@@ -62,7 +62,7 @@ function load(routes, elements = null) {
       const response = Array.isArray(route) ? route.shift() : route;
       if (response instanceof Error) throw response;
       if (!response) throw new Error(`unexpected request ${key}`);
-      return response;
+      return typeof response === "function" ? response() : response;
     },
   };
   vm.runInNewContext(source, context, { filename: "agent.js" });
@@ -473,21 +473,150 @@ test("an unknown update locks the controls until the reload succeeds", async () 
   assert.equal(count(p, moveKey(1)), 1); // never replayed automatically
 });
 
-test("an unknown update that actually committed is recognized after the reload", async () => {
-  const p = await openRequest("in_review", 4, [], {
-    [moveKey(1)]: [reply(502, undefined)],
-  });
+const mine = (n, state, version, messages) => reply(200, detail(n, state, version, messages));
+function reloadTo(p, n, response) {
   const original = p.ctx.fetch;
   p.ctx.fetch = async (url, options = {}) =>
-    (options.method ?? "GET") === "GET" && url === `/v1/agent/escalations/${uid(1)}`
-      ? reply(200, detail(1, "waiting_for_customer", 5))
+    (options.method ?? "GET") === "GET" && url === `/v1/agent/escalations/${uid(n)}`
+      ? typeof response === "function"
+        ? response()
+        : response
       : original(url, options);
+}
+
+test("an unknown update that committed is recognized only with matching saved text", async () => {
+  const p = await openRequest("in_review", 4, [], { [moveKey(1)]: [reply(502, undefined)] });
+  reloadTo(
+    p,
+    1,
+    mine(1, "waiting_for_customer", 5, [
+      { message_id: "m1", kind: "message_to_customer", content: "Which network?", version: 5 },
+    ]),
+  );
   p.el("ask").value = "Which network?";
   await p.click(p.el("ask-send"));
-  assert.match(p.el("status").textContent, /saved/);
+  assert.match(p.el("status").textContent, /was saved/);
   assert.equal(p.el("ask").value, "");
   assert.deepEqual(states(p), ["resume", "release"]);
   assert.equal(count(p, moveKey(1)), 1);
+});
+
+test("an unknown update with a matching state and newer version alone is not claimed as saved", async () => {
+  // Another tab moved the request to the same target with different text.
+  const p = await openRequest("in_review", 4, [], { [moveKey(1)]: [new TypeError("network")] });
+  reloadTo(
+    p,
+    1,
+    mine(1, "waiting_for_customer", 5, [
+      { message_id: "m1", kind: "message_to_customer", content: "Someone else's text", version: 5 },
+    ]),
+  );
+  p.el("ask").value = "Which network?";
+  await p.click(p.el("ask-send"));
+  assert.doesNotMatch(p.el("status").textContent, /was saved/);
+  assert.match(p.el("status").textContent, /could not tell/);
+  assert.equal(p.el("ask").value, "Which network?");
+  assert.equal(count(p, moveKey(1)), 1);
+});
+
+test("an unknown update on an unchanged request is reported as not saved", async () => {
+  const p = await openRequest("in_review", 4, [], { [moveKey(1)]: [reply(502, undefined)] });
+  reloadTo(p, 1, mine(1, "in_review", 4, []));
+  p.el("resolution").value = "Fixed.";
+  await p.click(p.el("resolve-send"));
+  assert.match(p.el("status").textContent, /not saved/);
+  assert.equal(p.el("resolution").value, "Fixed.");
+});
+
+test("two tabs: a definite 409 at the same target state is a conflict, never saved", async () => {
+  const p = await openRequest("in_review", 4, [], {
+    [moveKey(1)]: [error(409, "STALE_VERSION", "This request changed.")],
+  });
+  // The other tab already resolved it with its own note.
+  reloadTo(
+    p,
+    1,
+    mine(1, "resolved", 5, [
+      { message_id: "m1", kind: "resolution_note", content: "Fixed.", version: 5 },
+    ]),
+  );
+  p.el("resolution").value = "Fixed.";
+  await p.click(p.el("resolve-send"));
+  assert.doesNotMatch(p.el("status").textContent, /was saved|Saved/);
+  assert.match(p.el("status").textContent, /changed/);
+  assert.equal(p.el("resolution").value, "Fixed."); // preserved for that request
+  assert.match(p.el("detail-state").textContent, /Resolved · version 5/);
+  assert.deepEqual(states(p), []);
+  assert.equal(count(p, moveKey(1)), 1);
+});
+
+test("unsent text never carries to a different request", async () => {
+  const p = await openPage({
+    [QUEUE]: Array.from({ length: 4 }, () =>
+      queueOf(item(1, "in_review", 4), item(2, "in_review", 7)),
+    ),
+    [detailKey(1)]: [mine(1, "in_review", 4, []), mine(1, "in_review", 4, [])],
+    [detailKey(2)]: [mine(2, "in_review", 7, [])],
+  });
+  const opens = () => walk(p.el("list")).filter((n) => n.tag === "button" && n.textContent === "Open");
+  await p.click(opens()[0]);
+  p.el("ask").value = "Question for customer one";
+  p.el("resolution").value = "Note for customer one";
+  p.el("release-reason").value = "Reason for one";
+  await p.click(p.el("back"));
+  await p.click(opens()[1]);
+  assert.match(p.el("detail-title").textContent, /aaaaaaaa/);
+  assert.equal(p.el("ask").value, "");
+  assert.equal(p.el("resolution").value, "");
+  assert.equal(p.el("release-reason").value, "");
+  assert.match(p.el("detail-state").textContent, /version 7/);
+});
+
+test("text is kept when the same request is reloaded after a failed update", async () => {
+  const p = await openRequest("in_review", 4, [], {
+    [moveKey(1)]: [error(400, "VALIDATION_FAILED", "Too long.")],
+  });
+  p.el("ask").value = "Which network?";
+  await p.click(p.el("ask-send"));
+  assert.equal(p.el("ask").value, "Which network?");
+  await p.click(p.el("back"));
+  await p.click(p.rowButton("Open")); // same request again
+  assert.equal(p.el("ask").value, "Which network?");
+});
+
+test("changing the filter drops the old cursor and disables Load More until the new list arrives", async () => {
+  let release;
+  const slow = new Promise((resolve) => (release = resolve));
+  const p = await openPage({
+    [QUEUE]: [reply(200, { items: [item(1)], next_cursor: "old-cursor" })],
+    [`${QUEUE}&state=assigned`]: [() => slow],
+  });
+  assert.equal(p.el("more").hidden, false);
+  p.el("filter").value = "assigned";
+  await Promise.all((p.el("filter").handlers.change ?? []).map((fn) => fn({})));
+  await settle();
+  assert.equal(p.el("more").hidden, true);
+  assert.equal(p.el("list").children.length, 0);
+  assert.equal(p.el("empty").hidden, true); // loading, not "no requests"
+  await p.click(p.el("more")); // an immediate Load More does nothing
+  assert.equal(p.keys().some((k) => k.includes("cursor")), false);
+  release(reply(200, { items: [item(2, "assigned", 3)], next_cursor: null }));
+  await settle();
+  await settle();
+  assert.equal(p.el("list").children.length, 1);
+  assert.equal(p.el("more").hidden, true);
+  assert.equal(p.keys().some((k) => k.includes("cursor")), false);
+});
+
+test("Load More appends with the cursor of the current filter only", async () => {
+  const p = await openPage({
+    [QUEUE]: [reply(200, { items: [item(1)], next_cursor: "c1" })],
+    [`${QUEUE}&cursor=c1`]: [reply(200, { items: [item(2)], next_cursor: null })],
+  });
+  await p.click(p.el("more"));
+  assert.equal(p.el("list").children.length, 2);
+  assert.equal(p.el("more").hidden, true);
+  assert.equal(count(p, `${QUEUE}&cursor=c1`), 1);
 });
 
 test("releasing returns to a refreshed queue and clears the form", async () => {

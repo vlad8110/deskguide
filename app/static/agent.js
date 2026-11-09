@@ -233,9 +233,19 @@ async function agentTransition(api, detail, target, text) {
   return { outcome: "unknown", message: AGENT_UNKNOWN };
 }
 
-/* After an unknown outcome: did the reloaded request reach the target state? */
-function agentApplied(before, target, after) {
-  return after.state === target && after.version > before.version;
+/*
+ * After an UNKNOWN outcome only: is there evidence this exact update was saved? A matching
+ * state and newer version alone prove nothing (another tab may have got there first). Updates
+ * that carry text are proven by the saved message with that text at the next version.
+ * Updates without text (start, resume, release) can never be proven, so they are not claimed.
+ */
+function agentProvenSaved(before, target, text, after) {
+  const field = AGENT_FIELDS[target];
+  if (!field || target === "queued") return false;
+  if (after.state !== target || after.version !== before.version + 1) return false;
+  return after.messages.some(
+    (m) => m.kind === field[0] && m.content === text && m.version === before.version + 1,
+  );
 }
 
 /* Which controls the owner may use in each state. */
@@ -283,7 +293,18 @@ function initAgentFlow() {
     resolve: $("agent-resolution"),
     release: $("agent-release-reason"),
   };
-  const ui = { items: [], nextCursor: null, detail: null, busy: false, locked: false, token: 0 };
+  const ui = {
+    items: [],
+    nextCursor: null,
+    listFilter: "",
+    loading: false,
+    paging: false,
+    detail: null,
+    draftOwner: null,
+    busy: false,
+    locked: false,
+    token: 0,
+  };
 
   function say(text, good = false) {
     status.textContent = text;
@@ -312,6 +333,12 @@ function initAgentFlow() {
     reload.disabled = ui.busy;
   }
 
+  /* Unsent text belongs to one request: never carry it to another. */
+  function clearDrafts() {
+    Object.values(inputs).forEach((i) => (i.value = ""));
+    ui.draftOwner = null;
+  }
+
   /* ----- queue ----- */
   function renderQueue() {
     const rows = ui.items.map((item) => {
@@ -332,25 +359,43 @@ function initAgentFlow() {
       return row;
     });
     list.replaceChildren(...rows);
-    empty.hidden = rows.length > 0;
-    more.hidden = !ui.nextCursor;
+    empty.hidden = rows.length > 0 || ui.loading;
+    more.hidden = !ui.nextCursor || ui.loading;
+    more.disabled = ui.paging;
   }
 
   async function loadQueue({ append = false, keepMessage = false } = {}) {
+    // A cursor only belongs to the filter that produced it.
+    if (append && (!ui.nextCursor || filter.value !== ui.listFilter || ui.paging || ui.loading))
+      return;
     const token = ++ui.token;
     retryQueue.hidden = true;
+    if (append) {
+      ui.paging = true;
+    } else {
+      ui.loading = true;
+      ui.paging = false;
+      ui.nextCursor = null;
+      ui.items = [];
+    }
+    renderQueue();
     if (!keepMessage) say("Loading the queue…");
+    const requested = filter.value;
     const result = await agentLoadQueue(agentApi, {
-      state: filter.value,
+      state: requested,
       cursor: append ? ui.nextCursor : "",
     });
     if (token !== ui.token) return; // a newer load replaced this one
+    ui.loading = false;
+    ui.paging = false;
     if (result.outcome === "redirect") return endSession();
     if (result.outcome !== "ok") {
       say(result.message);
       retryQueue.hidden = result.outcome === "forbidden";
+      renderQueue();
       return;
     }
+    ui.listFilter = requested;
     ui.items = append ? ui.items.concat(result.items) : result.items;
     ui.nextCursor = result.nextCursor;
     renderQueue();
@@ -385,6 +430,8 @@ function initAgentFlow() {
     ui.busy = false;
     if (result.outcome === "redirect") return endSession();
     if (result.outcome === "ok") {
+      if (ui.draftOwner !== requestId) clearDrafts();
+      ui.draftOwner = requestId;
       ui.detail = result.detail;
       ui.locked = false;
       show("detail");
@@ -395,6 +442,7 @@ function initAgentFlow() {
     if (result.outcome === "gone") {
       ui.detail = null;
       ui.locked = false;
+      if (ui.draftOwner === requestId) clearDrafts();
       show("queue");
       say(result.message);
       loadQueue({ keepMessage: true });
@@ -460,13 +508,14 @@ function initAgentFlow() {
     }
     if (result.outcome === "gone") {
       ui.detail = null;
+      clearDrafts();
       show("queue");
       say(result.message);
       await loadQueue({ keepMessage: true });
       return;
     }
     if (result.outcome === "done" && target === "queued") {
-      Object.values(inputs).forEach((i) => (i.value = ""));
+      clearDrafts();
       ui.detail = null;
       show("queue");
       say("Released to the queue.", true);
@@ -478,6 +527,7 @@ function initAgentFlow() {
     if (reloaded.outcome === "redirect") return endSession();
     if (reloaded.outcome === "gone") {
       ui.detail = null;
+      clearDrafts();
       show("queue");
       say(reloaded.message);
       await loadQueue({ keepMessage: true });
@@ -491,17 +541,31 @@ function initAgentFlow() {
     }
     ui.detail = reloaded.detail;
     ui.locked = false;
-    const applied = result.outcome === "done" || agentApplied(before, target, reloaded.detail);
-    if (applied) inputs[name] && (inputs[name].value = "");
     renderDetail();
-    if (result.outcome === "done") say("Saved.", true);
-    else if (applied) say("That update was saved. Showing the latest state.", true);
-    else say(`${result.message} Your text is still here if you want to try again.`);
+    if (result.outcome === "done") {
+      if (inputs[name]) inputs[name].value = "";
+      say("Saved.", true);
+    } else if (result.outcome === "changed") {
+      // A definite rejection is never reported as saved, even if the state now matches.
+      say(`${result.message} Your text is still here if you want to try again.`);
+    } else if (agentProvenSaved(before, target, text, reloaded.detail)) {
+      if (inputs[name]) inputs[name].value = "";
+      say("That update was saved. Showing the latest state.", true);
+    } else if (reloaded.detail.version === before.version) {
+      say("That update was not saved. Your text is still here; you can try again.");
+    } else {
+      say("The request changed and we could not tell whether your update was included. Review the latest state. Your text is still here.");
+    }
   }
 
   root.hidden = false;
   show("queue");
-  filter.addEventListener("change", () => loadQueue());
+  filter.addEventListener("change", () => {
+    // Drop the old cursor and list at once; pagination stays off until the new list arrives.
+    ui.nextCursor = null;
+    ui.items = [];
+    loadQueue();
+  });
   refresh.addEventListener("click", () => loadQueue());
   retryQueue.addEventListener("click", () => loadQueue());
   more.addEventListener("click", () => loadQueue({ append: true }));
