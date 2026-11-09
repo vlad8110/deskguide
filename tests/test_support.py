@@ -361,9 +361,11 @@ def test_staff_cannot_call_customer_support_routes(app, sign_in, username):
     ]:
         assert post(api, path, body).status_code == 403
     assert client.get("/v1/escalations/" + sid).status_code == 403
+    assert client.get("/v1/escalations/requests").status_code == 403
 
 
 def test_anonymous_and_missing_csrf_requests_are_denied(client, sign_in):
+    assert client.get("/v1/escalations/requests").status_code == 401
     assert register((client, {})).status_code == 401
     sign_in(client)
     assert register((client, {})).json["error"]["code"] == "CSRF_FAILED"
@@ -773,6 +775,54 @@ def test_reply_racing_resolution_never_revives_terminal_request(
             .fetchone()[0]
             == "resolved"
         )
+
+
+def test_customer_request_list_returns_only_owned_retained_summaries(
+    app, customer, waiting, sign_in, clock
+):
+    path = "/v1/escalations/requests"
+    client = app.test_client()
+    sign_in(client, "customer-two")
+    assert client.get(path).json["items"] == []
+    foreign = (client, {"X-CSRF-Token": client.get("/v1/session").json["csrf_token"]})
+    assert submit(foreign)[1].status_code == 201
+
+    waiting_id, _ = waiting
+    _, expired = submit(customer)
+    _, recent = submit(customer)
+    assert expired.status_code == recent.status_code == 201
+    with app.app_context():
+        with get_db() as connection:
+            cutoff = clock[0] - support.RETENTION
+            connection.execute(
+                "UPDATE support_requests SET state='resolved', assigned_agent_id='a1', "
+                "resolved_at=?, created_at=? "
+                "WHERE request_id=?",
+                (cutoff, cutoff, expired.json["request_id"]),
+            )
+            connection.execute(
+                "UPDATE support_requests SET created_at=? WHERE request_id=?",
+                (cutoff - 1, waiting_id),
+            )
+
+    response = customer[0].get(path + "?customer_id=c2")
+    assert response.status_code == 200
+    assert response.headers["Cache-Control"] == "no-store"
+    assert response.json["items"] == [
+        {
+            "request_id": recent.json["request_id"],
+            "state": "queued",
+            "version": 1,
+            "created_at": recent.json["created_at"],
+        },
+        {
+            "request_id": waiting_id,
+            "state": "waiting_for_customer",
+            "version": 4,
+            "created_at": support.timestamp(cutoff - 1),
+        },
+    ]
+    assert customer[0].get(f"{path}/{waiting_id}").status_code == 200
 
 
 def test_reply_ui_reads_current_version_without_request_content(app, customer, waiting):
