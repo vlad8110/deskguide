@@ -547,7 +547,10 @@ function initAgentFlow() {
       say("Saved.", true);
     } else if (result.outcome === "changed") {
       // A definite rejection is never reported as saved, even if the state now matches.
-      say(`${result.message} Your text is still here if you want to try again.`);
+      if (agentActionsFor(reloaded.detail.state).includes(name))
+        say(`${result.message} Your text is still here if you want to try again.`);
+      else
+        say(`${result.message} Your update was not sent, and this request is now ${AGENT_STATE_LABELS[reloaded.detail.state].toLowerCase()}.`);
     } else if (agentProvenSaved(before, target, text, reloaded.detail)) {
       if (inputs[name]) inputs[name].value = "";
       say("That update was saved. Showing the latest state.", true);

@@ -544,6 +544,8 @@ test("two tabs: a definite 409 at the same target state is a conflict, never sav
   await p.click(p.el("resolve-send"));
   assert.doesNotMatch(p.el("status").textContent, /was saved|Saved/);
   assert.match(p.el("status").textContent, /changed/);
+  assert.match(p.el("status").textContent, /not sent/);
+  assert.doesNotMatch(p.el("status").textContent, /try again/); // no controls remain
   assert.equal(p.el("resolution").value, "Fixed."); // preserved for that request
   assert.match(p.el("detail-state").textContent, /Resolved · version 5/);
   assert.deepEqual(states(p), []);
