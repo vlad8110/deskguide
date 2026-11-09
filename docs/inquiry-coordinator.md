@@ -22,7 +22,33 @@ Register an implementation of [InquiryServices](../app/inquiry_types.py) at `app
 
 The coordinator checks expectation ownership, required excerpt ranges and text, cited-reference membership/coverage, and normalized equality to the preselected answer. Preparation must finish before generation. The original expectation is retained for the same inquiry. Missing checks, invalid output and dependency failures suppress the answer. Nothing retries generation or automatically creates support records.
 
-`GenerationPassage` omits source display titles; those are used only to format the returned citation. C2b links include the exact source, section and version. Implementing and verifying that source-view endpoint remains Collins/Hanlin's integration work; the coordinator tests do not establish that those links resolve in the running app.
+`GenerationPassage` omits source display titles; those are used only to format the returned citation.
+
+## C2b citation lookup
+
+`GET /v1/sources/DOC-003/sections/s2?version=3` returns `ref`, `document_title`, `section_title`, `text`, `correlation_id` and `contract_version` to a signed-in user with a current role grant. Omitting `version` uses the active pin. Explicit links resolve only the requested approved version. If a document has customer-specific grants, a customer also needs an individual grant. For a retired document, only explicit approved links can open until its configured cutoff. Missing, withdrawn, expired and inaccessible sources return the same 404. Responses use `Cache-Control: no-store`.
+
+Put the release file next to `evidence_manifest.json` and the pinned guide files, such as `DOC-003.v3.json`. The evidence manifest and each guide must be marked `"review_status": "approved"`, the manifest must have `"runtime_enabled": true`, and the guides must have `"classification": "synthetic"`. Use the hashes of the exact reviewed file bytes, for example with `shasum -a 256 evidence_manifest.json DOC-003.v3.json`.
+
+```json
+{
+  "manifest_sha256": "<manifest SHA-256>",
+  "current": {"DOC-003": {"version": "3", "sha256": "<guide SHA-256>"}},
+  "historical": {},
+  "retired_until": {}
+}
+```
+
+`historical` maps a source ID to a list of eligible older pins with the same version and hash fields. Omit withdrawn versions. `retired_until` optionally maps a retired source ID to an explicit UTC Unix cutoff in seconds. With no cutoff, retirement closes citation access immediately.
+
+After initializing the database, import the reviewed guides and point normal startup at the release file.
+
+```bash
+.venv/bin/python -m flask --app app import-citation-release /path/to/release.json
+DESKGUIDE_CITATION_RELEASE=/path/to/release.json .venv/bin/python -m flask --app app run
+```
+
+The importer grants the customer role for newly imported sources and preserves existing grants and retirement state on reimport. A customer role grant with no customer-specific rows grants access to the customer role. To close access when removing the final individual grant, remove the role grant in the same transaction. An unset release serves no sources. Invalid release configuration or a stored hash that differs from the selected pin returns 503. Run `.venv/bin/python -m pytest -q tests/test_sources.py` to test startup, import and the route with fictional data in a temporary database.
 
 ## Admission, time and storage
 
@@ -34,7 +60,7 @@ Only inquiry ID, trusted customer ownership, route, outcome, answer ID, configur
 
 ## Remaining connections
 
-- Collins: finalize source-grant/version rules, reviewed corpus/manifest, source lookup, C10 validation and outbound policy implementation before connecting a real generation adapter. Account/model/data controls, token/request limits and the shared circuit breaker remain separate provider work.
+- Collins and Vlad: connect the same reviewed release selection to retrieval and citation lookup. Collins owns C10 validation and outbound policy implementation before connecting a real generation adapter. Account/model/data controls, token/request limits and the shared circuit breaker remain separate provider work.
 - Hanlin: connect question/result states and source views, add the agreed notice, and preserve questions on fallback. This backend returns a support offer; the existing browser shell does not yet display it.
 - Vlad: connect C7 for explicit `check_account_status`; it currently returns a controlled service-unavailable escalation offer without retrieval/generation. Conversation IDs are rejected unless null because conversation ownership is not implemented. Explicit human-request recognition, clarification prompts and feedback remain separate workflows. [C4](support-backend.md) now provides the separately confirmed support backend; C1 never calls its save route automatically.
 - David: review the integration types and endpoint cases, independently verify evidence fixtures, and extend tests when actual adapters/source routes arrive. Synthetic tests do not establish live-provider or production capacity.
