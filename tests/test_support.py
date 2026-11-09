@@ -847,3 +847,22 @@ def test_reply_ui_not_waiting_takes_precedence_over_stale_version(
         assert result.json["error"]["retryable"] is False
     assert counts(app)["support_replies"] == 0
     assert customer[0].get("/v1/escalations/" + sid).json["version"] == 5
+
+
+def test_save_and_replay_expose_current_request_version(app, customer):
+    body, response = submit(customer)
+    assert response.status_code == 201 and response.json["version"] == 1
+    assert post(customer, "/v1/escalations", body).json["version"] == 1
+    with app.app_context():
+        with get_db() as db:
+            db.execute(
+                "UPDATE support_requests SET state='assigned',assigned_agent_id='a1',version=2 WHERE request_id=?",
+                (response.json["request_id"],),
+            )
+    replay = post(customer, "/v1/escalations", body)
+    assert (
+        replay.status_code == 200
+        and replay.json["version"] == 2
+        and replay.json["state"] == "assigned"
+    )
+    assert counts(app)["support_requests"] == 1

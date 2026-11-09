@@ -6,7 +6,7 @@ C5 exposes the unassigned queue and the signed-in agent's assigned requests. Cus
 | --- | --- |
 | `GET /v1/agent/escalations` | Lists unassigned queued requests and the caller's assigned requests. Optional `state`, `limit` (1–100, default 25) and signed `cursor`. |
 | `GET /v1/agent/escalations/{request_id}` | Assigned agent only: request content/note, messages, state and version. Missing, unassigned, expired or another agent's detail returns 404. |
-| `POST /v1/agent/escalations/{request_id}/claim` | No body. Atomically claims a queued request, sets the caller as owner, moves to `assigned`, increments version and records the event. A second claimant gets 409. |
+| `POST /v1/agent/escalations/{request_id}/claim` | No body. Atomically claims a queued request, sets the caller as owner, moves to `assigned`, increments version and records the event. Another agent claiming an owned request gets 409 `ALREADY_CLAIMED`; an owner claiming again gets 409 `CONFLICT`. |
 | `POST /v1/agent/escalations/{request_id}/transition` | Requires `to_state` and integer `expected_version`, plus the conditional field below. Owner/state/version are checked atomically. |
 | `GET /v1/escalations/requests/{request_id}` | Owning customer only: reviewed content/note, customer-visible messages and current state/version for C4 replies. No internal resolution notes or agent audit data. |
 
@@ -26,7 +26,7 @@ Pagination orders by creation time and request ID, returning at most `limit` row
 | Any of the three active assigned states | `queued` | Owner supplies `release_reason` (1–500 characters); ownership clears. |
 | `resolved` | None | Terminal. No reopening or takeover. |
 
-Release from review/waiting follows the working D12 direction and remains subject to team review. Missing required text gives 400. Unrelated conditional fields and identity fields are rejected. C5's reviewed examples distinguish known non-owner write attempts/second claims (409) from another agent's private detail lookup (404). Unknown/expired request IDs return 404. Stale versions and invalid state transitions give 409 without changing text, owner or state. Reload before deciding again; do not blindly resubmit a transition.
+Release from review/waiting follows the working D12 direction and remains subject to team review. Missing required text gives 400. Unrelated conditional fields and identity fields are rejected. For a valid transition payload, visibility/ownership is checked first: another agent's assigned request returns 404 `NOT_FOUND`, as does an unknown/expired ID. A queued request without an owner or an illegal transition returns 409 `CONFLICT`. An otherwise permitted owner transition with an outdated version returns 409 `STALE_VERSION`. No rejected update changes text, ownership or state. Reload before deciding again; do not blindly resubmit a transition.
 
 ```json
 {
@@ -42,11 +42,9 @@ Every claim/transition, including the C4 customer-reply transition, records acto
 
 ## Upgrade, retention and handoff
 
-### Contract confirmations pending
+### Contract alignment
 
-- Hanlin: confirm owner release to `queued` from `assigned`, `in_review` and `waiting_for_customer`, requiring `release_reason` and clearing ownership. Release from the latter two states extends the earlier rule; David reviews the conflict and customer-reply races.
-- Hanlin: reconcile the C5 scope/error table with its transition examples and tests. This implementation returns 404 for another agent's private detail lookup and 409 for a known non-owner transition or second claim. Confirm that distinction before final contract acceptance.
-- David's approval and Collins's favorable review of `c35ed7f` cover C1/C4, not this C5 addition. C5 requires its own review.
+Hanlin confirmed the reconciliation in [the coordination response](https://github.com/vlad8110/deskguide/issues/10#issuecomment-6726799339). The response fields and C5 visibility/state/version precedence above implement that confirmed direction. The D12 release extension and final team acceptance remain pending; confirmation of reconciliation is separate from approval of this implementation.
 
 Migration `003_agent_workflow.sql` adds agent messages, content-free state events, reply ordering and queue indexes. Existing version-1/version-2 records are preserved; legacy replies have no invented event/version history. Back up an existing database, then run the established `migrate-db` command before starting this revision. The working database is not automatically upgraded by development.
 
