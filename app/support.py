@@ -344,6 +344,7 @@ def _register(operation, parent=None):
     )
     if parent:
         result["request_id"] = parent
+        result["state"] = row["state"]
         result["version"] = row["version"]
     return _envelope(**result), 201
 
@@ -372,6 +373,7 @@ def _saved_request(row, submission_id):
         request_id=row["request_id"],
         submission_id=submission_id,
         state=row["state"],
+        version=row["version"],
         created_at=timestamp(row["created_at"]),
         acknowledgement="Your request has been saved.",
     )

@@ -7,9 +7,9 @@ The customer-only C4 endpoints use the existing session, server-derived customer
 | Endpoint | Behavior |
 | --- | --- |
 | `POST /v1/escalations/submission-ids` | Accepts `{"operation":"escalation"}`. Registers an unused UUID for 30 minutes; creates no support request. |
-| `POST /v1/escalations` | Requires `submission_id`, `reason`, `content` and boolean `consent_to_share: true`; optional `inquiry_id` and `note`. Atomically saves the request, receipt and completed registration. |
+| `POST /v1/escalations` | Requires `submission_id`, `reason`, `content` and boolean `consent_to_share: true`; optional `inquiry_id` and `note`. Atomically saves the request, receipt and completed registration. Initial save and replay responses include the request’s current `state` and `version`. |
 | `GET /v1/escalations/{submission_id}` | Returns owned registration/receipt status for escalation or reply IDs, including `saved`, current request state/version and expiry. `version` is null until an escalation has a saved request; unused reply IDs expose their parent request's current state/version. It does not return support content. |
-| `POST /v1/escalations/{request_id}/reply-ids` | Accepts `{"operation":"reply"}` for an owned request in `waiting_for_customer`. Binds the new ID to that request and returns its current `version` for `expected_version`. |
+| `POST /v1/escalations/{request_id}/reply-ids` | Accepts `{"operation":"reply"}` for an owned request in `waiting_for_customer`. Binds the new ID to that request and returns its current `state` and `version` for `expected_version`. |
 | `POST /v1/escalations/{request_id}/replies` | Requires `submission_id`, `message` and positive integer `expected_version`. Saves one reply and moves `waiting_for_customer` to `in_review`, retains the assigned agent and increments the version atomically. |
 
 Every POST carries `X-CSRF-Token`. Responses include `contract_version: "0.3.3"` and a server-generated correlation ID. IDs are canonical lowercase UUID v4 strings. Request bodies reject unrecognized fields, including attempted customer/role overrides.
@@ -40,7 +40,7 @@ New saves return 201 only after commit, with a request ID and “Your request ha
 | `STALE_VERSION` | The request still awaits a reply, but `expected_version` is outdated. | Reload status, show the updated request/messages, and ask the customer to review before submitting. |
 | `NOT_WAITING_FOR_CUSTOMER` | The request is no longer waiting for a reply, including resolution. Also applies when registering a reply ID. | Reload status and disable reply submission until the request is waiting again; never reopen it automatically. |
 
-State is checked before version, so a closed reply window is not reported merely as a stale version. These errors are not automatically retried. Status versions are snapshots; a subsequent state change can still yield 409. Completed same-payload replays are checked before state/version validation.
+State is checked before version, so a closed reply window is not reported merely as a stale version. An unused, unexpired reply ID remains bound to the same parent across agent release/reclaim. It can be used when the request is waiting again and the expected version is current. Before confirming a reply, the browser must reload and show the current conversation; a current version alone does not establish customer review. These errors are not automatically retried. Status versions are snapshots; a subsequent state change can still yield 409. Completed same-payload replays are checked before state/version validation.
 
 Receipts retain a random per-receipt salt and a SHA-256 comparison value covering customer scope, operation, parent and canonical payload; they contain no second support-text copy. This is a salted equality check, not encryption. It is independent of ephemeral application/session secrets, so same-ID recovery works across application restarts/instances sharing the database. Legacy fingerprints without this format fail closed rather than creating a new request.
 
