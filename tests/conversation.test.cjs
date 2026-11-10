@@ -91,11 +91,13 @@ const STATUS = (n) => `GET /v1/escalations/${uid(500 + n)}`;
 /* routes: "METHOD /path" -> response, or a list consumed one at a time. */
 function load(routes, elements = null) {
   const calls = [];
+  const listeners = {};
   const context = {
     TypeError,
     document: {
       querySelector: (selector) => (elements ? (elements[selector] ?? null) : null),
       createElement: (tag) => fakeElement(tag),
+      addEventListener: (type, fn) => (listeners[type] ??= []).push(fn),
     },
     window: { location: { assign: (url) => (context.assigned = url) } },
     fetch: async (url, options = {}) => {
@@ -112,7 +114,7 @@ function load(routes, elements = null) {
   };
   vm.createContext(context);
   vm.runInContext(conversationSource, context, { filename: "conversation.js" });
-  return { ctx: context, calls, keys: () => calls.map((c) => c.key) };
+  return { ctx: context, calls, listeners, keys: () => calls.map((c) => c.key) };
 }
 const count = (page, key) => page.keys().filter((k) => k === key).length;
 const api = (page) => (method, url, body) => page.ctx.convApi(method, url, body);
@@ -501,12 +503,16 @@ async function openPage(routes) {
     );
     await settle();
   };
+  const dispatch = async (type) => {
+    await Promise.all((page.listeners[type] ?? []).map((fn) => fn({})));
+    await settle();
+  };
   const openButtons = () =>
     walk(el("list")).filter((n) => n.tag === "button" && n.textContent === "Open");
   const messageTexts = () =>
     el("messages").children.map((li) => li.children.map((c) => c.textContent));
   await settle();
-  return { ...page, el, click, submit, openButtons, messageTexts };
+  return { ...page, el, click, submit, dispatch, openButtons, messageTexts };
 }
 
 const waitingDetail = (version = 4, extra = []) =>
@@ -797,4 +803,131 @@ test("Edit leaves review without sending, and an unused reply ID is reused later
   const sends = page.calls.filter((c) => c.key === SEND(1));
   assert.equal(JSON.parse(sends[1].options.body).message, "Better wording");
   assert.equal(JSON.parse(sends[1].options.body).submission_id, uid(501));
+});
+
+/* ---------- review follow-ups: failed reload, new saves, emoji limit ---------- */
+
+async function reviewThenSend(page) {
+  await page.click(page.openButtons()[0]);
+  page.el("reply").value = "Windows 11";
+  await page.submit();
+  assert.equal(page.el("review").hidden, false);
+  await page.click(page.el("send"));
+}
+
+test("a failed reload after a changed conversation leaves review and keeps the draft", async () => {
+  const page = await openPage({
+    [LIST]: [reply(200, { items: [summary(1, "waiting_for_customer", 4)] })],
+    [DETAIL(1)]: [
+      reply(200, waitingDetail(4)),
+      reply(200, waitingDetail(4)),
+      error(503, "DEPENDENCY_UNAVAILABLE", "Support is down."),
+      reply(200, waitingDetail(5, [message(2, "message_to_customer", "New question", 5)])),
+      reply(200, waitingDetail(5, [message(2, "message_to_customer", "New question", 5)])),
+    ],
+    [REG(1)]: [reply(201, registration(1, 4))],
+    [SEND(1)]: [error(409, "STALE_VERSION")],
+  });
+  await reviewThenSend(page);
+
+  // No dead Send button: review is closed, the draft is kept and Reload is offered.
+  assert.equal(page.el("review").hidden, true);
+  assert.equal(page.el("reply-box").hidden, true);
+  assert.equal(page.el("reply").value, "Windows 11");
+  assert.match(page.el("status").textContent, /choose Reload/);
+  assert.equal(page.el("reload").disabled, false);
+  assert.equal(page.el("back").disabled, false);
+  assert.equal(page.el("send").disabled, false);
+
+  await page.click(page.el("reload"));
+  assert.equal(page.el("reply-box").hidden, false);
+  assert.equal(page.el("reply").value, "Windows 11");
+  assert.equal(page.messageTexts().length, 2);
+
+  await page.submit();
+  assert.equal(page.el("review").hidden, false);
+  assert.equal(page.el("preview").textContent, "Windows 11");
+});
+
+test("a failed reload after the request stopped waiting also leaves review", async () => {
+  const page = await openPage({
+    [LIST]: [reply(200, { items: [summary(1, "waiting_for_customer", 4)] })],
+    [DETAIL(1)]: [
+      reply(200, waitingDetail(4)),
+      reply(200, waitingDetail(4)),
+      reply(502, undefined),
+    ],
+    [REG(1)]: [error(409, "NOT_WAITING_FOR_CUSTOMER")],
+  });
+  await reviewThenSend(page);
+  assert.equal(page.el("review").hidden, true);
+  assert.equal(page.el("reply-box").hidden, true);
+  assert.equal(page.el("reply").value, "Windows 11");
+  assert.match(page.el("status").textContent, /no longer waiting/);
+  assert.match(page.el("status").textContent, /choose Reload/);
+  assert.equal(page.el("reload").disabled, false);
+});
+
+test("a newly saved request appears in the list without a manual refresh", async () => {
+  const page = await openPage({
+    [LIST]: [reply(200, { items: [] }), reply(200, { items: [summary(1)] })],
+  });
+  assert.equal(page.el("empty").hidden, false);
+  await page.dispatch("deskguide:support-saved");
+  assert.equal(count(page, LIST), 2);
+  assert.equal(page.el("list").children.length, 1);
+  assert.equal(page.el("empty").hidden, true);
+});
+
+test("a save announced while the list is loading triggers one more load", async () => {
+  let release;
+  const gate = new Promise((resolve) => (release = resolve));
+  const page = await openPage({
+    [LIST]: [
+      () => gate.then(() => reply(200, { items: [] })),
+      reply(200, { items: [summary(1)] }),
+    ],
+  });
+  await page.dispatch("deskguide:support-saved"); // first load still in flight
+  assert.equal(count(page, LIST), 1);
+  release();
+  await settle();
+  await settle();
+  assert.equal(count(page, LIST), 2);
+  assert.equal(page.el("list").children.length, 1);
+  assert.equal(page.el("empty").hidden, true);
+});
+
+test("a save announced while a request is open does not pull the customer back to the list", async () => {
+  const page = await openPage({
+    [LIST]: [
+      reply(200, { items: [summary(1, "waiting_for_customer", 4)] }),
+      reply(200, { items: [summary(2), summary(1, "waiting_for_customer", 4)] }),
+    ],
+    [DETAIL(1)]: [reply(200, waitingDetail(4))],
+  });
+  await page.click(page.openButtons()[0]);
+  await page.dispatch("deskguide:support-saved");
+  assert.equal(page.el("detail-view").hidden, false);
+  assert.equal(count(page, LIST), 1);
+  await page.click(page.el("back"));
+  assert.equal(page.el("list").children.length, 2);
+});
+
+test("the reply limit counts characters like the server, so emoji are not cut at 1,000", () => {
+  const page = load({});
+  const emoji = "\u{1F600}"; // two UTF-16 units, one character
+  assert.equal(page.ctx.convBuildReply(emoji.repeat(1000)).message, emoji.repeat(1000));
+  assert.equal(page.ctx.convBuildReply(emoji.repeat(2000)).message, emoji.repeat(2000));
+  assert.ok(page.ctx.convBuildReply(emoji.repeat(2001)).error);
+  assert.ok(page.ctx.convBuildReply("a".repeat(2000)).message);
+  assert.ok(page.ctx.convBuildReply("a".repeat(2001)).error);
+});
+
+test("the reply box has no HTML length limit that counts UTF-16 units", () => {
+  const html = fs.readFileSync(path.join(__dirname, "../app/templates/home.html"), "utf8");
+  const box = html.match(/<textarea[^>]*id="conv-reply"[^>]*>/);
+  assert.ok(box, "reply textarea not found");
+  assert.doesNotMatch(box[0], /maxlength/i);
+  assert.match(html, /Your reply \(up to 2,000 characters\)/);
 });

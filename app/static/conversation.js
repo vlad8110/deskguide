@@ -466,6 +466,9 @@ function initConversationFlow() {
     reviewing: false,
     busy: false,
     token: 0,
+    view: "list",
+    needsReload: false,
+    refreshAfter: false,
     drafts: new Map(),
     ids: new Map(),
   };
@@ -489,11 +492,13 @@ function initConversationFlow() {
     refreshControls();
   }
   function show(view) {
+    ui.view = view;
     el.listView.hidden = view !== "list";
     el.detailView.hidden = view !== "detail";
   }
   function applyReplyVisibility() {
-    const waiting = ui.detail?.state === "waiting_for_customer";
+    // After a failed reload the messages on screen may be out of date: offer Reload, not a reply box.
+    const waiting = ui.detail?.state === "waiting_for_customer" && !ui.needsReload;
     el.replyBox.hidden = !waiting || ui.reviewing;
     el.review.hidden = !waiting || !ui.reviewing;
     refreshControls();
@@ -527,6 +532,7 @@ function initConversationFlow() {
     ui.detail = null;
     ui.reply = null;
     ui.reviewing = false;
+    ui.needsReload = false;
     show("list");
     el.retry.hidden = true;
     el.empty.hidden = true;
@@ -541,6 +547,11 @@ function initConversationFlow() {
     }
     if (token !== ui.token) return;
     if (result.outcome === "redirect") return endSession();
+    if (ui.refreshAfter) {
+      // A request was saved while this list was loading, so this answer may be out of date.
+      ui.refreshAfter = false;
+      return loadList(note);
+    }
     if (result.outcome === "ok") {
       el.list.replaceChildren(...result.items.map(makeRow));
       el.empty.hidden = result.items.length > 0;
@@ -555,6 +566,7 @@ function initConversationFlow() {
   function renderDetail(detail) {
     ui.detail = detail;
     ui.reviewing = false;
+    ui.needsReload = false;
     el.title.textContent = `Request ${detail.request_id.slice(0, 8)}`;
     el.stateText.textContent = convStateText(detail.state);
     el.content.textContent = detail.content;
@@ -712,10 +724,26 @@ function initConversationFlow() {
       applyReplyVisibility();
       say(result.message);
     } else {
-      // changed or conflict: nothing was sent. Show what is true now and require a fresh review.
+      // changed or conflict: nothing was sent. Leave review (keeping the draft) and reload.
       ui.reply = null;
-      const reloaded = await convLoadDetail(convApi, reply.requestId);
-      if (acceptDetail(reloaded, reply.requestId)) say(result.message);
+      ui.reviewing = false;
+      ui.needsReload = true;
+      applyReplyVisibility();
+      say("Reloading the conversation…");
+      setBusy(true);
+      let reloaded;
+      try {
+        reloaded = await convLoadDetail(convApi, reply.requestId);
+      } finally {
+        setBusy(false);
+      }
+      if (acceptDetail(reloaded, reply.requestId)) {
+        say(result.message);
+      } else if (reloaded.outcome === "error") {
+        say(
+          `${result.message} We could not reload the conversation. Your draft is kept; choose Reload, then review it again.`,
+        );
+      }
     }
   });
 
@@ -758,6 +786,13 @@ function initConversationFlow() {
   });
   el.retry.addEventListener("click", () => {
     if (!ui.busy) loadList();
+  });
+
+  // Another screen saved a new request: show it in the list without a manual refresh.
+  document.addEventListener?.("deskguide:support-saved", () => {
+    if (ui.view !== "list") return; // Back to the list always reloads it
+    if (ui.busy) ui.refreshAfter = true;
+    else loadList();
   });
 
   root.hidden = false;
