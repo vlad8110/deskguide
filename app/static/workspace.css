@@ -141,3 +141,68 @@ button:disabled {
   }
 
 }
+
+/* Support-request flow. */
+[hidden] {
+  display: none !important;
+}
+
+h2 {
+  font-size: 1.3rem;
+  margin-top: 2rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+}
+
+textarea {
+  width: 100%;
+  border: 1px solid #718298;
+  border-radius: 5px;
+  padding: 0.8rem;
+  font: inherit;
+  margin-bottom: 0.55rem;
+  resize: vertical;
+}
+
+textarea:focus-visible {
+  outline: 3px solid #327dc5;
+  outline-offset: 3px;
+}
+
+.review-box {
+  background: #eef3f8;
+  padding: 1rem;
+  border-radius: 5px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.consent {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-weight: 400;
+}
+
+.consent input {
+  width: auto;
+  margin: 0.3rem 0 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+button.secondary {
+  background: #fff;
+  color: #173c63;
+  border: 1px solid #173c63;
+}
+
+#support-status.ok {
+  color: #1d6b3a;
+}
