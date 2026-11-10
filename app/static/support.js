@@ -423,12 +423,18 @@ function initSupportFlow() {
     // Only a resolved receipt may become a new draft. Review, consent and recovery
     // belong to the existing request and must not be reset by another screen.
     if (!busy && !state.unresolved && !done.hidden) startAnother();
-    if (!busy && !state.unresolved && !form.hidden) {
-      if (!content.value.trim() && typeof event.detail?.question === "string")
-        content.value = event.detail.question;
+    if (
+      !busy && !state.unresolved && !form.hidden &&
+      !content.value.trim() && !note.value.trim() &&
+      typeof event.detail?.question === "string"
+    ) {
+      content.value = event.detail.question;
       content.focus();
     } else {
-      send.focus();
+      const notice = "You already have a request in progress. This question was not added.";
+      if (!status.textContent.includes(notice))
+        say([status.textContent, notice].filter(Boolean).join(" "));
+      document.querySelector("#support-heading").focus();
     }
     root.scrollIntoView();
   });

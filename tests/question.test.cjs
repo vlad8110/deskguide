@@ -505,7 +505,7 @@ async function openPage(routes, { support = true, extra = {} } = {}) {
     elements[`#ask-${id}`].hidden = true;
   if (support) {
     elements["#support"] = Object.assign(fakeElement(), { hidden: true });
-    for (const id of ["form", "review", "done", "status", "content", "note", "consent",
+    for (const id of ["heading", "form", "review", "done", "status", "content", "note", "consent",
       "edit", "send", "another", "saved", "preview-content", "preview-note"])
       elements[`#support-${id}`] = fakeElement();
     elements["#support-review"].hidden = true;
@@ -1093,4 +1093,54 @@ test("feedback token timeout allows retry without locking an unsent payload", as
   assert.equal(page.el("rating").disabled, false);
   assert.equal(page.el("comment").readOnly, false);
   assert.match(page.el("feedback-status").textContent, /Connection unavailable/);
+});
+
+for (const phase of ["review", "unresolved", "busy", "draft", "note-only"]) {
+  test(`Contact explains a preserved ${phase} request and focuses a non-action heading`, async () => {
+    const slow = deferred();
+    const page = await openPage({
+      [ASK]: reply(200, unanswered("escalation_offered", "human_requested")),
+      "POST /v1/escalations/submission-ids": supportRegistration(),
+      "POST /v1/escalations": phase === "busy" ? () => slow.promise : new TypeError("lost"),
+      [`GET /v1/escalations/${uid(70)}`]: reply(502, undefined),
+    });
+    const support = id => page.elements[`#support-${id}`];
+    if (phase === "draft" || phase === "note-only") {
+      support("content").value = phase === "draft" ? "existing request" : "";
+      support("note").value = "existing note";
+    } else {
+      await reviewSupport(page, "existing request");
+      support("consent").checked = true;
+    }
+    if (phase === "unresolved") await page.fire(support("send"), "click");
+    const pending = phase === "busy" ? page.fire(support("send"), "click") : null;
+    await settle();
+    const before = {
+      text: support("content").value, note: support("note").value,
+      consent: support("consent").checked, status: support("status").textContent,
+      editDisabled: support("edit").disabled, sends: count(page, "POST /v1/escalations"),
+    };
+    await page.ask("new question");
+    await page.fire(page.el("contact"), "click");
+    await page.fire(page.el("contact"), "click");
+    assert.match(support("status").textContent, /This question was not added/);
+    assert.equal(support("status").textContent.split("This question was not added").length, 2);
+    assert.ok(support("status").textContent.startsWith(before.status));
+    assert.equal(support("heading").focused, true);
+    assert.equal(support("send").focused, false);
+    assert.equal(support("content").value, before.text);
+    assert.equal(support("note").value, before.note);
+    assert.equal(support("consent").checked, before.consent);
+    assert.equal(support("edit").disabled, before.editDisabled);
+    assert.equal(count(page, "POST /v1/escalations"), before.sends);
+    if (pending) {
+      slow.resolve(supportSavedReply());
+      await pending;
+      assert.equal(count(page, "POST /v1/escalations"), 1);
+    }
+  });
+}
+
+test("the support heading is focusable without entering the tab order", () => {
+  assert.match(read("home.html", "templates"), /<h2 id="support-heading" tabindex="-1">/);
 });
