@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='workspace.css') }}" />
     <script src="{{ url_for('static', filename='workspace.js') }}" defer></script>
     <script src="{{ url_for('static', filename='support.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='conversation.js') }}" defer></script>
     <script src="{{ url_for('static', filename='agent.js') }}" defer></script>
   </head>
   <body>
@@ -24,7 +25,7 @@
         {% if account['role'] == 'customer' %}
           <p class="notice">
             The question and source screens are not available yet. You can contact
-            support below.
+            support and follow your requests below.
           </p>
           <section id="support" aria-labelledby="support-heading" hidden>
             <h2 id="support-heading">Contact support</h2>
@@ -58,6 +59,47 @@
               </button>
             </div>
             <p id="support-status" role="status" aria-live="polite"></p>
+          </section>
+          <section id="conversations" aria-labelledby="conv-heading" hidden>
+            <div id="conv-list-view">
+              <h2 id="conv-heading">Your support requests</h2>
+              <div class="actions">
+                <button id="conv-refresh" type="button" class="secondary">Refresh</button>
+              </div>
+              <ul id="conv-list" class="conv-list"></ul>
+              <p id="conv-empty" class="notice" hidden>You have no support requests to show.</p>
+              <button id="conv-retry" type="button" class="secondary" hidden>Try again</button>
+            </div>
+            <div id="conv-detail-view" hidden>
+              <button id="conv-back" type="button" class="secondary">Back to your requests</button>
+              <h2 id="conv-detail-title"></h2>
+              <p id="conv-detail-state" class="notice"></p>
+              <h3>What you sent</h3>
+              <p class="review-box" id="conv-content"></p>
+              <p class="review-box" id="conv-note"></p>
+              <h3>Conversation</h3>
+              <p id="conv-no-messages" hidden>No messages yet.</p>
+              <ul id="conv-messages" class="conv-messages"></ul>
+              <button id="conv-reload" type="button" class="secondary">Reload</button>
+              <p id="conv-hint" hidden>You can reply here when support asks you a question.</p>
+              <div id="conv-reply-box" hidden>
+                <form id="conv-reply-form" novalidate>
+                  <label for="conv-reply">Your reply (up to 2,000 characters)</label>
+                  <textarea id="conv-reply" rows="4"></textarea>
+                  <button type="submit">Review reply</button>
+                </form>
+              </div>
+              <div id="conv-review" hidden>
+                <h3>Review before sending</h3>
+                <p>This is exactly what support will receive.</p>
+                <p class="review-box" id="conv-preview"></p>
+                <div class="actions">
+                  <button id="conv-send" type="button">Send reply</button>
+                  <button id="conv-edit" type="button" class="secondary">Edit</button>
+                </div>
+              </div>
+            </div>
+            <p id="conv-status" role="status" aria-live="polite"></p>
           </section>
         {% elif account['role'] == 'agent' %}
           <section id="agent" aria-labelledby="agent-heading" hidden>

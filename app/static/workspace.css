@@ -236,7 +236,9 @@ select:focus-visible {
 }
 
 .agent-list,
-.agent-messages {
+.agent-messages,
+.conv-list,
+.conv-messages {
   list-style: none;
   padding: 0;
   margin: 1rem 0;
@@ -245,30 +247,37 @@ select:focus-visible {
 }
 
 .agent-row,
-.agent-message {
+.agent-message,
+.conv-row,
+.conv-message {
   border: 1px solid #d8e0e9;
   border-radius: 8px;
   padding: 0.9rem 1rem;
 }
 
 .agent-row p,
-.agent-message p {
+.agent-message p,
+.conv-row p,
+.conv-message p {
   margin: 0.3rem 0;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 
-.agent-row-head {
+.agent-row-head,
+.conv-row-head {
   font-size: 0.85rem;
   font-weight: 650;
   color: #3c5570;
 }
 
-.agent-message.customer_reply {
+.agent-message.customer_reply,
+.conv-message.customer_reply {
   background: #eef3f8;
 }
 
-.agent-message.message_to_customer {
+.agent-message.message_to_customer,
+.conv-message.message_to_customer {
   background: #fff;
   border-left: 4px solid #173c63;
 }
@@ -284,5 +293,19 @@ select:focus-visible {
 }
 
 #agent-status.ok {
+  color: #1d6b3a;
+}
+
+/* Customer conversation screen. */
+#conversations {
+  margin-top: 2rem;
+}
+
+#conv-status {
+  min-height: 1.6rem;
+  color: #9a2424;
+}
+
+#conv-status.ok {
   color: #1d6b3a;
 }
