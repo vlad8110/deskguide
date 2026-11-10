@@ -4,6 +4,9 @@
 
 const SUPPORT_CONTROL_CHARACTERS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/;
 const SUPPORT_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const SUPPORT_REQUEST_STATES = ["queued", "assigned", "in_review", "waiting_for_customer", "resolved"];
+const SUPPORT_REGISTRATION_STATES = ["unused", "completed", "expired"];
+const SUPPORT_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,6})?Z$/;
 const SUPPORT_SAVED_TEXT = "Your request has been saved.";
 // Codes the server only returns when it knows nothing was saved.
 const SUPPORT_RETRYABLE_CODES = [
@@ -120,41 +123,78 @@ function buildSupportPayload(contentText, noteText) {
   return { payload };
 }
 
+/* Contract Timestamp: ISO 8601 UTC, and a real calendar date and time. */
+function validTimestamp(value) {
+  if (typeof value !== "string") return false;
+  const match = SUPPORT_TIMESTAMP.exec(value);
+  if (!match) return false;
+  const [year, month, day, hour, minute, second] = match.slice(1).map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day &&
+    date.getUTCHours() === hour &&
+    date.getUTCMinutes() === minute &&
+    date.getUTCSeconds() === second
+  );
+}
+
+function validUuid(value) {
+  return typeof value === "string" && SUPPORT_UUID.test(value);
+}
+
+function validVersion(value) {
+  return Number.isInteger(value) && value >= 1 && value <= 2147483647;
+}
+
 /* A success status alone never proves a save: require the fields the contract promises. */
 function validSaveResponse(result, submissionId) {
   const data = result.data;
   return (
     (result.status === 200 || result.status === 201) &&
-    typeof data.request_id === "string" &&
-    SUPPORT_UUID.test(data.request_id) &&
+    validUuid(data.request_id) &&
     data.submission_id === submissionId &&
-    typeof data.state === "string" &&
-    typeof data.created_at === "string"
+    SUPPORT_REQUEST_STATES.includes(data.state) &&
+    validTimestamp(data.created_at) &&
+    (data.version === undefined || validVersion(data.version)) &&
+    (data.acknowledgement === undefined || typeof data.acknowledgement === "string")
   );
 }
 
+/* Status answers must be internally consistent, not just well-formed. */
 function validStatusResponse(result, submissionId) {
   const data = result.data;
-  if (!result.ok || data.submission_id !== submissionId) return false;
+  if (result.status !== 200 || data.submission_id !== submissionId) return false;
   if (data.operation !== "escalation" || typeof data.saved !== "boolean") return false;
-  if (!["unused", "completed", "expired"].includes(data.registration_state)) return false;
+  if (!SUPPORT_REGISTRATION_STATES.includes(data.registration_state)) return false;
   if (data.saved)
     return (
       data.registration_state === "completed" &&
-      typeof data.request_id === "string" &&
-      SUPPORT_UUID.test(data.request_id)
+      validUuid(data.request_id) &&
+      SUPPORT_REQUEST_STATES.includes(data.state) &&
+      validVersion(data.version) &&
+      validTimestamp(data.created_at) &&
+      data.expires_at === null
     );
-  return data.registration_state !== "completed";
+  return (
+    data.registration_state !== "completed" &&
+    data.request_id === null &&
+    data.state === null &&
+    data.version === null &&
+    data.created_at === null &&
+    validTimestamp(data.expires_at)
+  );
 }
 
 function validRegistration(result) {
   const data = result.data;
   return (
     result.status === 201 &&
-    typeof data.submission_id === "string" &&
-    SUPPORT_UUID.test(data.submission_id) &&
+    validUuid(data.submission_id) &&
     data.operation === "escalation" &&
-    data.registration_state === "unused"
+    data.registration_state === "unused" &&
+    validTimestamp(data.expires_at)
   );
 }
 
@@ -263,6 +303,12 @@ async function sendSupport(state, api = apiRequest) {
   return recoverSupport(state, api);
 }
 
+/* Tell other screens (such as the request list) that a request was confirmed saved. */
+function announceSupportSaved(requestId) {
+  if (typeof document.dispatchEvent === "function" && typeof CustomEvent === "function")
+    document.dispatchEvent(new CustomEvent("deskguide:support-saved", { detail: { requestId } }));
+}
+
 function initSupportFlow() {
   const root = document.querySelector("#support");
   if (!root) return;
@@ -352,11 +398,13 @@ function initSupportFlow() {
       resetSendButton();
       showDone(result.message, result.requestId, "Send another request");
       say("", true);
+      announceSupportSaved(result.requestId);
     } else if (result.outcome === "conflict") {
       consent.checked = false;
       resetSendButton();
       showDone(result.message, result.requestId, "Start new request");
       say("");
+      announceSupportSaved(result.requestId); // the original request was saved earlier
     } else if (result.outcome === "edit") {
       consent.checked = false;
       resetSendButton();

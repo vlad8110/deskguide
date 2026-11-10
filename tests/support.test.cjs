@@ -26,8 +26,14 @@ function reply(status, value, headers = {}) {
 const error = (status, code, message, headers) =>
   reply(status, { error: { code, message } }, headers);
 
+const EXPIRES = "2026-11-08T00:30:00Z";
 const registered = (id = SID) =>
-  reply(201, { submission_id: id, operation: "escalation", registration_state: "unused" });
+  reply(201, {
+    submission_id: id,
+    operation: "escalation",
+    registration_state: "unused",
+    expires_at: EXPIRES,
+  });
 const saved = (status = 201) =>
   reply(status, {
     request_id: RID,
@@ -43,6 +49,10 @@ const statusSaved = () =>
     registration_state: "completed",
     saved: true,
     request_id: RID,
+    state: "queued",
+    version: 1,
+    created_at: "2026-11-08T00:00:00Z",
+    expires_at: null,
   });
 const statusUnsaved = (registration_state = "unused") =>
   reply(200, {
@@ -51,14 +61,28 @@ const statusUnsaved = (registration_state = "unused") =>
     registration_state,
     saved: false,
     request_id: null,
+    state: null,
+    version: null,
+    created_at: null,
+    expires_at: EXPIRES,
   });
 
 /* routes: "METHOD /path" -> response, or a list consumed one at a time. */
 function load(routes, elements = null) {
   const calls = [];
+  const events = [];
   const context = {
     TypeError,
-    document: { querySelector: (selector) => (elements ? (elements[selector] ?? null) : null) },
+    document: {
+      querySelector: (selector) => (elements ? (elements[selector] ?? null) : null),
+      dispatchEvent: (event) => events.push(event),
+    },
+    CustomEvent: class {
+      constructor(type, init = {}) {
+        this.type = type;
+        this.detail = init.detail;
+      }
+    },
     window: { location: { assign: (url) => (context.assigned = url) } },
     fetch: async (url, options = {}) => {
       const method = options.method ?? "GET";
@@ -73,7 +97,7 @@ function load(routes, elements = null) {
     },
   };
   vm.runInNewContext(source, context, { filename: "support.js" });
-  return { ctx: context, calls, keys: () => calls.map((c) => c.key) };
+  return { ctx: context, calls, events, keys: () => calls.map((c) => c.key) };
 }
 const count = (page, key) => page.keys().filter((k) => k === key).length;
 const fresh = () => ({ payload: { ...PAYLOAD }, submissionId: null, unresolved: false });
@@ -186,24 +210,174 @@ test("malformed success bodies preserve the ID and enter status recovery", async
   }
 });
 
-test("status responses are validated too, not just any HTTP success", async () => {
-  for (const bad of [
-    reply(200, { saved: true }),
-    reply(200, { submission_id: SID, operation: "escalation", registration_state: "completed", saved: true, request_id: "nope" }),
-    reply(200, { submission_id: SID, operation: "escalation", registration_state: "weird", saved: false }),
-    reply(200, { submission_id: SID, operation: "escalation", registration_state: "completed", saved: false }),
-    reply(200, { submission_id: "other", operation: "escalation", registration_state: "unused", saved: false }),
-  ]) {
+const goodStatus = () => ({
+  submission_id: SID,
+  operation: "escalation",
+  registration_state: "completed",
+  saved: true,
+  request_id: RID,
+  state: "queued",
+  version: 1,
+  created_at: "2026-11-08T00:00:00Z",
+  expires_at: null,
+});
+const goodUnsaved = () => ({
+  ...goodStatus(),
+  registration_state: "unused",
+  saved: false,
+  request_id: null,
+  state: null,
+  version: null,
+  created_at: null,
+  expires_at: EXPIRES,
+});
+
+test("status responses are validated for values and consistency, not just HTTP success", async () => {
+  const invalid = [
+    { saved: true },
+    { ...goodStatus(), request_id: "nope" },
+    { ...goodStatus(), state: "not_a_request_state" },
+    { ...goodStatus(), state: null },
+    { ...goodStatus(), version: 0 },
+    { ...goodStatus(), version: "1" },
+    { ...goodStatus(), created_at: "not_a_timestamp" },
+    { ...goodStatus(), created_at: null },
+    { ...goodStatus(), expires_at: EXPIRES },
+    { ...goodStatus(), registration_state: "unused" },
+    { ...goodStatus(), registration_state: "weird" },
+    { ...goodStatus(), saved: "yes" },
+    { ...goodStatus(), operation: "reply" },
+    { ...goodStatus(), submission_id: "other" },
+    { ...goodUnsaved(), registration_state: "completed" },
+    { ...goodUnsaved(), request_id: RID },
+    { ...goodUnsaved(), state: "queued" },
+    { ...goodUnsaved(), version: 1 },
+    { ...goodUnsaved(), created_at: "2026-11-08T00:00:00Z" },
+    { ...goodUnsaved(), expires_at: null },
+    { ...goodUnsaved(), expires_at: "not_a_timestamp" },
+  ];
+  for (const bad of invalid) {
     const state = fresh();
     const page = load({
       "POST /v1/escalations/submission-ids": [registered()],
       "POST /v1/escalations": [error(503, "SAVE_OUTCOME_UNCERTAIN", "x")],
-      [STATUS_URL]: [bad],
+      [STATUS_URL]: [reply(200, bad)],
     });
     const result = await page.ctx.sendSupport(state);
-    assert.equal(result.outcome, "unresolved");
+    assert.equal(result.outcome, "unresolved", JSON.stringify(bad));
     assert.equal(state.submissionId, SID);
+    assert.equal(state.unresolved, true);
   }
+  for (const good of [goodStatus(), goodUnsaved(), { ...goodUnsaved(), registration_state: "expired" }]) {
+    const page = load({});
+    const ok = page.ctx.validStatusResponse(
+      { status: 200, ok: true, data: JSON.parse(JSON.stringify(good)) },
+      SID,
+    );
+    assert.equal(ok, true, JSON.stringify(good));
+  }
+});
+
+test("save responses with invalid values are not trusted and use status recovery", async () => {
+  const base = () => ({
+    request_id: RID,
+    submission_id: SID,
+    state: "queued",
+    created_at: "2026-11-08T00:00:00Z",
+    acknowledgement: "Your request has been saved.",
+  });
+  const invalid = [
+    { ...base(), state: "not_a_request_state" },
+    { ...base(), state: undefined },
+    { ...base(), state: 5 },
+    { ...base(), created_at: "not_a_timestamp" },
+    { ...base(), created_at: "2026-02-30T00:00:00Z" },
+    { ...base(), created_at: "2026-11-08 00:00:00" },
+    { ...base(), created_at: "2026-11-08T00:00:00+01:00" },
+    { ...base(), created_at: "" },
+    { ...base(), created_at: 1762560000 },
+    { ...base(), request_id: "r1" },
+    { ...base(), submission_id: "other" },
+    { ...base(), version: 0 },
+    { ...base(), version: "2" },
+    { ...base(), acknowledgement: 7 },
+  ];
+  for (const bad of invalid) {
+    const state = fresh();
+    const page = load({
+      "POST /v1/escalations/submission-ids": [registered()],
+      "POST /v1/escalations": [reply(201, bad)],
+      [STATUS_URL]: [reply(503, undefined)],
+    });
+    const result = await page.ctx.sendSupport(state);
+    assert.equal(result.outcome, "unresolved", JSON.stringify(bad));
+    assert.equal(state.submissionId, SID);
+    assert.equal(state.unresolved, true);
+    assert.equal(count(page, STATUS_URL), 1);
+  }
+  for (const good of [
+    base(),
+    { ...base(), version: 1 },
+    { ...base(), created_at: "2026-11-08T00:00:00.123456Z" },
+  ]) {
+    const page = load({
+      "POST /v1/escalations/submission-ids": [registered()],
+      "POST /v1/escalations": [reply(201, good)],
+    });
+    assert.equal((await page.ctx.sendSupport(fresh())).outcome, "saved");
+  }
+});
+
+test("an invalid save response resolves through a valid status check", async () => {
+  const state = fresh();
+  const page = load({
+    "POST /v1/escalations/submission-ids": [registered()],
+    "POST /v1/escalations": [
+      reply(201, {
+        request_id: RID,
+        submission_id: SID,
+        state: "not_a_request_state",
+        created_at: "not_a_timestamp",
+      }),
+    ],
+    [STATUS_URL]: [statusSaved()],
+  });
+  const result = await page.ctx.sendSupport(state);
+  assert.equal(result.outcome, "saved");
+  assert.equal(result.requestId, RID);
+  assert.equal(count(page, "POST /v1/escalations"), 1);
+});
+
+test("registration responses with invalid values send nothing", async () => {
+  const good = () => ({
+    submission_id: SID,
+    operation: "escalation",
+    registration_state: "unused",
+    expires_at: EXPIRES,
+  });
+  const invalid = [
+    { ...good(), submission_id: "nope" },
+    { ...good(), operation: "reply" },
+    { ...good(), registration_state: "completed" },
+    { ...good(), expires_at: "not_a_timestamp" },
+    { ...good(), expires_at: undefined },
+  ];
+  for (const bad of invalid) {
+    const page = load({ "POST /v1/escalations/submission-ids": [reply(201, bad)] });
+    assert.equal((await page.ctx.sendSupport(fresh())).outcome, "retry", JSON.stringify(bad));
+    assert.equal(page.keys().includes("POST /v1/escalations"), false);
+  }
+});
+
+test("the timestamp check accepts ISO UTC and rejects anything else", () => {
+  const { ctx } = load({});
+  for (const ok of ["2026-11-08T00:00:00Z", "2026-02-28T23:59:59Z", "2026-11-08T00:00:00.5Z"])
+    assert.equal(ctx.validTimestamp(ok), true, ok);
+  for (const bad of [
+    "", "x", null, undefined, 5, "2026-11-08", "2026-11-08T00:00:00", "2026-13-01T00:00:00Z",
+    "2026-02-30T00:00:00Z", "2026-11-08T24:00:00Z", "2026-11-08T00:60:00Z", "2026-11-08T00:00:00+00:00",
+  ])
+    assert.equal(ctx.validTimestamp(bad), false, String(bad));
 });
 
 test("a malformed registration response sends nothing", async () => {
@@ -476,4 +650,57 @@ test("completed-payload conflict offers a deliberate new request that resets eve
     .filter((c) => c.key === "POST /v1/escalations")
     .map((c) => JSON.parse(c.options.body).submission_id);
   assert.deepEqual(ids, [SID, NEW_SID]);
+});
+
+test("an invalid save acknowledgement never shows saved and keeps Edit locked", async () => {
+  const p = fakePage({
+    "POST /v1/escalations/submission-ids": [registered()],
+    "POST /v1/escalations": [
+      reply(201, {
+        request_id: RID,
+        submission_id: SID,
+        state: "not_a_request_state",
+        created_at: "not_a_timestamp",
+      }),
+    ],
+    [STATUS_URL]: [reply(502, undefined), statusSaved()],
+  });
+  await toReview(p);
+  p.elements["#support-consent"].checked = true;
+  await p.fire("#support-send", "click");
+  assert.equal(p.view(), "review");
+  assert.equal(p.elements["#support-edit"].disabled, true);
+  assert.equal(p.elements["#support-send"].textContent, "Check status");
+  assert.doesNotMatch(p.elements["#support-status"].textContent, /has been saved/);
+  await p.fire("#support-edit", "click");
+  assert.equal(p.view(), "review"); // still locked
+  await p.fire("#support-send", "click"); // status now readable and saved
+  assert.equal(p.view(), "done");
+  assert.equal(count(p, "POST /v1/escalations"), 1);
+  assert.equal(count(p, "POST /v1/escalations/submission-ids"), 1);
+});
+
+test("a confirmed save announces itself so the request list can refresh", async () => {
+  const p = fakePage({
+    "POST /v1/escalations/submission-ids": [registered()],
+    "POST /v1/escalations": [saved()],
+  });
+  await toReview(p);
+  p.elements["#support-consent"].checked = true;
+  await p.fire("#support-send", "click");
+  assert.equal(p.view(), "done");
+  assert.equal(p.events.length, 1);
+  assert.equal(p.events[0].type, "deskguide:support-saved");
+  assert.equal(p.events[0].detail.requestId, RID);
+});
+
+test("nothing is announced while a save is unconfirmed or failed", async () => {
+  const p = fakePage({
+    "POST /v1/escalations/submission-ids": [registered()],
+    "POST /v1/escalations": [error(503, "DEPENDENCY_UNAVAILABLE", "Try later.")],
+  });
+  await toReview(p);
+  p.elements["#support-consent"].checked = true;
+  await p.fire("#support-send", "click");
+  assert.equal(p.events.length, 0);
 });
