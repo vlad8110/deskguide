@@ -8,20 +8,223 @@
     <title>DeskGuide</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='workspace.css') }}" />
     <script src="{{ url_for('static', filename='workspace.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='support.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='question.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='conversation.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='agent.js') }}" defer></script>
   </head>
   <body>
     <header>
       <a href="/" class="brand">DeskGuide</a>
       <span>Local alpha workspace</span>
     </header>
-    <main>
+    <main{% if account and account['role'] == 'agent' %} class="wide"{% endif %}>
       {% if account %}
         <p class="eyebrow">YOUR WORKSPACE</p>
         <h1>Welcome, {{ account['username'] }}</h1>
         <p>You are signed in as <strong>{{ account['role'] }}</strong>.</p>
-        <p class="notice">
-          The question, source and support screens are not available yet.
-        </p>
+        {% if account['role'] == 'customer' %}
+          <p class="notice">
+            Ask a question about the DeskGuide guides, contact support, and follow your
+            requests below.
+          </p>
+          <section id="questions" aria-labelledby="ask-heading" hidden>
+            <h2 id="ask-heading">Ask a question</h2>
+            <form id="ask-form" novalidate>
+              <label for="ask-question">Your question (up to 1,000 characters)</label>
+              <textarea id="ask-question" rows="3"></textarea>
+              <p>Line breaks are treated as spaces.</p>
+              <div class="actions">
+                <button id="ask-submit" type="submit">Ask</button>
+                <button id="ask-clear" type="button" class="secondary">Clear</button>
+              </div>
+            </form>
+            <div id="ask-result" hidden>
+              <h3 id="ask-headline"></h3>
+              <p class="review-box" id="ask-answer" hidden></p>
+              <p class="notice" id="ask-notice" hidden></p>
+              <div id="ask-sources-box" hidden>
+                <h4>Sources</h4>
+                <ul id="ask-sources" class="ask-sources"></ul>
+              </div>
+              <div id="ask-source-view" class="ask-source" hidden>
+                <h4 id="ask-source-title"></h4>
+                <p class="review-box" id="ask-source-text"></p>
+                <button id="ask-source-close" type="button" class="secondary">
+                  Close source
+                </button>
+              </div>
+              <div id="ask-offer" hidden>
+                <button id="ask-contact" type="button" class="secondary">
+                  Contact support about this
+                </button>
+              </div>
+              <div id="ask-feedback" class="ask-feedback" hidden>
+                <h4>Was this helpful?</h4>
+                <form id="ask-feedback-form" novalidate>
+                  <label for="ask-rating">Your rating</label>
+                  <select id="ask-rating">
+                    <option value="">Choose</option>
+                    <option value="helpful">Helpful</option>
+                    <option value="not_helpful">Not helpful</option>
+                  </select>
+                  <div id="ask-category-box" hidden>
+                    <label for="ask-category">What went wrong?</label>
+                    <select id="ask-category"></select>
+                  </div>
+                  <label for="ask-comment">Comment (optional, up to 500 characters)</label>
+                  <textarea id="ask-comment" rows="2"></textarea>
+                  <button id="ask-feedback-send" type="submit" class="secondary">
+                    Send feedback
+                  </button>
+                </form>
+                <p id="ask-feedback-status" role="status" aria-live="polite"></p>
+              </div>
+            </div>
+            <p id="ask-status" role="status" aria-live="polite"></p>
+          </section>
+          <section id="support" aria-labelledby="support-heading" hidden>
+            <h2 id="support-heading" tabindex="-1">Contact support</h2>
+            <form id="support-form" method="post" action="/" novalidate>
+              <label for="support-content">What do you need help with?</label>
+              <textarea id="support-content" name="content" rows="5" maxlength="1000"
+                required></textarea>
+              <label for="support-note">Anything else we should know? (optional)</label>
+              <textarea id="support-note" name="note" rows="3" maxlength="2000"></textarea>
+              <button type="submit">Review request</button>
+            </form>
+            <div id="support-review" hidden>
+              <h3>Review before sending</h3>
+              <p>This is exactly what support will receive.</p>
+              <p class="review-box" id="support-preview-content"></p>
+              <p class="review-box" id="support-preview-note"></p>
+              <label class="consent" for="support-consent">
+                <input id="support-consent" type="checkbox" />
+                I agree to share this with DeskGuide support.
+              </label>
+              <div class="actions">
+                <button id="support-send" type="button">Send to support</button>
+                <button id="support-edit" type="button" class="secondary">Edit</button>
+              </div>
+            </div>
+            <div id="support-done" hidden>
+              <p class="notice" id="support-saved"></p>
+              <p>An agent has not read it yet, and we cannot promise a response time.</p>
+              <button id="support-another" type="button" class="secondary">
+                Send another request
+              </button>
+            </div>
+            <p id="support-status" role="status" aria-live="polite"></p>
+          </section>
+          <section id="conversations" aria-labelledby="conv-heading" hidden>
+            <div id="conv-list-view">
+              <h2 id="conv-heading">Your support requests</h2>
+              <div class="actions">
+                <button id="conv-refresh" type="button" class="secondary">Refresh</button>
+              </div>
+              <ul id="conv-list" class="conv-list"></ul>
+              <p id="conv-empty" class="notice" hidden>You have no support requests to show.</p>
+              <button id="conv-retry" type="button" class="secondary" hidden>Try again</button>
+            </div>
+            <div id="conv-detail-view" hidden>
+              <button id="conv-back" type="button" class="secondary">Back to your requests</button>
+              <h2 id="conv-detail-title"></h2>
+              <p id="conv-detail-state" class="notice"></p>
+              <h3>What you sent</h3>
+              <p class="review-box" id="conv-content"></p>
+              <p class="review-box" id="conv-note"></p>
+              <h3>Conversation</h3>
+              <p id="conv-no-messages" hidden>No messages yet.</p>
+              <ul id="conv-messages" class="conv-messages"></ul>
+              <button id="conv-reload" type="button" class="secondary">Reload</button>
+              <p id="conv-hint" hidden>You can reply here when support asks you a question.</p>
+              <div id="conv-reply-box" hidden>
+                <form id="conv-reply-form" novalidate>
+                  <label for="conv-reply">Your reply (up to 2,000 characters)</label>
+                  <textarea id="conv-reply" rows="4"></textarea>
+                  <button type="submit">Review reply</button>
+                </form>
+              </div>
+              <div id="conv-review" hidden>
+                <h3>Review before sending</h3>
+                <p>This is exactly what support will receive.</p>
+                <p class="review-box" id="conv-preview"></p>
+                <div class="actions">
+                  <button id="conv-send" type="button">Send reply</button>
+                  <button id="conv-edit" type="button" class="secondary">Edit</button>
+                </div>
+              </div>
+            </div>
+            <p id="conv-status" role="status" aria-live="polite"></p>
+          </section>
+        {% elif account['role'] == 'agent' %}
+          <section id="agent" aria-labelledby="agent-heading" hidden>
+            <div id="agent-queue-view">
+              <h2 id="agent-heading">Support queue</h2>
+              <p>
+                Unassigned requests and requests assigned to you. Claim a request to
+                read its details.
+              </p>
+              <div class="actions">
+                <label for="agent-filter" class="visually-hidden">Show</label>
+                <select id="agent-filter">
+                  <option value="">All of mine and unassigned</option>
+                  <option value="queued">Unassigned</option>
+                  <option value="assigned">Assigned to me</option>
+                  <option value="in_review">In review</option>
+                  <option value="waiting_for_customer">Waiting for the customer</option>
+                  <option value="resolved">Resolved</option>
+                </select>
+                <button id="agent-refresh" type="button" class="secondary">Refresh</button>
+              </div>
+              <ul id="agent-list" class="agent-list"></ul>
+              <p id="agent-empty" class="notice" hidden>No requests to show right now.</p>
+              <button id="agent-more" type="button" class="secondary" hidden>Load more</button>
+              <button id="agent-retry" type="button" class="secondary" hidden>Try again</button>
+            </div>
+            <div id="agent-detail-view" hidden>
+              <button id="agent-back" type="button" class="secondary">Back to the queue</button>
+              <h2 id="agent-detail-title"></h2>
+              <p id="agent-detail-state" class="notice"></p>
+              <h3>Customer request</h3>
+              <p class="review-box" id="agent-content"></p>
+              <p class="review-box" id="agent-note"></p>
+              <h3>Conversation</h3>
+              <p id="agent-no-messages">No messages yet.</p>
+              <ul id="agent-messages" class="agent-messages"></ul>
+              <button id="agent-reload" type="button" class="secondary" hidden>Reload</button>
+              <div id="agent-start-box" hidden>
+                <button id="agent-start" type="button">Start review</button>
+              </div>
+              <div id="agent-resume-box" hidden>
+                <button id="agent-resume" type="button">Resume review</button>
+              </div>
+              <div id="agent-ask-box" hidden>
+                <label for="agent-ask">Ask the customer for information (they will see this)</label>
+                <textarea id="agent-ask" rows="3" maxlength="2000"></textarea>
+                <button id="agent-ask-send" type="button">Send question to customer</button>
+              </div>
+              <div id="agent-resolve-box" hidden>
+                <label for="agent-resolution">Internal resolution note (the customer will not see this)</label>
+                <textarea id="agent-resolution" rows="3" maxlength="2000"></textarea>
+                <button id="agent-resolve-send" type="button">Resolve (cannot be reopened)</button>
+              </div>
+              <div id="agent-release-box" hidden>
+                <label for="agent-release-reason">Release reason (internal; not stored with the request)</label>
+                <textarea id="agent-release-reason" rows="2" maxlength="500"></textarea>
+                <button id="agent-release-send" type="button" class="secondary">Release to the queue</button>
+              </div>
+              <p id="agent-resolved-box" class="notice" hidden>
+                This request is resolved. It cannot be reopened.
+              </p>
+            </div>
+            <p id="agent-status" role="status" aria-live="polite"></p>
+          </section>
+        {% else %}
+          <p class="notice">
+            The question, source and support screens are not available yet.
+          </p>
+        {% endif %}
         <button id="sign-out" type="button">Sign out</button>
       {% else %}
         <p class="eyebrow">TEAM 4</p>

@@ -141,3 +141,209 @@ button:disabled {
   }
 
 }
+
+/* Support-request flow. */
+[hidden] {
+  display: none !important;
+}
+
+h2 {
+  font-size: 1.3rem;
+  margin-top: 2rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+}
+
+textarea {
+  width: 100%;
+  border: 1px solid #718298;
+  border-radius: 5px;
+  padding: 0.8rem;
+  font: inherit;
+  margin-bottom: 0.55rem;
+  resize: vertical;
+}
+
+textarea:focus-visible {
+  outline: 3px solid #327dc5;
+  outline-offset: 3px;
+}
+
+.review-box {
+  background: #eef3f8;
+  padding: 1rem;
+  border-radius: 5px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.consent {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-weight: 400;
+}
+
+.consent input {
+  width: auto;
+  margin: 0.3rem 0 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+button.secondary {
+  background: #fff;
+  color: #173c63;
+  border: 1px solid #173c63;
+}
+
+#support-status.ok {
+  color: #1d6b3a;
+}
+
+/* Agent queue and request detail. */
+main.wide {
+  width: min(94%, 860px);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+select {
+  font: inherit;
+  padding: 0.7rem;
+  border: 1px solid #718298;
+  border-radius: 5px;
+  background: #fff;
+  margin-top: 0.7rem;
+}
+
+select:focus-visible {
+  outline: 3px solid #327dc5;
+  outline-offset: 3px;
+}
+
+.agent-list,
+.agent-messages,
+.conv-list,
+.conv-messages {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.agent-row,
+.agent-message,
+.conv-row,
+.conv-message {
+  border: 1px solid #d8e0e9;
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+}
+
+.agent-row p,
+.agent-message p,
+.conv-row p,
+.conv-message p {
+  margin: 0.3rem 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.agent-row-head,
+.conv-row-head {
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: #3c5570;
+}
+
+.agent-message.customer_reply,
+.conv-message.customer_reply {
+  background: #eef3f8;
+}
+
+.agent-message.message_to_customer,
+.conv-message.message_to_customer {
+  background: #fff;
+  border-left: 4px solid #173c63;
+}
+
+.agent-message.internal {
+  background: #fff7e0;
+  border: 1px dashed #8a6a00;
+}
+
+#agent-status {
+  min-height: 1.6rem;
+  color: #9a2424;
+}
+
+#agent-status.ok {
+  color: #1d6b3a;
+}
+
+/* Customer conversation and question screens. */
+#conversations,
+#questions {
+  margin-top: 2rem;
+}
+
+.ask-sources {
+  list-style: none;
+  padding: 0;
+  margin: 0.6rem 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.ask-source,
+.ask-feedback {
+  border: 1px solid #d8e0e9;
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  margin: 1rem 0;
+}
+
+#ask-source-text,
+#ask-answer {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+#ask-status,
+#ask-feedback-status {
+  min-height: 1.6rem;
+  color: #9a2424;
+}
+
+#ask-status.ok,
+#ask-feedback-status.ok {
+  color: #1d6b3a;
+}
+
+#ask-status.info {
+  color: #3c5570;
+}
+
+#conv-status {
+  min-height: 1.6rem;
+  color: #9a2424;
+}
+
+#conv-status.ok {
+  color: #1d6b3a;
+}
