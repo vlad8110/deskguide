@@ -418,7 +418,21 @@ function initSupportFlow() {
       say(result.message);
     }
   });
-  another.addEventListener("click", () => {
+  root.addEventListener("deskguide:support-open", (event) => {
+    root.hidden = false;
+    // Only a resolved receipt may become a new draft. Review, consent and recovery
+    // belong to the existing request and must not be reset by another screen.
+    if (!busy && !state.unresolved && !done.hidden) startAnother();
+    if (!busy && !state.unresolved && !form.hidden) {
+      if (!content.value.trim() && typeof event.detail?.question === "string")
+        content.value = event.detail.question;
+      content.focus();
+    } else {
+      send.focus();
+    }
+    root.scrollIntoView();
+  });
+  function startAnother() {
     // A deliberate new request: the previous ID is already resolved as saved.
     state.payload = null;
     state.submissionId = null;
@@ -427,6 +441,10 @@ function initSupportFlow() {
     resetSendButton();
     say("");
     show("form");
+  }
+  another.addEventListener("click", () => {
+    if (busy || state.unresolved) return;
+    startAnother();
   });
 }
 

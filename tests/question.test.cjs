@@ -98,6 +98,7 @@ function load(routes, elements = null, extra = {}) {
   const calls = [];
   const context = {
     TypeError,
+    CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } },
     document: {
       querySelector: (selector) => (elements ? (elements[selector] ?? null) : null),
       createElement: (tag) => fakeElement(tag),
@@ -410,14 +411,14 @@ test("the comment limit counts characters like the server, both sides of 500", (
   assert.equal(build("line one\nline two").payload.comment, "line one\nline two");
 });
 
-test("feedback outcomes: saved, already recorded, expired, unavailable, definite error, unknown", async () => {
+test("feedback outcomes: saved, already recorded, unavailable, definite error, unknown", async () => {
   const run = async (response) => {
     const page = load({ [FEEDBACK]: [response] });
     return page.ctx.askSendFeedback({ inquiry_id: uid(1), rating: "helpful" }, api(page));
   };
   assert.equal((await run(reply(201, feedbackSaved()))).outcome, "saved");
   assert.equal((await run(error(409, "CONFLICT"))).outcome, "recorded");
-  assert.equal((await run(error(404, "NOT_FOUND"))).outcome, "expired");
+  assert.equal((await run(error(404, "NOT_FOUND"))).outcome, "unavailable");
   assert.equal((await run(reply(404, undefined))).outcome, "unavailable");
   assert.equal((await run(error(401, "UNAUTHENTICATED"))).outcome, "redirect");
   assert.equal((await run(error(400, "VALIDATION_FAILED", "Bad category."))).outcome, "error");
@@ -458,6 +459,9 @@ function fakeElement(tag = "div") {
     addEventListener(type, fn) {
       (this.handlers[type] ??= []).push(fn);
     },
+    dispatchEvent(event) {
+      for (const fn of this.handlers[event.type] ?? []) fn(event);
+    },
     append(...nodes) {
       this.children.push(...nodes);
     },
@@ -492,7 +496,7 @@ async function settle() {
   await new Promise((resolve) => setImmediate(resolve));
 }
 
-async function openPage(routes, { support = true } = {}) {
+async function openPage(routes, { support = true, extra = {} } = {}) {
   const elements = Object.fromEntries(IDS.map((id) => [`#ask-${id}`, fakeElement()]));
   elements["#questions"] = Object.assign(fakeElement(), { hidden: true });
   for (const id of [
@@ -501,9 +505,14 @@ async function openPage(routes, { support = true } = {}) {
     elements[`#ask-${id}`].hidden = true;
   if (support) {
     elements["#support"] = Object.assign(fakeElement(), { hidden: true });
-    elements["#support-content"] = fakeElement("textarea");
+    for (const id of ["form", "review", "done", "status", "content", "note", "consent",
+      "edit", "send", "another", "saved", "preview-content", "preview-note"])
+      elements[`#support-${id}`] = fakeElement();
+    elements["#support-review"].hidden = true;
+    elements["#support-done"].hidden = true;
   }
-  const page = load(routes, elements);
+  const page = load(routes, elements, extra);
+  if (support) vm.runInContext(read("support.js"), page.ctx, { filename: "support.js" });
   const el = (id) => elements[`#ask-${id}`];
   const fire = async (node, type, event = { preventDefault() {} }) => {
     await Promise.all((node.handlers[type] ?? []).map((fn) => fn(event)));
@@ -821,19 +830,20 @@ test("an unknown feedback outcome can be sent again and a duplicate answer count
   await page.fire(page.el("feedback-form"), "submit");
   assert.match(page.el("feedback-status").textContent, /will not be counted twice/);
   assert.equal(page.el("feedback-send").disabled, false);
-  assert.equal(page.el("rating").disabled, false);
+  assert.equal(page.el("rating").disabled, true);
   await page.fire(page.el("feedback-form"), "submit");
-  assert.equal(page.el("feedback-status").textContent, "Your feedback for this question was already recorded.");
+  assert.equal(page.el("feedback-status").textContent, "Feedback for this question was already recorded. This attempt did not replace it.");
   assert.equal(page.el("feedback-send").disabled, true);
 });
 
-test("feedback for an expired inquiry is explained and not offered again", async () => {
+test("generic NOT_FOUND feedback stays available without claiming the question expired", async () => {
   const page = await openPage({ [ASK]: [reply(200, answered())], [FEEDBACK]: [error(404, "NOT_FOUND", "Not found.")] });
   await page.ask("vpn");
   page.el("rating").value = "helpful";
   await page.fire(page.el("feedback-form"), "submit");
-  assert.equal(page.el("feedback-status").textContent, "This question is too old for feedback to be recorded.");
-  assert.equal(page.el("feedback-send").disabled, true);
+  assert.equal(page.el("feedback-status").textContent, "Feedback is not available right now.");
+  assert.equal(page.el("feedback-send").disabled, false);
+  assert.equal(page.el("rating").disabled, false);
 });
 
 test("feedback that arrives after a new question was asked never touches the new result", async () => {
@@ -918,4 +928,169 @@ test("question.js shares no global names with the other screens", () => {
     for (const source of others)
       assert.doesNotMatch(source, new RegExp(`^(?:async )?(?:function|const) ${name}\\b`, "m"), name);
   }
+});
+
+test("lost feedback retries the original payload and never claims later edits were saved", async () => {
+  const page = await openPage({
+    [ASK]: [reply(200, answered())],
+    [FEEDBACK]: [new TypeError("response lost after commit"), error(409, "CONFLICT")],
+  });
+  await page.ask("vpn");
+  page.el("rating").value = "helpful";
+  page.el("comment").value = "first text";
+  await page.fire(page.el("feedback-form"), "submit");
+  assert.equal(page.el("rating").disabled, true);
+  assert.equal(page.el("category").disabled, true);
+  assert.equal(page.el("comment").readOnly, true);
+  assert.equal(page.el("feedback-send").disabled, false);
+  assert.match(page.el("feedback-status").textContent, /original feedback is locked/);
+  // Even programmatic edits cannot change the retry.
+  page.el("rating").value = "not_helpful";
+  page.el("category").value = "incorrect";
+  page.el("comment").value = "second text";
+  await page.fire(page.el("feedback-form"), "submit");
+  const bodies = page.calls.filter(c => c.key === FEEDBACK).map(c => JSON.parse(c.options.body));
+  assert.deepEqual(bodies, [bodies[0], bodies[0]]);
+  assert.equal(bodies[0].comment, "first text");
+  assert.equal(page.el("comment").value, "first text");
+  assert.equal(page.el("rating").value, "helpful");
+  assert.match(page.el("feedback-status").textContent, /did not replace it/);
+});
+
+for (const phase of ["token-fetch", "token-body", "request-body"]) {
+  test(`timeout covers ${phase} and unlocks Ask/Clear`, async () => {
+    let timeout;
+    let signal;
+    let cleared = false;
+    const hang = (s) => new Promise((_, reject) =>
+      s.addEventListener("abort", () => reject(Object.assign(new Error("aborted"), { name: "AbortError" }))));
+    const page = await openPage({}, { support: false, extra: {
+      AbortController,
+      setTimeout: (fn, ms) => { assert.equal(ms, 30000); timeout = fn; return 1; },
+      clearTimeout: () => { cleared = true; },
+      fetch: async (url, options) => {
+        signal = options.signal;
+        if (url === "/v1/session") {
+          if (phase === "token-fetch") return hang(signal);
+          if (phase === "token-body") return { ...reply(200, {}), json: () => hang(signal) };
+          return reply(200, { csrf_token: "tok" });
+        }
+        return { ...reply(200, {}), json: () => hang(signal) };
+      },
+    } });
+    await page.ask("keep me");
+    assert.equal(page.el("submit").disabled, true);
+    assert.equal(typeof timeout, "function");
+    timeout();
+    await settle();
+    assert.equal(signal.aborted, true);
+    assert.equal(cleared, true);
+    assert.equal(page.el("submit").disabled, false);
+    assert.equal(page.el("clear").disabled, false);
+    assert.match(page.el("status").textContent, /Connection unavailable/);
+    assert.equal(page.el("question").value, "keep me");
+  });
+}
+
+const supportRegistration = () => reply(201, {
+  submission_id: uid(70), operation: "escalation", registration_state: "unused",
+  expires_at: "2026-11-11T00:00:00Z",
+});
+const supportSavedReply = () => reply(201, {
+  submission_id: uid(70), request_id: uid(71), state: "queued",
+  created_at: "2026-11-10T00:00:00Z",
+});
+async function reviewSupport(page, text) {
+  page.elements["#support-content"].value = text;
+  await page.fire(page.elements["#support-form"], "submit");
+}
+test("Contact after a completed support save opens a new editable draft with fresh consent", async () => {
+  const page = await openPage({
+    [ASK]: [reply(200, unanswered("escalation_offered", "human_requested"))],
+    "POST /v1/escalations/submission-ids": supportRegistration(),
+    "POST /v1/escalations": supportSavedReply(),
+  });
+  await reviewSupport(page, "old request");
+  page.elements["#support-consent"].checked = true;
+  await page.fire(page.elements["#support-send"], "click");
+  assert.equal(page.elements["#support-done"].hidden, false);
+  await page.ask("new question");
+  await page.fire(page.el("contact"), "click");
+  assert.equal(page.elements["#support-form"].hidden, false);
+  assert.equal(page.elements["#support-done"].hidden, true);
+  assert.equal(page.elements["#support-content"].value, "new question");
+  assert.equal(page.elements["#support-consent"].checked, false);
+  await page.fire(page.elements["#support-form"], "submit");
+  await page.fire(page.elements["#support-send"], "click");
+  assert.equal(count(page, "POST /v1/escalations"), 1);
+});
+for (const unresolved of [false, true]) {
+  test(`Contact preserves existing support ${unresolved ? "recovery lock" : "review and consent"}`, async () => {
+    const page = await openPage({
+      [ASK]: [reply(200, unanswered("escalation_offered", "human_requested"))],
+      "POST /v1/escalations/submission-ids": supportRegistration(),
+      "POST /v1/escalations": new TypeError("lost"),
+      [`GET /v1/escalations/${uid(70)}`]: reply(502, undefined),
+    });
+    await reviewSupport(page, "existing request");
+    page.elements["#support-consent"].checked = true;
+    if (unresolved) await page.fire(page.elements["#support-send"], "click");
+    await page.ask("new question");
+    await page.fire(page.el("contact"), "click");
+    assert.equal(page.elements["#support-review"].hidden, false);
+    assert.equal(page.elements["#support-form"].hidden, true);
+    assert.equal(page.elements["#support-content"].value, "existing request");
+    assert.equal(page.elements["#support-consent"].checked, true);
+    assert.equal(page.elements["#support-edit"].disabled, unresolved);
+    if (unresolved) {
+      assert.equal(page.elements["#support-send"].textContent, "Check status");
+      await page.fire(page.elements["#support-another"], "click");
+      assert.equal(page.elements["#support-review"].hidden, false);
+      assert.equal(count(page, "POST /v1/escalations"), 1);
+    }
+  });
+}
+
+test("a late feedback response cannot unlock feedback already sending on the next inquiry", async () => {
+  const first = deferred();
+  const second = deferred();
+  const page = await openPage({
+    [ASK]: [reply(200, answered()), reply(200, answered({ inquiry_id: uid(4) }))],
+    [FEEDBACK]: [() => first.promise, () => second.promise],
+  });
+  await page.ask("first");
+  page.el("rating").value = "helpful";
+  await page.fire(page.el("feedback-form"), "submit");
+  await page.ask("second");
+  page.el("rating").value = "not_helpful";
+  await page.fire(page.el("feedback-form"), "submit");
+  first.resolve(reply(201, feedbackSaved()));
+  await settle();
+  assert.equal(page.el("feedback-send").disabled, true);
+  await page.fire(page.el("feedback-form"), "submit");
+  assert.equal(count(page, FEEDBACK), 2);
+  second.resolve(reply(201, feedbackSaved()));
+  await settle();
+  assert.match(page.el("feedback-status").textContent, /saved for review/);
+});
+
+test("feedback token timeout allows retry without locking an unsent payload", async () => {
+  let timeout;
+  const page = await openPage({ [ASK]: reply(200, answered()) });
+  await page.ask("vpn");
+  page.ctx.AbortController = AbortController;
+  page.ctx.setTimeout = fn => { timeout = fn; return 1; };
+  page.ctx.clearTimeout = () => {};
+  page.ctx.fetch = async (url, options) => new Promise((_, reject) =>
+    options.signal.addEventListener("abort", () =>
+      reject(Object.assign(new Error("aborted"), { name: "AbortError" }))));
+  page.el("rating").value = "helpful";
+  await page.fire(page.el("feedback-form"), "submit");
+  assert.equal(page.el("feedback-send").disabled, true);
+  timeout();
+  await settle();
+  assert.equal(page.el("feedback-send").disabled, false);
+  assert.equal(page.el("rating").disabled, false);
+  assert.equal(page.el("comment").readOnly, false);
+  assert.match(page.el("feedback-status").textContent, /Connection unavailable/);
 });

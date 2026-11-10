@@ -64,7 +64,7 @@ const ASK_CLARIFICATION_DEFAULT = "Please add more detail to your question and a
 const ASK_INVALID_MESSAGE =
   "We received a reply we could not verify, so we are not showing it. Your question is still here; try again or contact support.";
 const ASK_UNKNOWN_FEEDBACK =
-  "We could not confirm that your feedback was saved. You can send it again; it will not be counted twice.";
+  "We could not confirm that your feedback was saved. Your original feedback is locked while its outcome is uncertain. Send it again to retry; it will not be counted twice.";
 const ASK_TIMEOUT_MS = 30000;
 
 // Multi-line text may keep line breaks and tabs; single-line text may not.
@@ -82,7 +82,8 @@ const askBadText = (text, multiline) =>
 async function askReadJson(response) {
   try {
     return await response.json();
-  } catch {
+  } catch (error) {
+    if (error?.name === "AbortError") throw error;
     // Proxies may return an HTML error page instead of the application's JSON.
     return null;
   }
@@ -126,10 +127,14 @@ async function askApi(method, path, body) {
   let sent = false;
   let timer = null;
   try {
+    const controller = typeof AbortController === "function" ? new AbortController() : null;
+    if (controller && typeof setTimeout === "function")
+      timer = setTimeout(() => controller.abort(), ASK_TIMEOUT_MS);
+    const signal = controller?.signal;
     const headers = {};
     let payload;
     if (method !== "GET") {
-      const tokenResponse = await fetch("/v1/session", { credentials: "same-origin" });
+      const tokenResponse = await fetch("/v1/session", { credentials: "same-origin", signal });
       const tokenData = await askReadJson(tokenResponse);
       if (!tokenResponse.ok) return askNormalize(tokenResponse, tokenData, false);
       if (typeof tokenData?.csrf_token !== "string" || !tokenData.csrf_token)
@@ -138,12 +143,7 @@ async function askApi(method, path, body) {
       headers["X-CSRF-Token"] = tokenData.csrf_token;
       payload = JSON.stringify(body ?? {});
     }
-    const options = { method, credentials: "same-origin", headers, body: payload };
-    if (typeof AbortController === "function" && typeof setTimeout === "function") {
-      const controller = new AbortController();
-      timer = setTimeout(() => controller.abort(), ASK_TIMEOUT_MS);
-      options.signal = controller.signal;
-    }
+    const options = { method, credentials: "same-origin", headers, body: payload, signal };
     sent = true;
     const response = await fetch(path, options);
     return askNormalize(response, await askReadJson(response), true);
@@ -379,6 +379,7 @@ function askBuildFeedback(inquiry, input) {
 async function askSendFeedback(payload, api = askApi) {
   const result = await api("POST", "/v1/feedback", payload);
   if (result.status === 401) return { outcome: "redirect" };
+  if (!result.sent) return { outcome: "error", message: askDescribeFailure(result, "") };
   if (result.status === 201) {
     const data = result.data;
     return askValidUuid(data.feedback_id) && data.state === "pending_review"
@@ -386,11 +387,6 @@ async function askSendFeedback(payload, api = askApi) {
       : { outcome: "unknown", message: ASK_UNKNOWN_FEEDBACK };
   }
   if (result.status === 409) return { outcome: "recorded" };
-  if (result.status === 404 && result.code === "NOT_FOUND")
-    return {
-      outcome: "expired",
-      message: "This question is too old for feedback to be recorded.",
-    };
   if (result.status === 404)
     return { outcome: "unavailable", message: "Feedback is not available right now." };
   if (
@@ -445,6 +441,7 @@ function initQuestionFlow() {
     asked: "", // the question exactly as it was sent
     feedbackBusy: false,
     feedbackDone: false,
+    feedbackPending: null,
   };
 
   function say(text, tone = false) {
@@ -461,11 +458,11 @@ function initQuestionFlow() {
   function refreshControls() {
     el.submit.disabled = ui.busy;
     el.clear.disabled = ui.busy;
-    const frozen = ui.feedbackBusy || ui.feedbackDone;
+    const frozen = ui.feedbackBusy || ui.feedbackDone || !!ui.feedbackPending;
     el.rating.disabled = frozen;
     el.category.disabled = frozen;
     el.comment.readOnly = frozen;
-    el.feedbackSend.disabled = frozen;
+    el.feedbackSend.disabled = ui.feedbackBusy || ui.feedbackDone;
   }
   function closeSource() {
     ui.sourceToken += 1;
@@ -522,6 +519,7 @@ function initQuestionFlow() {
   function resetFeedback(inquiry) {
     ui.feedbackBusy = false;
     ui.feedbackDone = false;
+    ui.feedbackPending = null;
     el.rating.value = "";
     el.comment.value = "";
     const options = [{ value: "", label: "Choose a reason (optional)" }].concat(
@@ -598,32 +596,37 @@ function initQuestionFlow() {
   function contactSupport() {
     const section = document.querySelector("#support");
     if (!section) return;
-    section.hidden = false;
-    const box = document.querySelector("#support-content");
-    // Offer the question as a starting point, but never overwrite what the customer typed.
-    if (box && !box.value.trim() && ui.asked) box.value = ui.asked;
-    box?.focus?.();
-    section.scrollIntoView?.();
+    section.dispatchEvent(new CustomEvent("deskguide:support-open", {
+      detail: { question: ui.asked },
+    }));
   }
 
   /* ----- feedback ----- */
   async function sendFeedback() {
     if (!ui.inquiry || ui.feedbackBusy || ui.feedbackDone) return;
     const inquiry = ui.inquiry;
-    const built = askBuildFeedback(inquiry, {
-      rating: el.rating.value,
-      category: el.category.value,
-      comment: el.comment.value,
-    });
+    const built = ui.feedbackPending
+      ? { payload: ui.feedbackPending }
+      : askBuildFeedback(inquiry, {
+          rating: el.rating.value,
+          category: el.category.value,
+          comment: el.comment.value,
+        });
     if (built.error) return sayFeedback(built.error);
+    // Retries must use exactly the first uncertain submission, not newly edited text.
+    const payload = built.payload;
+    el.rating.value = payload.rating;
+    el.category.value = payload.category ?? "";
+    el.comment.value = payload.comment ?? "";
+    el.categoryBox.hidden = payload.rating !== "not_helpful";
     ui.feedbackBusy = true;
     refreshControls();
     sayFeedback("Sending your feedback…");
     let outcome;
     try {
-      outcome = await askSendFeedback(built.payload);
+      outcome = await askSendFeedback(payload);
     } finally {
-      ui.feedbackBusy = false;
+      if (ui.inquiry === inquiry) ui.feedbackBusy = false;
     }
     // A late answer for an earlier question never touches the current one.
     if (ui.inquiry?.inquiryId !== inquiry.inquiryId) return;
@@ -633,11 +636,11 @@ function initQuestionFlow() {
       sayFeedback(
         outcome.outcome === "saved"
           ? "Thank you. Your feedback was saved for review."
-          : "Your feedback for this question was already recorded.",
+          : "Feedback for this question was already recorded. This attempt did not replace it.",
         true,
       );
     } else {
-      if (outcome.outcome === "expired") ui.feedbackDone = true;
+      if (outcome.outcome === "unknown") ui.feedbackPending = payload;
       sayFeedback(outcome.message);
     }
     refreshControls();
