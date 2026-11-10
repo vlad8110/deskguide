@@ -211,8 +211,10 @@ def test_normal_startup_imports_and_opens_pinned_guide(tmp_path, monkeypatch, si
     assert runner.invoke(args=["init-db"]).exit_code == 0
     assert runner.invoke(args=["seed-demo", "--password", PASSWORD]).exit_code == 0
 
-    def import_guides():
-        return runner.invoke(args=["import-citation-release", str(release_path)])
+    def import_guides(*options):
+        return runner.invoke(
+            args=["import-citation-release", str(release_path), *options]
+        )
 
     rejected = import_guides()
     assert rejected.exit_code == 1
@@ -225,6 +227,12 @@ def test_normal_startup_imports_and_opens_pinned_guide(tmp_path, monkeypatch, si
     app = create_app()
     client = app.test_client()
     assert sign_in(client, "customer-demo").status_code == 200
+    assert client.get(URL + "?version=3").status_code == 404
+    bad_grant = import_guides("--grant-customer", "DOC-999")
+    assert bad_grant.exit_code == 1
+    assert "Customer grants require a current source" in bad_grant.output
+    assert client.get(URL + "?version=3").status_code == 404
+    assert import_guides("--grant-customer", "DOC-003").exit_code == 0
     response = client.get(URL + "?version=3")
     assert response.status_code == 200
     assert response.json["text"] == "Select Campus."

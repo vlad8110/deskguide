@@ -48,7 +48,7 @@ After initializing the database, import the reviewed guides and point normal sta
 DESKGUIDE_CITATION_RELEASE=/path/to/release.json .venv/bin/python -m flask --app app run
 ```
 
-The importer grants the customer role for newly imported sources and preserves existing grants and retirement state on reimport. A customer role grant with no customer-specific rows grants access to the customer role. To close access when removing the final individual grant, remove the role grant in the same transaction. An unset release serves no sources. Invalid release configuration or a stored hash that differs from the selected pin returns 503. Run `.venv/bin/python -m pytest -q tests/test_sources.py` to test startup, import and the route with fictional data in a temporary database.
+Import does not grant access by default and preserves existing grants and retirement state. For a current source that is approved for all customers, pass `--grant-customer DOC-003` to `import-citation-release`. Repeat the option for each source that should receive this grant. A customer role grant with no customer-specific rows grants access to the customer role. To close access when removing the final individual grant, remove the role grant in the same transaction. An unset release serves no sources. Invalid release configuration or a stored hash that differs from the selected pin returns 503. Run `.venv/bin/python -m pytest -q tests/test_sources.py` to test startup, import and the route with fictional data in a temporary database.
 
 ## Admission, time and storage
 

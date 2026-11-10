@@ -137,12 +137,24 @@ def _guide(path, source_id, version, digest):
 @click.argument(
     "release_file", type=click.Path(exists=True, dir_okay=False, path_type=Path)
 )
+@click.option(
+    "--grant-customer",
+    "customer_sources",
+    multiple=True,
+    metavar="SOURCE_ID",
+    help="Grant the customer role access to this current source. Repeat for each source.",
+)
 @with_appcontext
-def import_citation_release(release_file):
+def import_citation_release(release_file, customer_sources):
     """Import the hashed guides in an approved fictional citation release."""
     try:
         release = _read_release(release_file)
         current, historical, _ = parse_release(release)
+        for source_id in customer_sources:
+            if source_id not in current:
+                raise ValueError(
+                    f"Customer grants require a current source: {source_id}."
+                )
         pins = {
             source_id: {version: digest}
             for source_id, (version, digest) in current.items()
@@ -155,16 +167,11 @@ def import_citation_release(release_file):
             for source_id, versions in pins.items():
                 for version, digest in versions.items():
                     title, sections = _guide(release_file, source_id, version, digest)
-                    created = db.execute(
+                    db.execute(
                         "INSERT INTO documents (source_id,title,created_at) VALUES (?,?,?) "
                         "ON CONFLICT(source_id) DO NOTHING",
                         (source_id, title, now()),
-                    ).rowcount
-                    if created:
-                        db.execute(
-                            "INSERT INTO document_role_grants VALUES (?,'customer')",
-                            (source_id,),
-                        )
+                    )
                     existing = db.execute(
                         "SELECT content_hash FROM document_versions "
                         "WHERE source_id=? AND source_version=?",
@@ -187,6 +194,14 @@ def import_citation_release(release_file):
                             for section_id, (heading, text) in sections.items()
                         ),
                     )
+            db.executemany(
+                """
+                INSERT INTO document_role_grants (source_id, role)
+                VALUES (?, 'customer')
+                ON CONFLICT(source_id, role) DO NOTHING
+                """,
+                ((source_id,) for source_id in customer_sources),
+            )
     except (OSError, ValueError, sqlite3.Error) as error:
         raise click.ClickException(str(error)) from None
     click.echo("Citation release guides imported.")
