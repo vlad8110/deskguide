@@ -8,6 +8,7 @@ from itsdangerous import BadSignature, URLSafeSerializer
 from .access import current_access, require_roles
 from .clock import now, timestamp
 from .db import get_db
+from .errors import ApiError
 from .support import (
     RETENTION,
     _conflict,
@@ -165,6 +166,12 @@ def claim(request_id):
     agent = current_access().subject_id
     with _transaction(agent_update=True) as connection:
         row = _retained(connection, request_id)
+        if row["assigned_agent_id"] not in (None, agent):
+            raise ApiError(
+                409,
+                "ALREADY_CLAIMED",
+                "Another agent has already taken this request. Reload the queue.",
+            )
         if row["state"] != "queued" or row["assigned_agent_id"] is not None:
             _conflict("This request has already been claimed. Reload the queue.")
         changed = connection.execute(
@@ -208,12 +215,18 @@ def transition(request_id):
     agent = current_access().subject_id
     with _transaction(agent_update=True) as connection:
         row = _retained(connection, request_id)
-        if (
-            row["assigned_agent_id"] != agent
-            or row["version"] != version
-            or target not in TRANSITIONS.get(row["state"], ())
+        if row["assigned_agent_id"] not in (None, agent):
+            _not_found()
+        if row["assigned_agent_id"] != agent or target not in TRANSITIONS.get(
+            row["state"], ()
         ):
             _conflict()
+        if row["version"] != version:
+            raise ApiError(
+                409,
+                "STALE_VERSION",
+                "This request changed. Reload it and decide again.",
+            )
         changed = connection.execute(
             "UPDATE support_requests SET state=?,assigned_agent_id=?,version=version+1,resolved_at=? WHERE request_id=? AND assigned_agent_id=? AND version=? AND state=?",
             (

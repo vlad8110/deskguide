@@ -217,14 +217,14 @@ def test_claim_has_no_body_and_uses_server_identity(api_factory, new_request):
     assert post(agent, f"{BASE}/{rid}/claim").status_code == 409
 
 
-def test_nonowner_update_conflicts_without_changing_or_exposing_content(
+def test_nonowner_update_is_hidden_without_changing_or_exposing_content(
     owned, api_factory
 ):
     rid, _ = owned
     other = api_factory("agent-two")
     response = transition(other, rid, "in_review", 2)
     assert (
-        response.status_code == 409 and "Fictional support request" not in response.text
+        response.status_code == 404 and "Fictional support request" not in response.text
     )
     assert other[0].get(f"{BASE}/{rid}").status_code == 404
     assert transition(other, str(uuid4()), "in_review", 2).status_code == 404
@@ -325,7 +325,7 @@ def test_release_requires_reason_clears_ownership_and_allows_new_claim(
     second = api_factory("agent-two")
     assert post(second, f"{BASE}/{rid}/claim").json["assigned_agent_id"] == "a2"
     assert (
-        transition(agent, rid, "in_review", response.json["version"]).status_code == 409
+        transition(agent, rid, "in_review", response.json["version"]).status_code == 404
     )
     with app.app_context():
         event = (
@@ -419,13 +419,15 @@ def test_two_simultaneous_agents_claim_once(app, new_request, api_factory):
 
     def work(agent):
         barrier.wait(timeout=10)
-        response = post(agent, f"{BASE}/{rid}/claim")
-        return response.status_code, response.json.get("assigned_agent_id")
+        return post(agent, f"{BASE}/{rid}/claim")
 
     with ThreadPoolExecutor(max_workers=2) as pool:
         results = list(pool.map(work, agents))
-    assert sorted(r[0] for r in results) == [200, 409]
-    winner = next(r[1] for r in results if r[0] == 200)
+    successful, rejected = sorted(results, key=lambda response: response.status_code)
+    assert successful.status_code == 200
+    assert rejected.status_code == 409
+    assert rejected.json["error"]["code"] == "ALREADY_CLAIMED"
+    winner = successful.json["assigned_agent_id"]
     with app.app_context():
         assert tuple(
             get_db()
@@ -598,3 +600,159 @@ def test_retention_hides_all_views_and_cleanup_cascades_messages_and_audit(
             "support_agent_messages",
         ):
             assert get_db().execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] == 0
+
+
+def test_confirmed_c5_error_precedence_and_hidden_ownership(app, owned, api_factory):
+    rid, owner = owned
+    other = api_factory("agent-two")
+    claim = post(other, f"{BASE}/{rid}/claim")
+    assert claim.status_code == 409 and claim.json["error"]["code"] == "ALREADY_CLAIMED"
+    own_claim = post(owner, f"{BASE}/{rid}/claim")
+    assert (
+        own_claim.status_code == 409 and own_claim.json["error"]["code"] == "CONFLICT"
+    )
+    hidden = transition(other, rid, "resolved", 1, resolution_note="Must stay hidden")
+    missing = transition(
+        other, str(uuid4()), "resolved", 1, resolution_note="Must stay hidden"
+    )
+    assert hidden.status_code == missing.status_code == 404
+    assert hidden.json["error"]["code"] == missing.json["error"]["code"] == "NOT_FOUND"
+    assert hidden.json["error"]["message"] == missing.json["error"]["message"]
+    illegal = transition(
+        owner, rid, "resolved", 1, resolution_note="Wrong state and stale"
+    )
+    assert illegal.status_code == 409 and illegal.json["error"]["code"] == "CONFLICT"
+    stale = transition(owner, rid, "in_review", 1)
+    assert stale.status_code == 409 and stale.json["error"]["code"] == "STALE_VERSION"
+    assert stale.json["error"]["retryable"] is False
+    released = transition(owner, rid, "queued", 2, release_reason="Release")
+    assert released.status_code == 200
+    queued = transition(owner, rid, "in_review", 2)
+    assert queued.status_code == 409 and queued.json["error"]["code"] == "CONFLICT"
+    assert owner[0].get(f"{BASE}/{rid}").status_code == 404
+    with app.app_context():
+        assert (
+            get_db()
+            .execute(
+                "SELECT COUNT(*) FROM support_state_events WHERE request_id=?", (rid,)
+            )
+            .fetchone()[0]
+            == 2
+        )
+
+
+def test_old_unused_reply_id_survives_release_and_reclaim(waiting, api_factory):
+    rid, first_agent = waiting
+    customer = api_factory("customer-one")
+    registered = post(
+        customer, f"/v1/escalations/{rid}/reply-ids", {"operation": "reply"}
+    )
+    assert (
+        registered.json["state"] == "waiting_for_customer"
+        and registered.json["version"] == 4
+    )
+    sid = registered.json["submission_id"]
+    assert (
+        transition(first_agent, rid, "queued", 4, release_reason="Hand off").status_code
+        == 200
+    )
+    second_agent = api_factory("agent-two")
+    assert post(second_agent, f"{BASE}/{rid}/claim").json["version"] == 6
+    assert transition(second_agent, rid, "in_review", 6).status_code == 200
+    assert (
+        transition(
+            second_agent,
+            rid,
+            "waiting_for_customer",
+            7,
+            message_to_customer="Please review the new question",
+        ).status_code
+        == 200
+    )
+    stale = post(
+        customer,
+        f"/v1/escalations/{rid}/replies",
+        dict(submission_id=sid, message="Reviewed reply", expected_version=4),
+    )
+    assert stale.json["error"]["code"] == "STALE_VERSION"
+    detail = customer[0].get(f"/v1/escalations/requests/{rid}").json
+    assert (
+        detail["version"] == 8
+        and detail["messages"][-1]["content"] == "Please review the new question"
+    )
+    result = post(
+        customer,
+        f"/v1/escalations/{rid}/replies",
+        dict(
+            submission_id=sid,
+            message="Reviewed reply",
+            expected_version=detail["version"],
+        ),
+    )
+    assert result.status_code == 201 and result.json["version"] == 9
+    assert second_agent[0].get(f"{BASE}/{rid}").json["assigned_agent_id"] == "a2"
+
+
+@pytest.mark.parametrize("first", ["release", "reply"])
+def test_controlled_reply_release_commit_orders(app, waiting, api_factory, first):
+    from threading import Event
+
+    rid, agent = waiting
+    customer = api_factory("customer-one")
+    sid = post(
+        customer, f"/v1/escalations/{rid}/reply-ids", {"operation": "reply"}
+    ).json["submission_id"]
+    reply_body = dict(
+        submission_id=sid, message="Reviewed race reply", expected_version=4
+    )
+    barrier = Barrier(2)
+    committed = Event()
+
+    def perform(kind):
+        barrier.wait(timeout=10)
+        if kind != first:
+            assert committed.wait(timeout=10)
+        try:
+            if kind == "release":
+                return transition(
+                    agent, rid, "queued", 4, release_reason="Release racing reply"
+                )
+            return post(customer, f"/v1/escalations/{rid}/replies", reply_body)
+        finally:
+            if kind == first:
+                committed.set()
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        a, b = pool.submit(perform, "release"), pool.submit(perform, "reply")
+        released, replied = a.result(timeout=15), b.result(timeout=15)
+    status = customer[0].get("/v1/escalations/" + sid).json
+    if first == "release":
+        assert released.status_code == 200
+        assert (
+            replied.status_code == 409
+            and replied.json["error"]["code"] == "NOT_WAITING_FOR_CUSTOMER"
+        )
+        assert status["state"] == "queued" and status["saved"] is False
+    else:
+        assert replied.status_code == 201
+        assert (
+            released.status_code == 409
+            and released.json["error"]["code"] == "STALE_VERSION"
+        )
+        assert status["state"] == "in_review" and status["saved"] is True
+        assert (
+            post(customer, f"/v1/escalations/{rid}/replies", reply_body).status_code
+            == 200
+        )
+    assert status["version"] == 5
+    with app.app_context():
+        db = get_db()
+        assert db.execute(
+            "SELECT COUNT(*) FROM support_replies WHERE request_id=?", (rid,)
+        ).fetchone()[0] == (first == "reply")
+        assert (
+            db.execute(
+                "SELECT COUNT(*) FROM support_state_events WHERE request_id=?", (rid,)
+            ).fetchone()[0]
+            == 4
+        )

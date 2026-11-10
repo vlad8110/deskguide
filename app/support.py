@@ -344,6 +344,7 @@ def _register(operation, parent=None):
     )
     if parent:
         result["request_id"] = parent
+        result["state"] = row["state"]
         result["version"] = row["version"]
     return _envelope(**result), 201
 
@@ -372,6 +373,7 @@ def _saved_request(row, submission_id):
         request_id=row["request_id"],
         submission_id=submission_id,
         state=row["state"],
+        version=row["version"],
         created_at=timestamp(row["created_at"]),
         acknowledgement="Your request has been saved.",
     )
@@ -568,6 +570,28 @@ def submit_reply(request_id):
         state=row["state"],
         version=row["version"],
     ), status
+
+
+@bp.get("/requests")
+@require_roles("customer")
+def list_customer_requests():
+    rows = get_db().execute(
+        "SELECT request_id, state, version, created_at FROM support_requests "
+        "WHERE customer_id=? AND (resolved_at IS NULL OR resolved_at>?) "
+        "ORDER BY created_at DESC, request_id DESC",
+        (current_access().customer_scope, now() - RETENTION),
+    )
+    return _envelope(
+        items=[
+            {
+                "request_id": row["request_id"],
+                "state": row["state"],
+                "version": row["version"],
+                "created_at": timestamp(row["created_at"]),
+            }
+            for row in rows
+        ]
+    )
 
 
 @bp.get("/requests/<request_id>")
