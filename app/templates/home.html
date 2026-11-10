@@ -9,13 +9,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='workspace.css') }}" />
     <script src="{{ url_for('static', filename='workspace.js') }}" defer></script>
     <script src="{{ url_for('static', filename='support.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='agent.js') }}" defer></script>
   </head>
   <body>
     <header>
       <a href="/" class="brand">DeskGuide</a>
       <span>Local alpha workspace</span>
     </header>
-    <main>
+    <main{% if account and account['role'] == 'agent' %} class="wide"{% endif %}>
       {% if account %}
         <p class="eyebrow">YOUR WORKSPACE</p>
         <h1>Welcome, {{ account['username'] }}</h1>
@@ -57,6 +58,69 @@
               </button>
             </div>
             <p id="support-status" role="status" aria-live="polite"></p>
+          </section>
+        {% elif account['role'] == 'agent' %}
+          <section id="agent" aria-labelledby="agent-heading" hidden>
+            <div id="agent-queue-view">
+              <h2 id="agent-heading">Support queue</h2>
+              <p>
+                Unassigned requests and requests assigned to you. Claim a request to
+                read its details.
+              </p>
+              <div class="actions">
+                <label for="agent-filter" class="visually-hidden">Show</label>
+                <select id="agent-filter">
+                  <option value="">All of mine and unassigned</option>
+                  <option value="queued">Unassigned</option>
+                  <option value="assigned">Assigned to me</option>
+                  <option value="in_review">In review</option>
+                  <option value="waiting_for_customer">Waiting for the customer</option>
+                  <option value="resolved">Resolved</option>
+                </select>
+                <button id="agent-refresh" type="button" class="secondary">Refresh</button>
+              </div>
+              <ul id="agent-list" class="agent-list"></ul>
+              <p id="agent-empty" class="notice" hidden>No requests to show right now.</p>
+              <button id="agent-more" type="button" class="secondary" hidden>Load more</button>
+              <button id="agent-retry" type="button" class="secondary" hidden>Try again</button>
+            </div>
+            <div id="agent-detail-view" hidden>
+              <button id="agent-back" type="button" class="secondary">Back to the queue</button>
+              <h2 id="agent-detail-title"></h2>
+              <p id="agent-detail-state" class="notice"></p>
+              <h3>Customer request</h3>
+              <p class="review-box" id="agent-content"></p>
+              <p class="review-box" id="agent-note"></p>
+              <h3>Conversation</h3>
+              <p id="agent-no-messages">No messages yet.</p>
+              <ul id="agent-messages" class="agent-messages"></ul>
+              <button id="agent-reload" type="button" class="secondary" hidden>Reload</button>
+              <div id="agent-start-box" hidden>
+                <button id="agent-start" type="button">Start review</button>
+              </div>
+              <div id="agent-resume-box" hidden>
+                <button id="agent-resume" type="button">Resume review</button>
+              </div>
+              <div id="agent-ask-box" hidden>
+                <label for="agent-ask">Ask the customer for information (they will see this)</label>
+                <textarea id="agent-ask" rows="3" maxlength="2000"></textarea>
+                <button id="agent-ask-send" type="button">Send question to customer</button>
+              </div>
+              <div id="agent-resolve-box" hidden>
+                <label for="agent-resolution">Internal resolution note (the customer will not see this)</label>
+                <textarea id="agent-resolution" rows="3" maxlength="2000"></textarea>
+                <button id="agent-resolve-send" type="button">Resolve (cannot be reopened)</button>
+              </div>
+              <div id="agent-release-box" hidden>
+                <label for="agent-release-reason">Release reason (internal; not stored with the request)</label>
+                <textarea id="agent-release-reason" rows="2" maxlength="500"></textarea>
+                <button id="agent-release-send" type="button" class="secondary">Release to the queue</button>
+              </div>
+              <p id="agent-resolved-box" class="notice" hidden>
+                This request is resolved. It cannot be reopened.
+              </p>
+            </div>
+            <p id="agent-status" role="status" aria-live="polite"></p>
           </section>
         {% else %}
           <p class="notice">
