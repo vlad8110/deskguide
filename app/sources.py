@@ -5,7 +5,13 @@ from dataclasses import asdict
 from flask import Blueprint, current_app, g, jsonify, request
 
 from .access import current_access
-from .citation_release import SECTION_ID, SOURCE_ID, parse_release, source_version
+from .citation_release import (
+    SECTION_ID,
+    SOURCE_ID,
+    parse_release,
+    source_version,
+    stored_guide,
+)
 from .clock import now
 from .db import get_db
 from .errors import CONTRACT_VERSION, ApiError
@@ -96,7 +102,16 @@ def get_section(source_id, section_id):
     )
     if section is None:
         raise ApiError(404, "NOT_FOUND", "The requested item is unavailable.")
-    if section["content_hash"] != digest:
+    expected = current_app.extensions.get("citation_release_content", {}).get(
+        (source_id, version, digest)
+    )
+    if (
+        section["content_hash"] != digest
+        or expected is None
+        or stored_guide(get_db(), source_id, version) != expected
+        or (section["document_title"], section["section_title"], section["content"])
+        != (expected[0], *expected[1].get(section_id, (None, None)))
+    ):
         raise _unavailable()
 
     return jsonify(

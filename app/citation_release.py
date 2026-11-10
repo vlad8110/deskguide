@@ -6,6 +6,7 @@ import os
 import re
 import sqlite3
 from pathlib import Path
+from types import MappingProxyType
 
 import click
 from flask.cli import with_appcontext
@@ -133,6 +134,42 @@ def _guide(path, source_id, version, digest):
     return title, rows
 
 
+def _release_pins(release):
+    current, historical, _ = parse_release(release)
+    pins = {
+        source_id: {version: digest} for source_id, (version, digest) in current.items()
+    }
+    for source_id, versions in historical.items():
+        pins.setdefault(source_id, {}).update(versions)
+    return pins
+
+
+def _verified_guides(path, release):
+    """Keep reviewed file content outside the mutable source database."""
+    guides = {}
+    for source_id, versions in _release_pins(release).items():
+        for version, digest in versions.items():
+            title, sections = _guide(path, source_id, version, digest)
+            guides[source_id, version, digest] = (title, MappingProxyType(sections))
+    return MappingProxyType(guides)
+
+
+def stored_guide(db, source_id, version):
+    """Read the complete title and section set for an imported version."""
+    document = db.execute(
+        "SELECT title FROM documents WHERE source_id=?", (source_id,)
+    ).fetchone()
+    sections = db.execute(
+        "SELECT section_id, title, content FROM document_sections "
+        "WHERE source_id=? AND source_version=?",
+        (source_id, version),
+    ).fetchall()
+    return (
+        document["title"] if document else None,
+        {row["section_id"]: (row["title"], row["content"]) for row in sections},
+    )
+
+
 @click.command("import-citation-release")
 @click.argument(
     "release_file", type=click.Path(exists=True, dir_okay=False, path_type=Path)
@@ -149,18 +186,13 @@ def import_citation_release(release_file, customer_sources):
     """Import the hashed guides in an approved fictional citation release."""
     try:
         release = _read_release(release_file)
-        current, historical, _ = parse_release(release)
+        current, _, _ = parse_release(release)
         for source_id in customer_sources:
             if source_id not in current:
                 raise ValueError(
                     f"Customer grants require a current source: {source_id}."
                 )
-        pins = {
-            source_id: {version: digest}
-            for source_id, (version, digest) in current.items()
-        }
-        for source_id, versions in historical.items():
-            pins.setdefault(source_id, {}).update(versions)
+        pins = _release_pins(release)
         db = get_db()
         db.execute("BEGIN IMMEDIATE")
         with db:
@@ -172,13 +204,19 @@ def import_citation_release(release_file, customer_sources):
                         "ON CONFLICT(source_id) DO NOTHING",
                         (source_id, title, now()),
                     )
+                    stored_title, stored_sections = stored_guide(db, source_id, version)
+                    if stored_title != title:
+                        raise ValueError(f"{source_id} has a different stored title.")
                     existing = db.execute(
                         "SELECT content_hash FROM document_versions "
                         "WHERE source_id=? AND source_version=?",
                         (source_id, version),
                     ).fetchone()
                     if existing is not None:
-                        if existing["content_hash"] != digest:
+                        if (
+                            existing["content_hash"] != digest
+                            or stored_sections != sections
+                        ):
                             raise ValueError(
                                 f"{source_id} version {version} has different content."
                             )
@@ -213,8 +251,12 @@ def init_app(app):
         "CITATION_RELEASE"
     )
     if path and app.config["CITATION_RELEASE"] is None:
+        app.extensions.pop("citation_release_content", None)
         try:
-            app.config["CITATION_RELEASE"] = _read_release(Path(path))
+            release = _read_release(Path(path))
+            guides = _verified_guides(Path(path), release)
+            app.extensions["citation_release_content"] = guides
+            app.config["CITATION_RELEASE"] = release
         except (OSError, ValueError):
             # Keep the application available while source lookup fails closed.
             app.config["CITATION_RELEASE"] = path
