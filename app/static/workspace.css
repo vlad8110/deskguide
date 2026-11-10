@@ -296,9 +296,47 @@ select:focus-visible {
   color: #1d6b3a;
 }
 
-/* Customer conversation screen. */
-#conversations {
+/* Customer conversation and question screens. */
+#conversations,
+#questions {
   margin-top: 2rem;
+}
+
+.ask-sources {
+  list-style: none;
+  padding: 0;
+  margin: 0.6rem 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.ask-source,
+.ask-feedback {
+  border: 1px solid #d8e0e9;
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  margin: 1rem 0;
+}
+
+#ask-source-text,
+#ask-answer {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+#ask-status,
+#ask-feedback-status {
+  min-height: 1.6rem;
+  color: #9a2424;
+}
+
+#ask-status.ok,
+#ask-feedback-status.ok {
+  color: #1d6b3a;
+}
+
+#ask-status.info {
+  color: #3c5570;
 }
 
 #conv-status {

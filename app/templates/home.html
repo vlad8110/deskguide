@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='workspace.css') }}" />
     <script src="{{ url_for('static', filename='workspace.js') }}" defer></script>
     <script src="{{ url_for('static', filename='support.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='question.js') }}" defer></script>
     <script src="{{ url_for('static', filename='conversation.js') }}" defer></script>
     <script src="{{ url_for('static', filename='agent.js') }}" defer></script>
   </head>
@@ -24,9 +25,64 @@
         <p>You are signed in as <strong>{{ account['role'] }}</strong>.</p>
         {% if account['role'] == 'customer' %}
           <p class="notice">
-            The question and source screens are not available yet. You can contact
-            support and follow your requests below.
+            Ask a question about the DeskGuide guides, contact support, and follow your
+            requests below.
           </p>
+          <section id="questions" aria-labelledby="ask-heading" hidden>
+            <h2 id="ask-heading">Ask a question</h2>
+            <form id="ask-form" novalidate>
+              <label for="ask-question">Your question (up to 1,000 characters)</label>
+              <textarea id="ask-question" rows="3"></textarea>
+              <p>Line breaks are treated as spaces.</p>
+              <div class="actions">
+                <button id="ask-submit" type="submit">Ask</button>
+                <button id="ask-clear" type="button" class="secondary">Clear</button>
+              </div>
+            </form>
+            <div id="ask-result" hidden>
+              <h3 id="ask-headline"></h3>
+              <p class="review-box" id="ask-answer" hidden></p>
+              <p class="notice" id="ask-notice" hidden></p>
+              <div id="ask-sources-box" hidden>
+                <h4>Sources</h4>
+                <ul id="ask-sources" class="ask-sources"></ul>
+              </div>
+              <div id="ask-source-view" class="ask-source" hidden>
+                <h4 id="ask-source-title"></h4>
+                <p class="review-box" id="ask-source-text"></p>
+                <button id="ask-source-close" type="button" class="secondary">
+                  Close source
+                </button>
+              </div>
+              <div id="ask-offer" hidden>
+                <button id="ask-contact" type="button" class="secondary">
+                  Contact support about this
+                </button>
+              </div>
+              <div id="ask-feedback" class="ask-feedback" hidden>
+                <h4>Was this helpful?</h4>
+                <form id="ask-feedback-form" novalidate>
+                  <label for="ask-rating">Your rating</label>
+                  <select id="ask-rating">
+                    <option value="">Choose</option>
+                    <option value="helpful">Helpful</option>
+                    <option value="not_helpful">Not helpful</option>
+                  </select>
+                  <div id="ask-category-box" hidden>
+                    <label for="ask-category">What went wrong?</label>
+                    <select id="ask-category"></select>
+                  </div>
+                  <label for="ask-comment">Comment (optional, up to 500 characters)</label>
+                  <textarea id="ask-comment" rows="2"></textarea>
+                  <button id="ask-feedback-send" type="submit" class="secondary">
+                    Send feedback
+                  </button>
+                </form>
+                <p id="ask-feedback-status" role="status" aria-live="polite"></p>
+              </div>
+            </div>
+            <p id="ask-status" role="status" aria-live="polite"></p>
+          </section>
           <section id="support" aria-labelledby="support-heading" hidden>
             <h2 id="support-heading">Contact support</h2>
             <form id="support-form" method="post" action="/" novalidate>
