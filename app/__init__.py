@@ -19,7 +19,16 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import generate_password_hash
 
-from . import accounts, agent_support, auth, db, inquiries, support
+from . import (
+    accounts,
+    agent_support,
+    auth,
+    citation_release,
+    db,
+    inquiries,
+    sources,
+    support,
+)
 from .errors import CONTRACT_VERSION, ApiError, error_response
 
 
@@ -85,6 +94,7 @@ def create_app(test_config=None):
         LOGIN_WINDOW_SECONDS=900,
         MAX_CONTENT_LENGTH=16 * 1024,
         TIME_PROVIDER=time.time,
+        CITATION_RELEASE=None,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ENGINE_OPTIONS={
             "connect_args": {"timeout": 5},
@@ -141,8 +151,10 @@ def create_app(test_config=None):
     ).serializer = JsonSessionSerializer()
     db.init_app(app)
     accounts.init_app(app)
+    citation_release.init_app(app)
     app.register_blueprint(auth.bp)
     inquiries.init_app(app)
+    app.register_blueprint(sources.bp)
     support.init_app(app)
     agent_support.init_app(app)
 
