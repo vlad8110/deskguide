@@ -205,6 +205,22 @@ def test_failed_prechecks_make_zero_generation_calls(
 
 
 @pytest.mark.parametrize(
+    "ref",
+    [
+        replace(REF, source_id="DOC-3"),
+        replace(REF, section_id="s/2"),
+        replace(REF, source_version="0"),
+        replace(REF, source_version="9223372036854775808"),
+    ],
+)
+def test_unresolvable_source_reference_stops_before_generation(ask, services, ref):
+    passage = replace(services.retrieved.passages[0], ref=ref)
+    services.retrieved = replace(services.retrieved, passages=(passage,))
+    assert_no_answer(ask(), "temporarily_unavailable", "service_unavailable")
+    assert [call[0] for call in services.calls] == ["retrieve"]
+
+
+@pytest.mark.parametrize(
     "change",
     [
         lambda e: None,
