@@ -59,3 +59,41 @@ No database, application startup or provider configuration is changed.
 
 After approval, lock the reviewed snapshot before evaluation. Changes
 require a new identified revision and review.
+
+## PR #21 review follow-up
+
+The initial demo uses three fictional guides instead of the earlier
+8–12-document target so the team can review every source and evidence
+mapping before integration. The reduced scope is pending team acceptance.
+
+Q01–Q20 remain the baseline. Of the 16 questions labeled supported,
+12 are eligible under the strict alias policy: eight exact aliases and
+four whitespace variants of existing intents. The other four supported
+questions are coverage misses. The remaining four baseline questions
+are unsupported. The 12/16 figure describes fixture eligibility, not
+measured answer accuracy. Whitespace variants add no new intents.
+
+Count the four supplemental questions and eight permission/version
+scenarios separately. Q01–Q12 expect one provider call only after all
+prechecks pass; a failed precheck expects zero. Q13–Q20 and all four
+supplemental questions expect zero. These are fixture expectations.
+
+### Proposed release identity and authority
+
+The test pin hashes the exact UTF-8 section text with SHA-256, excluding
+JSON syntax and any added newline. For a runtime release, the proposal
+is to record SHA-256 digests of the exact reviewed UTF-8 file bytes,
+including their existing whitespace and line endings. One release record
+binds the evidence manifest and all three source files to their digests
+and exact source versions. Verify the pins before use. Missing, retired,
+or mismatched content blocks generation; never substitute a newer version.
+
+Release approval does not grant document access. Retrieval and exact
+citation lookup must enforce current grants, including after rollback.
+
+Proposed authority, pending team confirmation: a designated release
+authorizer other than the author approves the exact reviewed release.
+Only that role may activate it or roll back to a previously approved
+release after checking its pins and current eligibility. If no approved
+release is eligible, leave runtime disabled. This PR does not activate
+a release.

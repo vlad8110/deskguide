@@ -25,7 +25,9 @@
           "text": "Open the demo sign-in page and select Forgot password."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q02",
@@ -47,7 +49,9 @@
           "text": "Use the reset link sent to your demo email address to choose a new password."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q03",
@@ -69,7 +73,9 @@
           "text": "If your reset link has expired, request a new link from the demo sign-in page."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q04",
@@ -91,7 +97,9 @@
           "text": "Select the Acme-Campus demo Wi-Fi network and sign in with your demo account."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q05",
@@ -113,7 +121,9 @@
           "text": "Visitors use the Acme-Guest demo Wi-Fi network and the guest code supplied by their host."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q06",
@@ -135,7 +145,9 @@
           "text": "If the demo Wi-Fi connection fails, forget the network and reconnect."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q07",
@@ -157,7 +169,9 @@
           "text": "You need an active demo account."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q08",
@@ -179,7 +193,9 @@
           "text": "Install the Acme VPN client, sign in, and select the Campus profile."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q09",
@@ -201,7 +217,9 @@
           "text": "Open the demo sign-in page and select Forgot password."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q10",
@@ -223,7 +241,9 @@
           "text": "Use the reset link sent to your demo email address to choose a new password."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q11",
@@ -245,7 +265,9 @@
           "text": "If your reset link has expired, request a new link from the demo sign-in page."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q12",
@@ -267,7 +289,9 @@
           "text": "Select the Acme-Campus demo Wi-Fi network and sign in with your demo account."
         }
       ],
-      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget."
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
     },
     {
       "case_id": "Q13",
@@ -417,5 +441,6 @@
       "expected_generation_calls": 0,
       "rationale": "The corpus does not establish this answer; do not invent it."
     }
-  ]
+  ],
+  "generation_call_expectations": "For Q01–Q12, one call is expected only after retrieval and access, C10 evidence preparation, and outbound checks all pass. Any failed precheck must result in zero calls. These are fixture expectations, not observed provider calls."
 }
