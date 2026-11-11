@@ -1,0 +1,446 @@
+{
+  "purpose": "Proposed evaluation labels and evidence for independent review.",
+  "manifest_version": "corpus-v1-draft-1",
+  "review_status": "pending_independent_review",
+  "results_recorded": false,
+  "scope": "Fixture expectations only; not executed endpoint or provider results.",
+  "cases": [
+    {
+      "case_id": "Q01",
+      "question": "How do I start a demo password reset?",
+      "category": "exact_alias",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "password_reset_start",
+      "expected_answer": "Open the demo sign-in page and select Forgot password.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-001",
+            "section_id": "s1",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 54,
+          "text": "Open the demo sign-in page and select Forgot password."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q02",
+      "question": "How do I complete a demo password reset?",
+      "category": "exact_alias",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "password_reset_finish",
+      "expected_answer": "Use the reset link sent to your demo email address to choose a new password.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-001",
+            "section_id": "s2",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 76,
+          "text": "Use the reset link sent to your demo email address to choose a new password."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q03",
+      "question": "What should I do if my demo reset link expires?",
+      "category": "exact_alias",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "password_reset_expired",
+      "expected_answer": "If your reset link has expired, request a new link from the demo sign-in page.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-001",
+            "section_id": "s3",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 78,
+          "text": "If your reset link has expired, request a new link from the demo sign-in page."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q04",
+      "question": "How do I connect to the demo campus Wi-Fi?",
+      "category": "exact_alias",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "wifi_connect",
+      "expected_answer": "Select the Acme-Campus demo Wi-Fi network and sign in with your demo account.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-002",
+            "section_id": "s1",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 77,
+          "text": "Select the Acme-Campus demo Wi-Fi network and sign in with your demo account."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q05",
+      "question": "How do visitors connect to the demo Wi-Fi?",
+      "category": "exact_alias",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "wifi_guest",
+      "expected_answer": "Visitors use the Acme-Guest demo Wi-Fi network and the guest code supplied by their host.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-002",
+            "section_id": "s2",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 89,
+          "text": "Visitors use the Acme-Guest demo Wi-Fi network and the guest code supplied by their host."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q06",
+      "question": "What should I try if the demo Wi-Fi connection fails?",
+      "category": "exact_alias",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "wifi_troubleshoot",
+      "expected_answer": "If the demo Wi-Fi connection fails, forget the network and reconnect.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-002",
+            "section_id": "s3",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 69,
+          "text": "If the demo Wi-Fi connection fails, forget the network and reconnect."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q07",
+      "question": "What do I need before setting up the demo VPN?",
+      "category": "exact_alias",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "vpn_prerequisite",
+      "expected_answer": "You need an active demo account.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-003",
+            "section_id": "s1",
+            "source_version": "3"
+          },
+          "start": 0,
+          "end": 32,
+          "text": "You need an active demo account."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q08",
+      "question": "How do I set up the Campus VPN profile?",
+      "category": "exact_alias",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "vpn_install",
+      "expected_answer": "Install the Acme VPN client, sign in, and select the Campus profile.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-003",
+            "section_id": "s2",
+            "source_version": "3"
+          },
+          "start": 0,
+          "end": 68,
+          "text": "Install the Acme VPN client, sign in, and select the Campus profile."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q09",
+      "question": "  How  do  I  start  a  demo  password  reset?  ",
+      "category": "whitespace_normalization",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "password_reset_start",
+      "expected_answer": "Open the demo sign-in page and select Forgot password.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-001",
+            "section_id": "s1",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 54,
+          "text": "Open the demo sign-in page and select Forgot password."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q10",
+      "question": "  How  do  I  complete  a  demo  password  reset?  ",
+      "category": "whitespace_normalization",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "password_reset_finish",
+      "expected_answer": "Use the reset link sent to your demo email address to choose a new password.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-001",
+            "section_id": "s2",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 76,
+          "text": "Use the reset link sent to your demo email address to choose a new password."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q11",
+      "question": "  What  should  I  do  if  my  demo  reset  link  expires?  ",
+      "category": "whitespace_normalization",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "password_reset_expired",
+      "expected_answer": "If your reset link has expired, request a new link from the demo sign-in page.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-001",
+            "section_id": "s3",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 78,
+          "text": "If your reset link has expired, request a new link from the demo sign-in page."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q12",
+      "question": "  How  do  I  connect  to  the  demo  campus  Wi-Fi?  ",
+      "category": "whitespace_normalization",
+      "knowledge_label": "supported",
+      "expected_preparation": "ready",
+      "expected_intent_id": "wifi_connect",
+      "expected_answer": "Select the Acme-Campus demo Wi-Fi network and sign in with your demo account.",
+      "required_excerpts": [
+        {
+          "ref": {
+            "source_id": "DOC-002",
+            "section_id": "s1",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 77,
+          "text": "Select the Acme-Campus demo Wi-Fi network and sign in with your demo account."
+        }
+      ],
+      "conditions": "After independent approval, with required source access, exact versions, healthy checks and sufficient budget.",
+      "expected_generation_calls": 1,
+      "expected_generation_calls_if_precheck_fails": 0
+    },
+    {
+      "case_id": "Q13",
+      "question": "How can I begin resetting my demo password?",
+      "category": "unlisted_paraphrase",
+      "knowledge_label": "supported",
+      "expected_preparation": "insufficient_evidence",
+      "expected_intent_id": null,
+      "expected_answer": null,
+      "required_excerpts": [],
+      "related_evidence": [
+        {
+          "ref": {
+            "source_id": "DOC-001",
+            "section_id": "s1",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 54,
+          "text": "Open the demo sign-in page and select Forgot password."
+        }
+      ],
+      "expected_generation_calls": 0,
+      "rationale": "Evidence exists, but this wording is not an approved alias. Record this fallback as a supported-question coverage miss."
+    },
+    {
+      "case_id": "Q14",
+      "question": "How can I finish resetting my demo password?",
+      "category": "unlisted_paraphrase",
+      "knowledge_label": "supported",
+      "expected_preparation": "insufficient_evidence",
+      "expected_intent_id": null,
+      "expected_answer": null,
+      "required_excerpts": [],
+      "related_evidence": [
+        {
+          "ref": {
+            "source_id": "DOC-001",
+            "section_id": "s2",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 76,
+          "text": "Use the reset link sent to your demo email address to choose a new password."
+        }
+      ],
+      "expected_generation_calls": 0,
+      "rationale": "Evidence exists, but this wording is not an approved alias. Record this fallback as a supported-question coverage miss."
+    },
+    {
+      "case_id": "Q15",
+      "question": "How can I join the demo campus wireless network?",
+      "category": "unlisted_paraphrase",
+      "knowledge_label": "supported",
+      "expected_preparation": "insufficient_evidence",
+      "expected_intent_id": null,
+      "expected_answer": null,
+      "required_excerpts": [],
+      "related_evidence": [
+        {
+          "ref": {
+            "source_id": "DOC-002",
+            "section_id": "s1",
+            "source_version": "1"
+          },
+          "start": 0,
+          "end": 77,
+          "text": "Select the Acme-Campus demo Wi-Fi network and sign in with your demo account."
+        }
+      ],
+      "expected_generation_calls": 0,
+      "rationale": "Evidence exists, but this wording is not an approved alias. Record this fallback as a supported-question coverage miss."
+    },
+    {
+      "case_id": "Q16",
+      "question": "How can I install the Campus VPN profile?",
+      "category": "unlisted_paraphrase",
+      "knowledge_label": "supported",
+      "expected_preparation": "insufficient_evidence",
+      "expected_intent_id": null,
+      "expected_answer": null,
+      "required_excerpts": [],
+      "related_evidence": [
+        {
+          "ref": {
+            "source_id": "DOC-003",
+            "section_id": "s2",
+            "source_version": "3"
+          },
+          "start": 0,
+          "end": 68,
+          "text": "Install the Acme VPN client, sign in, and select the Campus profile."
+        }
+      ],
+      "expected_generation_calls": 0,
+      "rationale": "Evidence exists, but this wording is not an approved alias. Record this fallback as a supported-question coverage miss."
+    },
+    {
+      "case_id": "Q17",
+      "question": "How much does the demo VPN subscription cost?",
+      "category": "missing_knowledge",
+      "knowledge_label": "unsupported",
+      "expected_preparation": "insufficient_evidence",
+      "expected_intent_id": null,
+      "expected_answer": null,
+      "required_excerpts": [],
+      "related_evidence": [],
+      "expected_generation_calls": 0,
+      "rationale": "The corpus does not establish this answer; do not invent it."
+    },
+    {
+      "case_id": "Q18",
+      "question": "Which printer driver should I install?",
+      "category": "missing_knowledge",
+      "knowledge_label": "unsupported",
+      "expected_preparation": "insufficient_evidence",
+      "expected_intent_id": null,
+      "expected_answer": null,
+      "required_excerpts": [],
+      "related_evidence": [],
+      "expected_generation_calls": 0,
+      "rationale": "The corpus does not establish this answer; do not invent it."
+    },
+    {
+      "case_id": "Q19",
+      "question": "How do I configure the VPN on a Linux router?",
+      "category": "missing_knowledge",
+      "knowledge_label": "unsupported",
+      "expected_preparation": "insufficient_evidence",
+      "expected_intent_id": null,
+      "expected_answer": null,
+      "required_excerpts": [],
+      "related_evidence": [],
+      "expected_generation_calls": 0,
+      "rationale": "The corpus does not establish this answer; do not invent it."
+    },
+    {
+      "case_id": "Q20",
+      "question": "How long is a demo password reset link valid?",
+      "category": "missing_knowledge",
+      "knowledge_label": "unsupported",
+      "expected_preparation": "insufficient_evidence",
+      "expected_intent_id": null,
+      "expected_answer": null,
+      "required_excerpts": [],
+      "related_evidence": [],
+      "expected_generation_calls": 0,
+      "rationale": "The corpus does not establish this answer; do not invent it."
+    }
+  ],
+  "generation_call_expectations": "For Q01–Q12, one call is expected only after retrieval and access, C10 evidence preparation, and outbound checks all pass. Any failed precheck must result in zero calls. These are fixture expectations, not observed provider calls."
+}
