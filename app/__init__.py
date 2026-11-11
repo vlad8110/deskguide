@@ -25,6 +25,7 @@ from . import (
     auth,
     citation_release,
     db,
+    feedback,
     inquiries,
     sources,
     support,
@@ -154,6 +155,7 @@ def create_app(test_config=None):
     citation_release.init_app(app)
     app.register_blueprint(auth.bp)
     inquiries.init_app(app)
+    feedback.init_app(app)
     app.register_blueprint(sources.bp)
     support.init_app(app)
     agent_support.init_app(app)

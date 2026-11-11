@@ -58,7 +58,8 @@ def test_cross_customer_feedback_is_rejected_by_database(app, clock):
         )
         with pytest.raises(sqlite3.IntegrityError):
             db.execute(
-                "INSERT INTO feedback VALUES ('f1','i1','c2','helpful',NULL,?)",
+                "INSERT INTO feedback (feedback_id, inquiry_id, customer_id, rating, created_at) "
+                "VALUES ('f1','i1','c2','helpful',?)",
                 (clock[0],),
             )
         db.rollback()

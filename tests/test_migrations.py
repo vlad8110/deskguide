@@ -1,8 +1,10 @@
 """Atomic database upgrades and readiness of library-managed session storage."""
 
 import sqlite3
+from uuid import uuid4
 
 import pytest
+from werkzeug.security import generate_password_hash
 
 from app import create_app, db
 
@@ -95,7 +97,7 @@ def test_agent_upgrade_preserves_version_two_messages_and_receipts(tmp_path):
         )
     app = create_app({"TESTING": True, "DATABASE": str(database)})
     with app.app_context():
-        assert db.migrate_db() == (2, 3)
+        assert db.migrate_db() == (2, db.SCHEMA_VERSION)
         connection = db.get_db()
         assert tuple(
             connection.execute("SELECT content,note FROM support_requests").fetchone()
@@ -287,3 +289,59 @@ def test_health_detects_missing_or_incomplete_http_session_storage(
     assert response.status_code == 503
     assert response.json["error"]["code"] == "DEPENDENCY_UNAVAILABLE"
     assert "http_sessions" not in response.text
+
+
+def test_feedback_upgrade_preserves_legacy_rows_and_accepts_a_rating(tmp_path, sign_in):
+    database = tmp_path / "version-three.sqlite3"
+    inquiry_id = str(uuid4())
+    password = "Fictional-feedback-passphrase-12!"
+    with sqlite3.connect(database) as connection:
+        for migration in db.MIGRATIONS[:3]:
+            connection.executescript(migration.read_text())
+        connection.execute("PRAGMA user_version=3")
+        connection.execute(
+            "INSERT INTO customers (customer_id, display_name) VALUES ('c', 'Demo')"
+        )
+        connection.execute(
+            "INSERT INTO users (user_id, username, password_hash, role, customer_id, created_at) "
+            "VALUES ('u','legacy-customer',?,'customer','c',1)",
+            (generate_password_hash(password),),
+        )
+        connection.execute(
+            "INSERT INTO inquiries (inquiry_id, customer_id, route, outcome, created_at, expires_at) "
+            "VALUES (?, 'c', 'ai', 'temporarily_unavailable', 1, 2000)",
+            (inquiry_id,),
+        )
+        connection.executemany(
+            "INSERT INTO feedback VALUES (?, ?, 'c', ?, 'Demo comment', 1)",
+            [("f1", inquiry_id, "unclear"), ("f2", inquiry_id, "other")],
+        )
+    app = create_app(
+        {"TESTING": True, "DATABASE": str(database), "TIME_PROVIDER": lambda: 1000}
+    )
+    with app.app_context():
+        assert db.migrate_db() == (3, 4)
+
+    client = app.test_client()
+    assert sign_in(client, "legacy-customer", password).status_code == 200
+    token = client.get("/v1/session").json["csrf_token"]
+    request = {
+        "json": {"inquiry_id": inquiry_id, "rating": "helpful"},
+        "headers": {"X-CSRF-Token": token},
+    }
+    saved = client.post("/v1/feedback", **request)
+    assert saved.status_code == 201
+    assert client.post("/v1/feedback", **request).status_code == 409
+
+    with app.app_context():
+        connection = db.get_db()
+        rows = connection.execute(
+            "SELECT feedback_id, rating, category, comment, state FROM feedback "
+            "ORDER BY created_at, feedback_id"
+        ).fetchall()
+        assert [tuple(row) for row in rows] == [
+            ("f1", None, "unclear", "Demo comment", "legacy"),
+            ("f2", None, "other", "Demo comment", "legacy"),
+            (saved.json["feedback_id"], "helpful", None, None, "pending_review"),
+        ]
+        assert connection.execute("PRAGMA foreign_key_check").fetchall() == []

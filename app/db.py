@@ -15,6 +15,7 @@ MIGRATIONS = (
     Path(__file__).with_name("schema.sql"),
     Path(__file__).with_name("migrations") / "002_support_details.sql",
     Path(__file__).with_name("migrations") / "003_agent_workflow.sql",
+    Path(__file__).with_name("migrations") / "004_customer_feedback.sql",
 )
 SCHEMA_VERSION = len(MIGRATIONS)
 
