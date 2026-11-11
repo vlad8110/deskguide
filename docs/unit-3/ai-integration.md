@@ -410,7 +410,7 @@ Follow the proposed V30 ceiling of 4,096 total input tokens and 512 output token
 
 Count instructions, question, evidence and provider framing in the input budget. Do not silently alter an oversized question.
 
-Select permitted evidence that fits. If any manifest-required evidence is omitted, rerun sufficiency and fail closed rather than generating from an incomplete required set.
+Reserve input tokens for the instructions, question, provider framing and every permitted manifest-required excerpt before adding optional passages. Use the selected model’s token accounting. If the required material exceeds the input budget, return the controlled precheck failure with zero provider calls. Add optional permitted passages in rank order as space allows, preserving retrieval order for ties. Recheck the assembled input before dispatch.
 
 Prototype concurrency is up to five only when the account's request and token quotas permit it. A concurrency ceiling alone does not enforce requests-per-minute or token limits.
 
