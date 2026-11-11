@@ -2,7 +2,7 @@
 
 DeskGuide is Team 4’s CMSC 495 capstone project: a browser application for customer-support questions using fictional workplace documents and links to supporting sources.
 
-**Status:** Flask/SQLite foundation, [C1 inquiry coordinator](docs/inquiry-coordinator.md), [C4 support backend](docs/support-backend.md) and [C5 agent workflow](docs/agent-support.md) implemented. Live AI/retrieval adapters, product screens and feedback remain integration work; the full alpha is not complete. Existing databases require `migrate-db` for schema version 3 before using this revision.
+**Status:** Flask/SQLite foundation, [C1 inquiry coordinator](docs/inquiry-coordinator.md), [C4 support backend](docs/support-backend.md) and [C5 agent workflow](docs/agent-support.md) implemented. The customer question and support screens, citation lookup and customer feedback submission are available. Live AI/retrieval adapters and the feedback review queue remain integration work. Run `migrate-db` on existing databases to apply schema version 4 before using this revision. Run `cleanup-inquiries` periodically to remove expired inquiry metadata and linked feedback.
 
 ## Team
 
@@ -28,7 +28,7 @@ Python and Flask; HTML, CSS, and JavaScript; SQLite; local document retrieval; o
 
 ## Design baseline
 
-The [Unit 3 design hub](docs/unit-3/README.md) links to the combined architecture review. Application integration uses the [C4 interface contracts](docs/unit-3/interface-contracts.md). Vlad coordinates implementation through the [module handoff](docs/unit-5/module-handoff.md), with completed work recorded in [contributions](contributions.md).
+The [Unit 3 design hub](docs/unit-3/README.md) links to the combined architecture review. Application integration uses the [Unit 3 interface contracts](docs/unit-3/interface-contracts.md). Vlad coordinates implementation through the [module handoff](docs/unit-5/module-handoff.md), with completed work recorded in [contributions](contributions.md).
 
 Vlad's [architecture first draft](docs/unit-3/architecture-first-draft/README.md) is available for team review, with the editable Google Doc, shared draw.io diagram, PNG preview and Markdown copies. PDFs are reserved for final submission.
 
@@ -173,7 +173,7 @@ Run the appropriate command from the repository root:
 
 Leave that terminal running. Open [http://127.0.0.1:5055/](http://127.0.0.1:5055/) in a browser on the same computer and sign in with a seeded username or the account you created. Use your locally chosen password.
 
-Successful login shows `Welcome, <username>`, the application role and a **Sign out** button. The question, source, support and feedback screens are still to be implemented; the current workspace states that limitation. You can also open [the health check](http://127.0.0.1:5055/health), which should return JSON containing `"status": "ok"` after database initialization.
+Successful login shows `Welcome, <username>`, the application role and a **Sign out** button. Customers can ask a question, submit feedback, and open support requests. Agents can work their support queue. You can also open [the health check](http://127.0.0.1:5055/health), which should return JSON containing `"status": "ok"` after database initialization.
 
 Press **Ctrl+C** in the server terminal to stop it. To return later, open the repository folder and rerun only the start command; keep your `.env` and existing database/accounts. The server uses `--no-reload`, so restart it after Python code changes. `127.0.0.1` refers to the computer opening the link; it is not a shared team website.
 

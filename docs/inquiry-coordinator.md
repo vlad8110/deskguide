@@ -58,7 +58,7 @@ SQLite transactions record admission before dependency work, with one active inq
 
 Dependencies receive a remaining-time budget: retrieval at most 2 seconds, generation at most 12 seconds, and a one-second fallback reserve inside the 20-second inquiry budget. The coordinator discards returned results that exceed a stage budget; a result beyond the overall deadline yields 504. **Adapters must implement cancellable or bounded I/O using the supplied timeout.** This synchronous coordinator cannot interrupt a dependency that ignores its timeout or protect against an indefinitely blocked call. Do not connect an unbounded adapter. Timeout tests use a controlled clock; they are not live latency measurements.
 
-Only inquiry ID, trusted customer ownership, route, outcome, answer ID, configuration version and creation/expiry times are persisted. No question, answer or passage text is saved or logged. Inquiry metadata expires after 30 days by timestamp. Source-reference persistence and scheduled inquiry/feedback purge are not implemented in this slice. C1 needs no schema change; the separate [C4 backend](support-backend.md) adds migration 2.
+Only inquiry ID, trusted customer ownership, route, outcome, answer ID, configuration version and creation/expiry times are persisted. No question, answer or passage text is saved or logged. Inquiry metadata expires after 30 days by timestamp. Use `flask --app app cleanup-inquiries` to purge expired metadata and its linked feedback. Source-reference persistence and automatic scheduling remain separate. C1 needs no schema change; the separate [C4 backend](support-backend.md) adds migration 2.
 
 ## Remaining connections
 

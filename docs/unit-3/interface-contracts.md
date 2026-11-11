@@ -1,7 +1,9 @@
-# DeskGuide Interface Contracts — combined review draft 3.3
+# DeskGuide Interface Contracts (Draft 3.3, aligned to Vlad's Nov 2 revised proposal, the decisions log D01–D23 and PR #17 feedback)
 
 **Lead:** Hanlin | **Reviewers:** Collins (interfaces), David (verification) | **Architecture check:** Vlad
-**Status:** Combined design for team review, incorporating Hanlin's Draft 3.2, Collins's evidence/breaker proposal and Vlad's November 3 decisions. Final approval, manifest fixtures, provider selection and measured capacity remain pending. Examples are fictional.
+**Status:** Draft 3.3 for review. Revises Draft 3.2 (which revised Draft 3.1 to match Vlad's Nov 2 follow-up and `proposed-decisions.md` (sections 1-14)) and records the original reconciliation with `main`. Design limits are proposed. No provider access or measured capacity is claimed. C1, C4 and C5 have implementation evidence in `main` (7d7b01f); the remaining differences are listed in Section 8. All examples are fictional.
+**Cross-check status:** Section 8 records the original PR #17 comparison against `7d7b01f`. This combined review retains the newer C4/C5 contracts and adds the selected C10, privacy and release rules from PR #15. The alpha scope uses Cohere Command R7B, three fictional guides and exact aliases. Live provider evaluation and final team approval remain pending.
+**Draft 3.3** resolves Vlad’s two C5 contract points, exposes version to customers and reconciles the contract with `main` (see Section 8).
 **Workload basis (Vlad):** 10,000 concurrent customer sessions, 1 new inquiry per customer per minute on average, about 167 new inquiries per second (10,000 / 60 = 166.67). This is a planning assumption, not measured usage.
 
 ---
@@ -31,8 +33,8 @@ Logical components do not imply separate deployed services. Vlad's proposed depl
 | C1 | Customer inquiry and answer | `POST /v1/inquiries` | B10, R1 |
 | C2 | Retrieval and source access | `retrieve()`, `GET /v1/sources/{source_id}/sections/{section_id}` | B07, R1 |
 | C3 | AI generation adapter | `generate()` | B05, B10, B11 |
-| C4 | Human escalation | C4a `POST /v1/escalations/submission-ids`, C4b `POST /v1/escalations`, C4c `GET /v1/escalations/{submission_id}`, C4d `POST /v1/escalations/{request_id}/reply-ids`, C4e `POST /v1/escalations/{request_id}/replies` | B11, R2 |
-| C5 | Agent review and update | `GET /v1/agent/escalations`, `.../{request_id}/claim`, `.../{request_id}/transition` | B13, R2 |
+| C4 | Human escalation | C4a `POST /v1/escalations/submission-ids`, C4b `POST /v1/escalations`, C4c `GET /v1/escalations/{submission_id}`, C4d `POST /v1/escalations/{request_id}/reply-ids`, C4e `POST /v1/escalations/{request_id}/replies`, C4f `GET /v1/escalations/requests/{request_id}`, C4g `GET /v1/escalations/requests` (planned) | B11, R2 |
+| C5 | Agent review and update | `GET /v1/agent/escalations`, `GET /v1/agent/escalations/{request_id}` (C5d), `.../{request_id}/claim`, `.../{request_id}/transition` | B13, R2 |
 | C6 | Feedback and reviewed improvement | feedback and improvement-proposal endpoints | B13, B16, P04, R3 |
 | C7 | Existing customer database | `get_customer_profile()` | P02, R5 |
 | C8 | Document administration | `/v1/admin/documents` | B14 |
@@ -124,8 +126,11 @@ Vlad's architecture uses opaque server-side sessions in cookies. Draft 2's beare
 | `UNAUTHENTICATED` | 401 | No | Missing, invalid or expired session |
 | `FORBIDDEN` | 403 | No | Role or scope not permitted |
 | `CSRF_FAILED` | 403 | No | State-changing request without a valid CSRF token |
-| `NOT_FOUND` | 404 | No | Missing, purged, unknown, or outside caller's scope (same response for all). Includes unknown or foreign submission IDs and feedback on an inquiry whose metadata expired. |
-| `CONFLICT` | 409 | No | Illegal transition, ownership/version conflict, or reused `submission_id`/reply version with different content |
+| `NOT_FOUND` | 404 | No | Missing, purged, unknown, or outside caller's scope (same response for all). Includes unknown or foreign submission IDs and feedback on an inquiry whose metadata expired, and any call other than a claim on a request assigned to another agent. |
+| `CONFLICT` | 409 | No | Illegal transition, non-owner action on a request the caller can see, request not in the state a C5 action needs, or reused submission_id with different content. |
+| `STALE_VERSION` | 409 | No | `expected_version` no longer matches the request's current `version`. The client reloads and decides again. |
+| `ALREADY_CLAIMED` | 409 | No | C5b only. Another agent claimed this request first. |
+| `NOT_WAITING_FOR_CUSTOMER` | 409 | No | C4d and C4e only. The request is not waiting for a customer reply: it is queued after a release, assigned, in review or resolved. Resolved requests are never reopened. |
 | `SUBMISSION_ID_EXPIRED` | 410 | No | A registered but unused `submission_id` passed its validity period. The customer must register a new one (C4a); the server never recreates it. |
 | `RATE_LIMITED` | 429 | Yes | Per-customer limit reached, including a fourth pending `submission_id` registration ("too many pending submissions") |
 | `INTERNAL_ERROR` | 500 | Yes | Unexpected failure, no details exposed |
@@ -202,6 +207,9 @@ Every `error.message` is plain language, safe to display, and never contains sta
 
 | Code | Default message |
 |---|---|
+| `STALE_VERSION` | "This request changed since you last loaded it. Please reload and try again." |
+| `ALREADY_CLAIMED` | "Another agent has already taken this request. Please refresh the queue." |
+| `NOT_WAITING_FOR_CUSTOMER` | "This request is not waiting for a reply from you. Please reload to see its current status." |
 | `VALIDATION_FAILED` | "Please check what you entered and try again." (names the rule in plain words, for example "Your question must be between 1 and 1000 characters.") |
 | `UNAUTHENTICATED` | "Your session has ended. Please sign in again." |
 | `FORBIDDEN` | "You do not have access to this." |
@@ -276,7 +284,7 @@ Status key: **Proposed** = drafted here, needs team approval. **Open** = no valu
 | V32 | Inquiry metadata retention | 30 days from creation; linked feedback expires with it; scheduled daily cleanup | D09 | Proposed (Vlad); David reviews |
 | V33 | Diagnostic log retention | 7 days, no raw question, answer or customer content, credentials or direct customer identifiers | D09 | Proposed (Vlad); David reviews |
 | V34 | Backup retention | Encrypted daily backups on a 7-day rotation; restored data has current expiry rules reapplied | Vlad, section 9 | Proposed; David verifies restoration |
-| V35 | Release authority | Vlad is primary and Hanlin is the accepted backup release authorizer. Explicit release permission and non-author authorization remain required. A change's author cannot give final release authorization (see C6). | Vlad, section 5 (D08); David's Nov 2 response and `decisions.md` | Proposed; backup accepted (Hanlin); final team approval pending |
+| V35 | Release authority | Vlad is primary and Hanlin is the accepted backup release authorizer. Explicit release permission and non-author authorization remain required. A change's author cannot give final release authorization (see C6). | Vlad, section 5 (D08); [November 3 decision log](design-decisions-and-review-log.md) | Proposed; backup accepted (Hanlin); final team approval pending |
 
 ---
 
@@ -414,7 +422,7 @@ The same request without the token returns 403:
 3. **Set `route` before applying admission** from the validated `requested_operation`: `check_account_status` gives `account_status`; `ask_question` gives `ai`, or `human_requested` when the human-request policy recognizes an explicit request. No question text is ever classified into `account_status`. The complexity and sufficiency rules remain Collins's (V19).
 4. Apply per-customer limit, then bounded admission. No queueing.
 5. `account_status` route: call C7 and return a deterministic status answer. **No retrieval, no generation.**
-6. `ai` route: retrieve (C2a), pre-generation evidence check (V19), generate (C3), validate (C10), return.
+6. `ai` route: retrieve (C2a), prepare evidence and bind the inquiry expectation (C10/V19), check the selected outbound payload for eligibility (D22), generate (C3), validate (C10), return.
 
 **Request examples**
 
@@ -503,6 +511,7 @@ Deterministic account status (fictional customer `CUST-004821`):
 | Per-customer limit (5 per minute), or a second inquiry while one is active | 429 `RATE_LIMITED` + `Retry-After` |
 | Admission denied before processing, including an open circuit discovered at admission | 503 `SERVICE_BUSY` + `Retry-After`. No queue; the browser keeps the question. |
 | Insufficient, conflicting or stale evidence | 200 `clarification_requested` or `escalation_offered`, `suggested_reason: insufficient_evidence`; no unsupported answer shown |
+| Pre-generation evidence checker or outbound eligibility check unavailable | 200 `temporarily_unavailable`, `escalation_offered: true`, `suggested_reason: service_unavailable`; zero provider calls |
 | C10 validation fails (including the runtime evidence-support check) | 200 `clarification_requested` or `escalation_offered`, `suggested_reason: validation_failed`; candidate suppressed |
 | Retrieval timeout or unavailable (C2a) | 200 `temporarily_unavailable`, `escalation_offered: true`, `suggested_reason: service_unavailable`. Not treated as proof that no source exists. |
 | Provider failure (C3, any category including provider timeout and `circuit_open`) | 200 `temporarily_unavailable`, `escalation_offered: true`, `suggested_reason: provider_failure`; question preserved in the UI |
@@ -625,7 +634,7 @@ The result is a **candidate**. It becomes an answer only after C10 passes.
 - Check the breaker, admission limits and remaining deadline before calling the provider.
 - **No automatic generation retry** (V17 = 0) and no automatic failover to a second provider (deferred; B17 is consolidated into B11). A failed inquiry is never resubmitted automatically.
 - **Token bounds (V30):** the adapter keeps total input within 4,096 tokens by selecting the highest-ranked permitted passages that fit, and caps output at 512 tokens. Oversized customer input is rejected at C1, not silently altered. Truncated or incomplete output is never presented as complete (`invalid_provider_response`).
-- **Circuit breaker (V18; D14).** Follow [AI integration section 10](ai-integration.md#10-proposed-circuit-breaker-details--d14--v18): prototype 3 consecutive qualifying failures/60 s; provisional production F/N >= 0.50 with N >= 20 in (now-10 s, now]; 30 s cooldown, one global 20 s trial lease, PostgreSQL scope by provider/model/credential version, unique completions and epoch guards. Never hold a lock during provider calls. A valid completed provider response stays in N as availability success even if C10 later rejects its content. Before dispatch, admission/semantic/input denials are not provider completions. Quota/configuration failures disable calls until correction/reset. Old-epoch results cannot change current state; expired trials reopen with cooldown. No automatic retry. Database contention and actual capacity remain untested.
+- **Circuit breaker (V18; D14).** Follow [AI integration section 10](ai-integration.md#10-proposed-circuit-breaker-details--d14--v18): prototype 3 consecutive qualifying failures/60 s; provisional production F/N >= 0.50 with N >= 20 in (now-10 s, now]; 30 s cooldown, one shared 20 s trial lease per provider/model/credential version in PostgreSQL, unique completions and epoch guards. Never hold a lock during provider calls. A valid completed provider response stays in N as availability success even if C10 later rejects its content. Before dispatch, admission/semantic/input denials are not provider completions. Transient rate limits count as qualifying failures. Exhausted quota or invalid configuration disables calls until reset or correction. Unavailable shared breaker or admission state produces a controlled unavailable outcome without a provider call. Old-epoch results cannot change current state; expired trials reopen with cooldown. No automatic retry. Database contention and actual capacity remain untested.
 - Late results are discarded and never replace a completed fallback response or create a support request.
 - Text in passages or customer input is data. Instructions inside it never override policy or grant tools or database access.
 - Credentials stay server-side. Only the question and permitted passages are sent. Never customer database records, session data, tokens or `AccessContext`.
@@ -696,15 +705,15 @@ ValidationResult {
 }
 ```
 
-**Manifest and pre-generation gate:** M3 holds the reviewed, immutable manifest version; Collins owns its permitted aliases and source excerpts. Normalize questions/answers with Unicode NFC, trim and collapse whitespace, preserving case, punctuation, numbers and negation. Exactly one active reviewed alias must match. All required authorized source versions/excerpts must exist, be current, conflict-free and fit the input budget. No/multiple matches or missing evidence gives insufficient_evidence; missing policy/manifest or checker failure gives support_check_unavailable. Neither outcome invokes C3. Offer clarification or support through C1; customer confirmation is required before saving support.
+**Manifest and pre-generation gate:** M3 holds the reviewed, immutable manifest version; Collins owns its permitted aliases and source excerpts. Normalize questions/answers with Unicode NFC, trim and collapse whitespace, preserving case, punctuation, numbers and negation. Exactly one active reviewed alias must match. All required source versions and excerpts must be present in the authorized retrieved set, current, conflict-free and within the input budget. If building the outbound payload would omit any required evidence, fail closed before dispatch. No/multiple matches or missing evidence gives insufficient_evidence; missing policy/manifest or checker failure gives support_check_unavailable. Neither outcome invokes C3. Offer clarification or support through C1; customer confirmation is required before saving support.
 
-M2 obtains the immutable expectation before C3 and retains it for this inquiry. Bind inquiry_id and exact policy/manifest/source versions; do not derive it from the candidate or store inquiry-specific state in a shared mutable singleton. The expectation is internal permitted knowledge, not a browser input or an additional provider payload field. Its excerpt offsets are zero-based Unicode code-point offsets [start,end) into the NFC-normalized, immutable section text returned by the knowledge store; do not collapse source whitespace for offsets. Verify range text exactly. Excerpts and approved_answer remain within existing passage, input-token and response limits.
+M2 obtains the immutable expectation before C3 and retains it for this inquiry. Bind inquiry_id and exact policy/manifest/source versions; do not derive it from the candidate or store inquiry-specific state in a shared mutable singleton. The expectation is internal permitted knowledge, not a browser input or an additional provider payload field. Its excerpt offsets are zero-based Unicode code-point offsets [start,end) into the NFC-normalized, immutable section text returned by the knowledge store; do not collapse source whitespace for offsets. Verify range text against the full authorized section at the exact source version, rather than applying section offsets to a truncated passage. Excerpts and approved_answer remain within existing passage, input-token and response limits.
 
-**Structural validation:** require at least one citation; every cited reference must belong to the authorized retrieval set, resolve through C2b, match the source version and remain accessible. Reject malformed/truncated output. Reject an expectation for a different inquiry or unavailable/retired policy/manifest as support_check_unavailable.
+**Structural validation:** require at least one citation; every cited reference must belong to the authorized retrieval set, resolve through C2b, match the source version and remain accessible. Reject malformed/truncated output. Reject a null expectation, an expectation for a different inquiry, or an unavailable or retired policy or manifest as `support_check_unavailable`. Complete the structural checks before runtime support validation. Return the failed structural checks without running the support policy if any structural check fails.
 
 **Runtime evidence validation:** require 100-percent normalized equality with the preselected approved_answer, no extra wording, all expected references cited and all expected excerpt ranges present in those exact source versions. Cited references remain subject to structural checks. M2 independently checks required-reference coverage. A mismatch is unsupported_content; use the whole candidate span when a narrower unsupported span cannot be isolated. No confidence score, fuzzy match, second model call or automatic retry is permitted. Missing/failed/timed-out checks fail closed as support_check_unavailable. Suppress every failed candidate and retain null answer_id; C1 returns clarification_requested or escalation_offered with validation_failed.
 
-**Limits:** this intentionally constrains generation to reviewed FAQ wording and rejects paraphrases/unlisted questions. It cannot establish source truth or general semantic correctness. The manifest is not yet populated/evaluated; supported-answer behavior remains unavailable until reviewed fixtures are configured. B12 independent manual review remains separate. Pre-labeled eligible alias misses, rejected paraphrases, busy/failure/fallback outcomes remain service-target misses.
+**Limits:** this intentionally constrains generation to reviewed FAQ wording and rejects paraphrases/unlisted questions. It cannot establish source truth or general semantic correctness. The draft fictional corpus and evaluation fixtures are in [PR #21](https://github.com/vlad8110/deskguide/pull/21). Supported answers remain unavailable until a reviewed release is configured. Live provider evaluation remains pending. B12 independent manual review remains separate. Pre-labeled eligible alias misses, rejected paraphrases, busy/failure/fallback outcomes remain service-target misses.
 
 **Planned cases:** valid reviewed alias/excerpts/exact answer passes; missing/ambiguous alias makes zero provider calls; wrong inquiry expectation and missing/retired policy fail closed; changed source version, revoked access and missing citation fail; added negation/number/unsupported paraphrase fails; concurrent inquiries cannot exchange expectations; checker timeout suppresses output; astral characters and decomposed Unicode preserve canonical offset checks. No tests are claimed as executed.
 
@@ -777,6 +786,7 @@ Cancel needs no endpoint: an unused ID simply expires 30 minutes after registrat
 | `note` | string | No | Yes | 0-2,000 chars |
 | `consent_to_share` | boolean | Yes | No | Must be `true` |
 
+
 Unrelated conversation history is **not** attached automatically.
 
 **Response 201 (new) / 200 (replay of a completed receipt with the same payload)**
@@ -786,6 +796,7 @@ Unrelated conversation history is **not** attached automatically.
 | `request_id` | Uuid | The saved request |
 | `submission_id` | Uuid | Echoed |
 | `state` | RequestState | `queued` on first creation. On replay, the request's current state. |
+| `version` | int | The request's current version. Customers send it as `expected_version` in C4e. |
 | `created_at` | Timestamp | |
 | `acknowledgement` | string | Returned only after the durable commit. States that the request was saved, not that an agent has read or accepted it, and gives no response-time promise. |
 | `correlation_id`, `contract_version` | | |
@@ -809,6 +820,7 @@ Unrelated conversation history is **not** attached automatically.
   "request_id": "f6a7b8c9-5555-4e66-8f77-3a88b99cc0dd",
   "submission_id": "5c4d3e2f-4444-4d55-8e66-2f77a88b99cc",
   "state": "queued",
+  "version": 1,
   "created_at": "2026-11-01T15:04:05Z",
   "acknowledgement": "Your request has been saved. It has not been read by an agent yet.",
   "correlation_id": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
@@ -892,7 +904,8 @@ Customer, own records only. Works for both `escalation` and `reply` IDs.
 | `registration_state` | RegistrationState | `unused`, `completed` or `expired` |
 | `saved` | boolean | True only when a completed receipt exists |
 | `request_id` | Uuid | Null for an unused or expired escalation ID. For a reply ID, the parent request. |
-| `state` | RequestState | Null unless `saved` |
+| `state` | RequestState | Escalation ID: null unless `saved`. **Reply ID: always the parent request's current `state`.** |
+| `version` | int | Escalation ID: null unless `saved`. **Reply ID: always the parent request's current `version`.** |
 | `created_at` | Timestamp | Null unless `saved` |
 | `expires_at` | Timestamp | Null when `completed` |
 
@@ -907,6 +920,7 @@ Unknown ID or another customer's ID: 404 `NOT_FOUND`.
   "saved": true,
   "request_id": "f6a7b8c9-5555-4e66-8f77-3a88b99cc0dd",
   "state": "queued",
+  "version": 1,
   "created_at": "2026-11-01T15:04:05Z",
   "expires_at": null,
   "correlation_id": "5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b"
@@ -919,8 +933,8 @@ Customer, own request only. Same shape as C4a with `operation: "reply"`. The ID 
 
 | Condition | Response |
 |---|---|
-| Request is `waiting_for_customer` | 201 with `submission_id`, `operation: "reply"`, `request_id`, `registration_state: "unused"`, `expires_at` |
-| Request in any other state (including `resolved`) | 409 `CONFLICT` |
+| Request is `waiting_for_customer` | 201 with `submission_id`, `operation: "reply"`, `request_id`, `registration_state: "unused"`, `expires_at`, and the parent request's current `state` and **`version`** (the value to send as `expected_version`) |
+| Request in any other state (including `queued` after a release, and `resolved`) | 409 `NOT_WAITING_FOR_CUSTOMER` |
 | Not the caller's request | 404 `NOT_FOUND` |
 
 #### C4e. `POST /v1/escalations/{request_id}/replies` (submit a customer reply)
@@ -937,10 +951,17 @@ Customer, own request only. Same shape as C4a with `operation: "reply"`. The ID 
 | Completed receipt, same payload | 200 with the original reply; no second message, no state change |
 | Completed receipt, changed payload | 409 `CONFLICT` |
 | Missing registration, or unused ID past its validity | Unknown or foreign ID: 404 `NOT_FOUND`. Expired unused ID: 410 `SUBMISSION_ID_EXPIRED`. |
-| Request is `resolved` (late reply, or reply racing resolution) | 409 `CONFLICT`. The request is **not** revived. Resolved is terminal; the customer starts a new request through C4a. |
-| Request in another state, or stale `expected_version` | 409 `CONFLICT` |
+| Request is `resolved` (late reply, or reply racing resolution) | 409 `NOT_WAITING_FOR_CUSTOMER`. The request is **not** revived. The customer starts a new request through C4a. |
+| Stale `expected_version` on a request that is `waiting_for_customer` | 409 `STALE_VERSION`. Nothing is saved; the client re-reads `version` through C4c. |
+| Request in any other state, **including `queued` after an agent release** | 409 `NOT_WAITING_FOR_CUSTOMER`. Nothing is saved; the reply ID stays unused until it expires. |
 | Commit outcome unknown | 503 `SAVE_OUTCOME_UNCERTAIN`; check C4c or retry with the same ID and payload |
 | Save known to have failed | 503 `DEPENDENCY_UNAVAILABLE` |
+
+**Check order (C4e).** An unknown or foreign ID, or a request the caller does not own, first (404); then a completed receipt (200 replay, or 409 `CONFLICT` for a changed payload); then an expired unused ID (410); then the request state (409 `NOT_WAITING_FOR_CUSTOMER`); then `expected_version` (409 `STALE_VERSION`). The state check runs before the version check because a release or resolution increments `version`: a late reply is both stale and in the wrong state, and the customer needs the state answer. A reply after a release or on a resolved request therefore returns `NOT_WAITING_FOR_CUSTOMER`, not `STALE_VERSION`.
+
+Agent release. When an agent releases a request to queued (C5c), any unused reply ID for it cannot be used while the request is not waiting for the customer. C4d and C4e return 409 `NOT_WAITING_FOR_CUSTOMER`, and the customer cannot reply until an agent claims the request and asks again. A reply that already completed is unaffected, and its replay still returns 200. The customer UI shows “this request is waiting for an agent.”
+
+**Earlier reply ID after a release.** The ID is not cancelled. If the agent claims the request again and asks a new question, an unused, unexpired reply ID registered before the release is accepted, provided `expected_version` is current. A current version prevents a stale update but does not show that the customer reviewed the latest question. The customer UI must therefore reload the request and show the current conversation before the customer confirms a reply.
 
 The ownership, state and version checks happen atomically with the save. Reply receipts are kept for the retained record's lifetime. Attachments, live chat, notification email and reopening are excluded in this draft. Customers return to the application for updates.
 
@@ -968,7 +989,7 @@ The ownership, state and version checks happen atomically with the save. Reply r
 {
   "contract_version": "0.3.3",
   "error": {
-    "code": "CONFLICT",
+    "code": "NOT_WAITING_FOR_CUSTOMER",
     "message": "This request has been resolved. Please start a new request.",
     "retryable": false,
     "correlation_id": "9c0d1e2f-3a4b-4c5d-8e6f-7a8b9c0d1e2f"
@@ -976,18 +997,44 @@ The ownership, state and version checks happen atomically with the save. Reply r
 }
 ```
 
-**Tests (C4):** register returns an unused ID with `expires_at`; a fourth unused ID returns 429 with no older ID cancelled, across any mix of escalation and reply registrations; concurrent registrations never exceed three; an expired ID does not count toward the cap before cleanup runs; first submit returns 201 and one row plus one receipt; same-ID, same-payload retry returns 200 with one row; 20 concurrent same-ID submits create exactly one row; same ID with different content returns 409; unused ID after V25 returns 410, creates no row, and is not usable later; unknown ID and another customer's ID return identical 404; ID of a purged request is unusable; save failure (mock) returns 503 `DEPENDENCY_UNAVAILABLE`, no row, and the same-ID retry succeeds; commit-then-timeout (mock) returns `SAVE_OUTCOME_UNCERTAIN` and C4c then returns `saved: true`; `consent_to_share: false` returns 400; another customer's `inquiry_id` returns 403; administrator calling C4 returns 403; reply-ID registration on a non-waiting request returns 409; reply returns 201 and the request returns to `in_review` with the same agent; duplicate reply returns 200 with one stored message; reply racing resolution returns 409 and the request stays `resolved`; stale `expected_version` returns 409; replica B accepts a retry for an ID registered on replica A; an unused ID's expiry does not delete a completed receipt.
+#### C4f. `GET /v1/escalations/requests/{request_id}` (customer request detail)
 
+Customer, own request only. Another customer's or an unknown `request_id` returns 404 `NOT_FOUND` (identical response). Returns the request's current `state` and `version` and the conversation visible to the customer: the customer's own messages and any `message_to_customer` from the agent. It never includes `release_reason`, internal resolution notes, or the assigned agent's identity. The customer UI loads this before offering a reply, so it shows the latest question and the current `version` to send as `expected_version`.
+
+| Field | Type | Notes |
+|---|---|---|
+| `request_id` | Uuid | |
+| `state` | RequestState | Current state |
+| `version` | int | Current version; send it as `expected_version` in C4e |
+| `content` | string | The customer-reviewed text |
+| `note` | string | Null when none was sent |
+| `reason` | EscalationReason | |
+| `created_at` | Timestamp | |
+| `messages` | array | Customer replies and agent questions in order (see below) |
+| `correlation_id`, `contract_version` | | |
+
+Each message has `message_id` (Uuid), `kind` (`customer_reply` or `message_to_customer` only), `content`, `created_at` and `version` (the request version the message produced; null for a legacy reply). Messages are ordered by `created_at`, then `version`, then `message_id`. A resolved request stops being readable 30 days after resolution (404). `release_reason`, internal resolution notes and audit data are never returned.
+
+#### C4g. `GET /v1/escalations/requests` (customer request list, planned)
+
+Customer only. Lists the signed-in customer's own retained requests so a customer can find a conversation after a reload. Each item has `request_id`, `state`, `version` and `created_at`; nothing else (no content or messages). Never includes another customer's requests. A resolved request drops off the list when C4f stops returning it (30 days after resolution). Ordering, `limit` and paging follow the shared conventions and are to be fixed with the backend; the customer UI loads C4f for any request it opens. Backend owner: Vlad. This section is a plan and must be confirmed against the implementation before the customer reply screen ships.
+
+**Tests (C4):** register returns an unused ID with `expires_at`; a fourth unused ID returns 429 with no older ID cancelled, across any mix of escalation and reply registrations; concurrent registrations never exceed three; an expired ID does not count toward the cap before cleanup runs; first submit returns 201 and one row plus one receipt; same-ID, same-payload retry returns 200 with one row; 20 concurrent same-ID submits create exactly one row; same ID with different content returns 409; unused ID after V25 returns 410, creates no row, and is not usable later; unknown ID and another customer's ID return identical 404; ID of a purged request is unusable; save failure (mock) returns 503 `DEPENDENCY_UNAVAILABLE`, no row, and the same-ID retry succeeds; commit-then-timeout (mock) returns `SAVE_OUTCOME_UNCERTAIN` and C4c then returns `saved: true`; `consent_to_share: false` returns 400; another customer's `inquiry_id` returns 403; administrator calling C4 returns 403; reply-ID registration on a non-waiting request returns 409 `NOT_WAITING_FOR_CUSTOMER`; reply returns 201 and the request returns to `in_review` with the same agent; duplicate reply returns 200 with one stored message; reply racing resolution returns 409 `NOT_WAITING_FOR_CUSTOMER` and the request stays `resolved`; stale `expected_version` on a waiting request returns 409 `STALE_VERSION`; replica B accepts a retry for an ID registered on replica A; an unused ID's expiry does not delete a completed receipt.
+
+C4b, C4c and C4d responses include version; C4c on a reply ID returns the parent’s current state and version; a stale expected_version returns 409 STALE_VERSION and saves nothing; a reply after an agent release returns 409 NOT_WAITING_FOR_CUSTOMER with no message stored; a late reply with an out-of-date `expected_version` after a release or resolution returns NOT_WAITING_FOR_CUSTOMER, not STALE_VERSION; a reply ID registered before a release is accepted after a re-claim and a new question only with the current `expected_version`; a reply racing a release commits exactly one outcome and never leaves the request in a state the customer UI cannot explain.
 ---
 
 ### C5. Agent review and update
 
 **Owner:** `AgentQueueService` (M6). **Authorization:** `agent` only. Customers and administrators get 403. All `POST` endpoints require CSRF.
 
-**Scope (D07).** One company initially. An agent sees the **unassigned queue** and the requests **assigned to that agent**, and nothing else. Another agent's request returns 404 `NOT_FOUND`.
+**Scope and visibility rule (D07).** One company initially. An agent can see a request only if it is `queued` or assigned to that agent. A request assigned to **another agent** is treated as not existing: every call that names it (including the detail lookup, C5d) returns 404 `NOT_FOUND`, except a claim (below). Queue visibility does not include detail access: agent detail is owner-only, so a queued request returns 404 from the detail endpoint until the agent claims it. For a request the caller can see, an illegal transition, a non-owner action or a stale version returns 409. In short: **404 means the caller may not see it; 409 means the caller can see it but its state forbids the action.**
 
 **C5a. `GET /v1/agent/escalations?state=queued&limit=25&cursor=...`**
 `state` is optional (`queued`, or a state of the caller's own assigned requests). `limit` 1-100, default 25. Returns `{ items: [EscalationSummary], next_cursor|null, correlation_id, contract_version }` with `EscalationSummary { request_id, state, content, reason, created_at, assigned_agent_id|null, customer_ref, account_status|null, version }`. Customer data is limited to the C7 allowlist (`customer_id`, `account_status`). `account_status` is null when C7 is unavailable.
+
+A state filter other than queued returns only the caller’s own assigned requests.
+
 
 **Example 200 for `GET /v1/agent/escalations?state=queued&limit=25`**
 ```json
@@ -1010,7 +1057,7 @@ The ownership, state and version checks happen atomically with the save. Reply r
 ```
 
 **C5b. `POST /v1/agent/escalations/{request_id}/claim`**
-No body. Atomic: succeeds only if `state = queued`; sets `assigned`, `assigned_agent_id = caller`, increments `version`, and returns the updated summary. If another agent claimed first, 409 `CONFLICT`.
+No body. Atomic: succeeds only if `state = queued`; sets `assigned`, `assigned_agent_id = caller`, increments `version`, and returns the updated summary. If the request is already assigned to another agent, 409 ALREADY_CLAIMED. This is the one deliberate exception to the 404 rule: the agent learned of the request from the queue listing, so the response reveals nothing new. Claiming a request already assigned to the caller returns 409 CONFLICT.
 
 ```json
 {
@@ -1045,14 +1092,19 @@ No body. Atomic: succeeds only if `state = queued`; sets `assigned`, `assigned_a
 | `assigned`, `in_review` or `waiting_for_customer` | `queued` (release) | Assigned agent. Ownership is cleared. | `release_reason` |
 | `resolved` | none | Terminal; late customer replies do not reopen it | |
 
-Releasing from `in_review` or `waiting_for_customer` extends Hanlin's earlier rule and needs team agreement (D12). No direct takeover, auto-dispatch, supervisor or reopen workflow in this draft. Any other transition, a non-owner update, or a stale version returns 409 `CONFLICT`. Conflicting updates never silently overwrite each other (atomic owner and version check).
+Releasing from `in_review` or `waiting_for_customer` extends the earlier rule. It remains pending until the team confirms it under Section 7 (D12). A release **increments `version`**, clears `assigned_agent_id`, and returns `{ request_id, state: "queued", assigned_agent_id: null, version }`. `release_reason` is internal: it is never shown to the customer and never appears in a C4 response. The audit record notes only that a reason was given. The customer-side effect is in C4e ("Agent release").
+
+No direct takeover, auto-dispatch, supervisor or reopen workflow in this draft. Conflicting updates never silently overwrite each other (atomic owner and version check). **Check order (C5c):** (1) visibility and ownership, (2) allowed transition, (3) `expected_version`. Another agent's request returns 404 (claim excepted, above); a non-owner action on a `queued` request (other than claim) or an illegal transition returns 409 `CONFLICT`; a stale version on an otherwise allowed transition returns 409 `STALE_VERSION`.
 
 | Other conditions | Response |
 |---|---|
 | Not an agent | 403 `FORBIDDEN` |
 | Missing CSRF token | 403 `CSRF_FAILED` |
-| Unknown `request_id`, or another agent's assigned request | 404 `NOT_FOUND` |
-| Missing conditional field | 400 `VALIDATION_FAILED` |
+| Unknown `request_id`, or a request assigned to another agent (any call except claim) | 404 `NOT_FOUND` |
+| Claim of a request assigned to another agent | 409 `ALREADY_CLAIMED` |
+| Stale `expected_version` | 409 `STALE_VERSION` |
+| Illegal transition, or a non-owner action on a `queued` request | 409 `CONFLICT` |
+| Missing conditional field (`message_to_customer`, `resolution_note`, `release_reason`) | 400 `VALIDATION_FAILED` |
 | Storage down | 503 `DEPENDENCY_UNAVAILABLE` |
 
 **Examples**
@@ -1066,22 +1118,54 @@ Transition request (to `waiting_for_customer`):
 }
 ```
 
-Stale version, non-owner and second claim all return the same envelope shape:
+Second claim (another agent got there first):
 ```json
 {
   "contract_version": "0.3.3",
   "error": {
-    "code": "CONFLICT",
-    "message": "This request was changed by someone else. Reload it and try again.",
+    "code": "ALREADY_CLAIMED",
+    "message": "Another agent has already taken this request. Please refresh the queue.",
     "retryable": false,
     "correlation_id": "1e2f3a4b-5c6d-4e7f-8a8b-9c0d1e2f3a4b"
   }
 }
 ```
 
+Stale version: same envelope with `"code": "STALE_VERSION"` and the message "This request changed since you last loaded it. Please reload and try again."
+
+Another agent's assigned request returns the standard 404 `NOT_FOUND` body (identical to an unknown ID).
+
+Release (request to `/transition`, then the response):
+```json
+{ "to_state": "queued", "expected_version": 4, "release_reason": "Needs a network specialist." }
+```
+```json
+{
+  "contract_version": "0.3.3",
+  "request_id": "f6a7b8c9-5555-4e66-8f77-3a88b99cc0dd",
+  "state": "queued",
+  "assigned_agent_id": null,
+  "version": 5,
+  "correlation_id": "2f3a4b5c-6d7e-4f8a-9b9c-0d1e2f3a4b5d"
+}
+```
+
 **Audit.** Each transition records agent ID, old and new state, `correlation_id`, and timestamp, not content. A release records that a reason was given, not its text.
 
-**Tests:** customer or administrator on any C5 endpoint returns 403; two concurrent claims give one 200 and one 409; non-owner transition returns 409; another agent's assigned request returns 404; `resolved` then any transition returns 409; stale version returns 409; `waiting_for_customer` without a message returns 400; release from each of the three owned states without `release_reason` returns 400, and with it returns the request to `queued` with no owner so a second agent can claim it; customer reply moves the request back to `in_review` with the same owner; saved request visible in queue after a simulated broker failure; C7 outage still lists requests with `account_status: null`.
+**C5d. `GET /v1/agent/escalations/{request_id}`** (request detail)
+
+Owner-only. The assigned agent gets the request's current `state` and `version` and the conversation. Customer messages and the agent's own `message_to_customer` are shown separately from the internal `resolution_note` and `release_reason`, which are never mixed into customer-visible text. A `queued` request, a request assigned to another agent and an unknown `request_id` all return 404 `NOT_FOUND`. A queued request becomes readable only after the caller claims it (C5b). Customers and administrators get 403.
+
+| Field | Type | Notes |
+|---|---|---|
+| `request_id`, `state`, `content`, `reason`, `created_at`, `assigned_agent_id`, `customer_ref`, `account_status`, `version` | | Same as `EscalationSummary` in C5a. `account_status` is null while C7 is unavailable. |
+| `note` | string | Null when none was sent |
+| `messages` | array | Same shape as C4f, but `kind` may also be `resolution_note` |
+| `correlation_id`, `contract_version` | | |
+
+A `resolution_note` message is visible only to the currently assigned agent and never appears in any customer response. `release_reason` is not stored and is never returned. A resolved request stops being readable 30 days after resolution (404).
+
+**Tests:** customer or administrator on any C5 endpoint returns 403; two concurrent claims give one 200 and one 409 ALREADY_CLAIMED; another agent’s assigned request returns 404 for transition (and for detail, which also returns 404 for a queued request until it is claimed), but 409 ALREADY_CLAIMED for claim; a non-owner transition on a queued request returns 409 CONFLICT; resolved then any transition returns 409 CONFLICT; stale version returns 409 STALE_VERSION; waiting_for_customer without a message returns 400; release from each of the three owned states without release_reason returns 400, and with it returns the request to queued with no owner, an incremented version, and no release_reason visible to the customer, so a second agent can claim it; a customer reply moves the request back to in_review with the same owner; an unused reply ID fails with 409 after a release; saved request visible in queue after a simulated broker failure; C7 outage still lists requests with account_status: null.
 
 ---
 
@@ -1302,10 +1386,12 @@ This is also the entry point for source changes approved through the C6 improvem
 | Field | Type | Req. | Constraints |
 |---|---|---|---|
 | `title` | string | Yes | 1-120 chars |
-| `visibility` | enum `customer`, `agent` | Yes | Controls retrieval scope |
+| `visibility` | enum `customer`, `agent` | Yes | Sets the source's explicit role grant when the document is saved: `customer` grants customers only, `agent` grants agents only (see **Role grants** below) |
 | `sections` | array of `{ section_id, title, text }` | Yes | 1-30 sections; `section_id` matches `^s[0-9]{1,2}$` and is unique; `text` 1-5,000 chars |
 
 Response: `{ source_id, source_version, index_status: "rebuilding"|"ready", correlation_id, contract_version }`. Source IDs stay stable across versions. Invalid input is rejected.
+
+**Role grants.** The validated `visibility` value sets the source's explicit role grant when the document is saved. Grants are the runtime authority for retrieval and citation; the stored `visibility` field is not checked on its own. `customer` grants customers only and `agent` grants agents only. A replace applies the new grant in the same transaction as the new `source_version`. On every citation open (C2b) the service checks the caller's current grant and the cited version, and returns 404 (identical to a missing source) if the caller's access was revoked, including for older versions. A saved replacement stays pending until the release review (Section 7). The three initial guides grant customers only.
 
 | Condition | Response |
 |---|---|
@@ -1337,7 +1423,7 @@ Response 200:
 }
 ```
 
-**Tests:** replace creates version 4 while `DOC-003` v3 still resolves; invalid section ID returns 400; customer or agent calling C8 returns 403; failed rebuild leaves the prior version active; retired document no longer retrieved.
+**Tests:** a role grant set by `visibility` applies in the same transaction as a replacement; a revoked grant returns 404 on citation open for the current and older versions; `agent` visibility is not returned to customers; replace creates version 4 while `DOC-003` v3 still resolves; invalid section ID returns 400; customer or agent calling C8 returns 403; failed rebuild leaves the prior version active; retired document no longer retrieved.
 
 ---
 
@@ -1367,13 +1453,181 @@ Response 200:
 | Required customer data unavailable | C1, C7 |
 | Customer data and `AccessContext` never reach the provider | C3, C7, C9 |
 | Token and payload bounds | C1, C3, C4 |
+| Agent visibility rule: 404 for another agent's request, 409 for visible-but-forbidden, claim exception | C5 |
+| Agent release racing a customer reply; reply ID unusable after release | C4d, C4e, C5c |
+| Detail endpoints: owner-only agent detail (404 until claimed), customer own-request detail | C4f, C5d |
+| Check order: C4e state before version; C5c visibility, then transition, then version | C4e, C5c |
 
 ---
 
-## 6. Remaining evidence and final review
+## 6. Changes
 
-- Collins supplies reviewed manifest/aliases/source versions, exact account/model/tier quotas, tokenizer compatibility, data controls and latency evidence.
-- Hanlin and Collins review C10 preparation/expectation and C3 counting/response alignment.
-- David's existing verification package remains the planned-check baseline; Vlad coordinates additional independent review coverage.
-- Production admission/connections/replica sizing and cost remain evidence-dependent. No simulated run establishes external-provider capacity.
-- All four members review the same identified final combined version. No final approval or executed test is implied.
+**Combined review:** retains PR #17’s C4/C5 contracts, restores the exact VPN source wording, and incorporates the C10 evidence rules, D22/D23 privacy rules and Hanlin’s backup designation. The account-status answer ID describes the design. The optional account-status demo is deferred for alpha.
+
+### 6.0 Draft 3.2 to Draft 3.3 (this revision)
+
+Source: Vlad's two C5 contract questions on PR #19 (c35ed7f review) and Hanlin's UI review of the C4 backend.
+
+| Draft 3.2 | Draft 3.3 |
+|---|---|
+| C5 gave a non-owner update 409 but another agent's request 404 in the same section | One visibility rule: 404 when the caller may not see the request, 409 when they can see it but its state forbids the action. Claim is the one exception (409 `ALREADY_CLAIMED`). |
+| Single 409 `CONFLICT` for every conflict | Adds `STALE_VERSION` and `ALREADY_CLAIMED`; `CONFLICT` keeps illegal transitions, non-owner actions on a visible request, wrong state and payload mismatch. |
+| Release from `in_review` / `waiting_for_customer` flagged as needing agreement | Stays pending until the team confirms it under Section 7. A release increments `version`, returns `state` and `version`, and keeps `release_reason` internal. |
+| Customer effect of a release unspecified | Documented in C4e: reply IDs become unusable (409) until an agent claims and asks again. |
+| `version` returned only in the C4e response | C4b, C4c and C4d now return `version` (and C4c/C4d `state` for reply IDs), so the customer can supply `expected_version`. |
+| Contract version `0.3.2` | `0.3.3`, the version `main` reports for C1, C4 and C5. |
+| C4d and C4e returned `CONFLICT` when the request was not waiting | New code `NOT_WAITING_FOR_CUSTOMER` (409) for registration or a reply on a request that is queued after a release, assigned, in review or resolved. `CONFLICT` stays for a changed payload. Added to Sections 2.5 and 2.8, C4d, C4e and the C4 tests. |
+| C4e check order unspecified | Request state is checked before `expected_version`, so a late reply after a release or resolution returns `NOT_WAITING_FOR_CUSTOMER`, not `STALE_VERSION`. |
+| C5c check order unspecified | Visibility and ownership, then allowed transition, then `expected_version`. |
+| Earlier reply ID after a release unspecified | Documented in C4e: kept, accepted after a re-claim and new question with a current version; the UI reloads and shows the current conversation before the customer confirms. |
+| Detail endpoints missing | Added C4f (customer detail) and C5d (agent detail, owner-only; a queued request returns 404 until claimed). Queue visibility does not include detail access. |
+| C4b and C4c examples had no `version`; C4c `state` was null unless saved | Examples include `version`; C4c `state` follows the version row: the parent's current state for a reply ID. |
+### 6.1 Draft 3.1 to Draft 3.2 (kept for history)
+
+Source: Vlad's Nov 2 follow-up and `proposed-decisions.md`. His items are given by section number.
+
+| Draft 3.1 | Draft 3.2 |
+|---|---|
+| Open note that Vlad must reconcile `waiting_customer` | Removed. `waiting_for_customer` is used everywhere (section 1). |
+| Session values were Hanlin's placeholders; renewal unspecified | 30 min inactivity renewed by authenticated activity, 8 h absolute that never slides; shared-state enforcement; role or permission change revokes sessions; current-session logout only (section 2). |
+| Unused-ID cap described per operation, expiry vague | Fixed 30 min; three IDs **combined** across escalation and reply; fourth registration returns 429 "too many pending submissions"; no eviction; atomic cap; expired IDs free their slot before cleanup (section 3). |
+| Account status routed by classification | C1 gains a required `requested_operation` selector (`ask_question`, `check_account_status`); `question` is conditional; the server sets `route`; scope never comes from the body (section 4). |
+| Provisioning left open | New C9c: single company, protected command or approved bulk import, no self-registration, controlled account store, explicit reviewer and release permissions, server-side role and ownership checks (section 11). |
+| Release authority was an open question | Release needs the explicit `release_authorizer` permission; the author cannot authorize; Vlad primary and a backup that Vlad designates (David declined); designate another qualified non-author if neither is independent; the exact reviewed and evaluated version is released; rollback by Vlad or David with a reason (section 5). |
+| V31 counted successful saves only | 95% of valid, confirmed submissions in 2 s, timed from application receipt to commit and success-response readiness; uncertain, failed and busy outcomes are misses; each submission counted once; retries and invalid attempts reported separately; registration measured separately; late reconciliation cannot convert a miss (section 6). |
+| Evidence rule hook only | States that an unavailable rule is not completed functionality and not proof of the service target (section 7). |
+| One breaker rule | Prototype (3 consecutive) and a provisional production candidate (at least 50% in a rolling 10 s window after at least 20 calls) (section 8). |
+| Retention in several places | One table in Section 2.6, with evaluation summaries, backups, purge timing and restore rules (section 9). |
+| Peak factor and concurrency open | Peak factor 2 and the three scenarios; prototype concurrency up to five; production pending (sections 13, 14). |
+| No safe-message or retry summary | New Sections 2.8 (safe messages) and 2.9 (timeouts and retry by contract). |
+| Missing examples | Added C1 request examples (including account status), C2a and C2b, C4 fourth-registration 429, C5a, C6b and C8. |
+| Contract version `0.3.1` | `0.3.2` |
+| Release backup named as David | David declined the backup role (his Nov 2 response and `decisions.md`). V35, C6, the tests and Section 7 now say Vlad designates a different qualified non-author. An evaluated version is immutable. |
+| Diagram cross-check not done | Done against Vlad's two Nov 2 diagrams. Four diagram edits are listed in Section 7 item 5. |
+| Browser calls omitted C2b | Added C2b to the M1 row in Section 1.1 (the browser opens citations). |
+| Breaker tests covered the prototype only | Added production-candidate tests (19 vs 20 calls, 50% threshold) and the recovery epoch (David N12). |
+| Test instrumentation unspecified | Added David's proposed non-content test fields (Section 2.6) and the locked eligibility snapshot (Section 2.7). |
+
+### 6.2 Draft 3 to Draft 3.1 (kept for history)
+
+Source: Vlad's decisions log (D01-D21, revision 4). PR #16 and PR #18 were opened, but only their descriptions were readable. Collins's flow file and David's verification files did not load, so nothing here depends on their contents.
+
+| Draft 3 | Draft 3.1 |
+|---|---|
+| Feedback window of 7 days with `FEEDBACK_WINDOW_CLOSED` (V26) | Feedback expires with inquiry metadata (30 days, D05/D09). No separate window or error code. Late feedback on a purged inquiry is 404. |
+| C6 request carried an optional `answer_id` | Removed. The server derives outcome, route and configuration from trusted metadata and links an answer internally if one exists. Category must be valid for the recorded outcome. |
+| Customer replies deduplicated by `expected_version` only | D17: replies use server-issued, registered `reply` IDs scoped to customer, parent request and operation. New C4d (register) and C4e (submit). Receipt saved in the same transaction. A reply racing resolution cannot revive the request. |
+| `waiting_customer` | `waiting_for_customer`, following D12/D17, Collins's model and Draft 2. Vlad's architecture review still says `waiting_customer`; Vlad to reconcile. |
+| Release only from `assigned` | Owner may release from `assigned`, `in_review` or `waiting_for_customer`, with a reason. A customer reply keeps the owner. |
+| Agents listed requests by state | D07: unassigned queue plus requests assigned to the caller. Others return 404. |
+| Breaker: three failures within 60 s | D14: three **consecutive** qualifying failures within 60 s; a success resets the count; recovery uses one shared trial on a new admitted inquiry; failed inquiries are not resubmitted; exhausted quota is not probed every 30 s; configuration failures do not count. |
+| No one-active-inquiry rule | D11: one active inquiry per customer (plus the 5-per-minute limit) |
+| No durable-save target | D11: 95% of successful durable saves within 2 s (V31) |
+| No token bounds | D15: at most 4,096 input and 512 output tokens (proposed, model-dependent) (V30) |
+| Retention partly implied | D09: inquiry metadata 30 days, diagnostic logs 7 days, no general chat transcripts, confirmed support content while open plus 30 days after resolution (V32, V33) |
+| Tenant model open | D07: one company initially; multi-company deferred. V20 closed (proposed). |
+| 504 described only as a backstop | D04: 504 when the overall 20 s deadline expires and a response can still be delivered. Provider timeout (at most 12 s) is a controlled 200. |
+| Missing examples | Added: C3 allowed outbound payload and forged-context denial (D06); cookie and CSRF (D18); C4 changed-payload, uncertain-commit and status examples (D09/D17); reply, late-reply and conflict examples (D12/D17); agent claim, transition and conflict examples (D12); C7 authorized, denied and unavailable (D02/D16); one complete improvement and rollback (D08); feedback on an answered and a failed inquiry (D05). |
+| Contract inventory C4a-C4d | C4a register, C4b submit, C4c status, C4d register reply ID, C4e submit reply |
+
+### 6.3 Draft 2 to Draft 3 (kept for history; superseded where 6.1 or 6.2 says so)
+
+| Draft 2 | Draft 3 |
+|---|---|
+| `submission_id` generated by the browser | Server-issued and pre-registered via new C4a; bound to customer and operation; expiry V25 |
+| C4a submit, C4b status, C4c reply | Renumbered: C4a register, C4b submit, C4c status, C4d reply |
+| Reused ID with unknown or expired state undefined | 410 `SUBMISSION_ID_EXPIRED` (never recreated); unknown or foreign ID is 404; uncertain commit is 503 `SAVE_OUTCOME_UNCERTAIN` |
+| 24 h idempotency retention (V11, open) | Receipt retained for request lifetime plus 30 days after resolution |
+| Customer reply allowed only in `waiting_for_customer` | Renamed `waiting_for_customer`; replies carry `expected_version`; duplicate reply replays; late reply on `resolved` returns 409 |
+| Release to `queued` with no reason | `release_reason` required |
+| `Authorization: Bearer` on all endpoints | Cookie session, CSRF token, session expiry, logout (C9b) |
+| `AccessContext` before every internal call | Same, with an explicit C3 exception: no context reaches the provider adapter |
+| `approved_context` in C3; C7 allowlist of four fields | `approved_context` removed; C7 allowlist is `customer_id` and `account_status`; account status is deterministic and bypasses the model |
+| Customer-context lookup then generation | New `route` decided before admission; `answer_origin` added |
+| V6 provider timeout 15 s; V17 retry 0 or 1 | 12 s; no automatic retry (V17 = 0) |
+| V16 queue size and wait limit; queue wait counts in the deadline | No AI waiting queue; immediate `SERVICE_BUSY` |
+| V18 breaker open | Vlad's proposal recorded; `circuit_open` failure category added; counter, reset and write policy remains Collins's |
+| C10 structural checks only | Adds runtime evidence-support hook (`EvidenceSupportPolicy`), fail-closed `support_check_unavailable` and `unsupported_content`; rule remains Collins's (V19) |
+| C6 required `answer_id` | `answer_id` nullable; feedback keyed to `inquiry_id` and outcome; category `fallback_unhelpful`; 7-day window and `FEEDBACK_WINDOW_CLOSED` |
+| 504 vs provider failure unclear | Provider timeout is 200 `temporarily_unavailable`; 504 is a backstop with a fallback reserve (V28) |
+| `EscalationReason` without a service-failure reason | Adds `service_unavailable` so retrieval or customer-data failure is distinct from `insufficient_evidence` |
+| No service target | Section 2.7 service level (V27) with eligibility denominator and load scenarios |
+| Retrieval failure unspecified | Mapped to `service_unavailable`, never to an empty result |
+| `contract_version` `"0.2"` | `"0.3"` in Draft 3, `"0.3.1"` in Draft 3.1, `"0.3.2"` in Draft 3.2, `"0.3.3"` in Draft 3.3 |
+
+---
+
+---
+
+## 7. Open decisions
+
+Final team approval remains pending. Unanswered technical items stay open after the Nov 3, 10:00 a.m. Eastern response cutoff.
+
+1. **Vlad:** coordinate one consistent final document, diagram, contracts and rationale; confirm the release-authority wording (V35) and the provisioning and role boundaries (C9c); production limits and assumptions (V15). Confirm the C5 visibility rule, the release extension (D12), the new STALE_VERSION / ALREADY_CLAIMED / NOT_WAITING_FOR_CUSTOMER codes, the C4e and C5c check orders and the two detail endpoints, then make the code changes listed in Section 8.
+2. **Collins:** provide executable evidence for the selected evidence-support and breaker rules (V18/V19); confirm V28; provider quotas, token budgets, retention settings and latency evidence (V15, V30); the release flow.
+3. **David:** (see the [release decision log](design-decisions-and-review-log.md) for the backup designation); verify renewal, expiry, role-change and logout cases (V23, V24); registration, cleanup and commit races and the three-ID cap (V25); the durable-save accounting and failure cases (V31); deletion, restricted access, receipt protection, backup expiry and restoration (V11, V21, V32-V34); non-author release enforcement and rollback (V35); the transition table; zero provider calls for account status; whether `subject_id` may be logged. The C5 404/409 matrix and the release-versus-reply race, in both commit orders, against the final revision.
+4. **Team:** confirm all proposed values; record decisions in `decisions.md`.
+5. **Diagram (Vlad):** the Nov 2 diagrams label parent contract IDs C1-C10, which is correct. The Nov 2 snapshot had four differences: its M8 box named David, while the combined design names Hanlin; the browser arrow lists C1, C4/C5, C6 and C8 but not C9 (session) or C2b (open a citation); there is no M2 to M9 arrow for sessions and accounts or an M4 to M9 arrow for breaker state, though M9 lists them; and sub-contracts C4a-C4e and C9a-C9c appear only in the contracts, so the diagram does not need to show them.
+
+## 8. Cross-check status and limits
+
+| Check | Status |
+|---|---|
+| Component names M1-M9 and contract owners against Vlad's architecture review | Checked in Drafts 2 and 3 |
+| `waiting_for_customer`, session values, ID values, account-status selector, release authority, V31 against Vlad's Nov 2 proposal | Applied in this draft |
+| Contract IDs and component names against Vlad's Nov 2 component and deployment diagrams | **Done.** C1-C10, M1-M9, `waiting_for_customer`, session, ID and retention values, breaker values, the 12 s / 20 s / 1 s timings, "no waiting queue", the explicit account-status selector and the evidence and release controls all match. Four edits are listed in Section 7 item 5 (M8 "David backup", browser arrow missing C9 and C2b, missing M2-M9 and M4-M9 arrows). |
+| Collins's AI flows (PR #16, `bcf86e0`, "first design draft") | **Read; version confirmed by Hanlin.** Component names match. Differences from the decisions log and these contracts are in my PR #16 review. |
+| Review of Collins's AI section | **Done as a written review** (findings on queues, `submission_id` issuance, customer data in C3, retries, replies, release authority, scenarios and contract mapping). Comments are to be posted on PR #16. |
+| David's PR #18 verification files | **Read:** `verification-plan.md`, `david-design-review-notes.md`, `david-verification-alignment-nov2.md`, `decisions.md`. His tests N01-N15, denominators and retention checks match this draft, apart from the backup release role. **Not read:** his Nov 2 COMMENTED review of Draft 3.1 on PR #17 (the page only returned a cached older view), so any comment in it is not yet addressed. |
+| Examples reconciled with Collins and David | **Partly done.** David's N01-N15 cases map onto contract behavior. Collins's draft has no examples to reconcile. |
+| Implementation or test execution | C1, C4 and C5 have implementation evidence in `main` (7d7b01f). The remaining differences are in the table below. C2, C3 and C6-C10 are not claimed. No test run is claimed by this document. |
+
+**Differences between Draft 3.3 and `main` (7d7b01f).** Vlad proposes keeping Draft 3.3 and updating the code, except the last row.
+
+| Situation | Draft 3.3 | `main` | Resolution | Owner |
+|---|---|---|---|---|
+| Claim of another agent's request | 409 `ALREADY_CLAIMED` | 409 `CONFLICT` | Update code | Vlad |
+| Transition on another agent's request | 404 `NOT_FOUND` | 409 `CONFLICT` | Update code | Vlad |
+| C5 owner sends a stale `expected_version` | 409 `STALE_VERSION` | 409 `CONFLICT` | Update code | Vlad |
+| C4b 201 and replay response | Includes `version` | Omitted | Update code | Vlad |
+| C4d 201 response | Includes `state` | Omitted | Update code | Vlad |
+| C4d or C4e when the request is not waiting for a reply | 409 `NOT_WAITING_FOR_CUSTOMER` (this revision) | 409 `NOT_WAITING_FOR_CUSTOMER` | Contract updated | Hanlin |
+
+## 9. Rationale for key choices
+
+- **Server-issued, pre-registered IDs.** A browser-generated ID cannot show that a submission was intended, expired or ever registered. Registering first lets the server reject expired and unknown IDs, cap pending submissions, and bind each ID to a customer, an operation and, for replies, a parent request.
+- **One transaction for the request and its receipt.** If the request and receipt could commit separately, a crash between them would allow a duplicate or a lost acknowledgement. The uncertain-commit outcome is reported honestly instead of claiming "not saved".
+- **No AI waiting queue.** A queue spends the 20 s deadline waiting. An immediate `SERVICE_BUSY` keeps the question in the browser and keeps the service-target accounting honest.
+- **Controlled 200 for provider failure.** The customer stays in the normal path and can be offered a human immediately. 504 is reserved for the overall deadline.
+- **`AccessContext` stays out of C3.** Authorization finishes before the provider is called, so nothing about identity or customer data can leak into a prompt.
+- **Explicit account-status selector.** Inferring the operation from free text would let wording decide which customer data is read. A named operation with server-derived scope keeps that bounded and needs no model.
+- **Fail-closed validation.** A source link can be valid while the answer is unsupported. When support cannot be checked, the safest result is a fallback with a support option.
+- **Reviewed improvement with non-author release.** Feedback can be mistaken or malicious, so it only creates review evidence. A change's author cannot authorize its own release.
+- **Separate escalation capacity.** A human handoff must stay available while AI is saturated.
+- **Receipts outlive unused-ID expiry.** Completed receipts follow the request's retention so a late retry cannot create a duplicate.
+
+## 10. Contribution note
+
+## Hanlin Wang
+
+**Role:** Lead for interface contracts (C1-C10).
+
+**What I did**
+- Drafted the interface contracts, including shared conventions, error codes, and the proposed-values table (Drafts 1 and 2).
+- Revised the contracts after reading Vlad's architecture review, decisions log, Nov 2 follow-up and proposed decisions, issue #12, and Collins's review on PR #17 (Drafts 3, 3.1 and 3.2, proposed and pending review):
+  - D09/D17: server-issued, pre-registered IDs for escalations and replies, scoped receipts, atomic saving, same and changed-payload retries, expired and missing IDs, duplicate replies, and the combined three-ID cap with no eviction (C4a-C4e).
+  - D05/D12/D18: feedback expiry with inquiry metadata (C6), agent scope, conflicts, release and late replies (C4e, C5), session renewal, role-change revocation, logout and CSRF (C9b), and controlled provisioning and role boundaries (C9c).
+  - D16 and D08: the explicit account-status selector in C1, and non-author release permission with Vlad as primary authorizer and a backup that Vlad designates (David declined) (C6). The combined review records Hanlin as that backup.
+  - D11: the 95%-within-15-seconds and 95%-within-2-seconds targets, the revised durable-save accounting (V31), the one-second fallback reserve, and Collins's failure rules; the evidence-support rule itself remains Collins's.
+- Added safe user-facing messages and a timeout and retry table (Sections 2.8, 2.9), more request and response examples, and a rationale section.
+- Listed open decisions for Vlad, Collins and David in Section 7.
+- Resolved Vlad’s two C5 contract points (release rule, 404/409 rule) and exposed version to customers (C4b-C4d).
+- Reconciled the contract with `main`: added `NOT_WAITING_FOR_CUSTOMER`, the C4e and C5c check orders, the earlier-reply-ID rule and the two detail endpoints (C4f, C5d).
+
+**Reviews**
+- Draft 3.3 has not yet been reviewed.
+
+**Tools used**
+- I used an AI assistant (Claude) to help draft and structure the contracts. I reviewed the content and checked it against the team documents.
+
+

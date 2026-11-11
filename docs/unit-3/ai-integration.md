@@ -3,7 +3,7 @@
 **Lead:** Collins Amponsah
 **Reviewers:** Hanlin Wang and David Warren
 **Architecture coordination:** Vladimyr Merci
-**Revision:** November 3, 2026; aligned to Hanlin's Interface Contracts Draft 3.2 and Vlad's November 2 Revised Proposed Decisions.
+**Revision:** Combined Unit 3 review, incorporating the November 3 decisions and Draft 3.3 interface contracts.
 
 **Status:** Revised design proposal for review. Team acceptance remains pending. No application implementation, executed tests, live provider access, measured answer quality or production capacity is claimed.
 
@@ -195,7 +195,7 @@ Exact extraction can still reproduce incorrect or misleading source material. In
 
 The policy intentionally rejects paraphrases and unlisted questions, reducing coverage. A future semantic policy requires a new version, reviewed thresholds, adversarial evaluation and explicit provider/deadline accounting.
 
-The manifest, aliases and source labels have not been supplied or tested in this revision. Until configured and reviewed, the rule remains unavailable and AI answers fail closed. This is not completed supported-answer functionality or proof of meeting the service target.
+The draft manifest, aliases and source labels are available in [PR #21](https://github.com/vlad8110/deskguide/pull/21). Until a reviewed release is configured, AI answers fail closed. This is not completed supported-answer functionality or proof of meeting the service target.
 
 ## 6. Flow B — confirmed human handoff and replies
 
@@ -543,7 +543,6 @@ This is input to the combined 500-word rationale, not a replacement for that del
 - **Collins / Hanlin / David:** review the proposed manifest-based evidence rule and C10 integration; populate and evaluate the manifest before claiming supported-answer functionality.
 - **Collins / David:** review breaker qualifying outcomes, atomic counting, epochs, recovery resets and lease expiry.
 - **Collins:** supply exact-model provider quota, policy, retention, latency and cost evidence.
-- **Hanlin / Vlad:** confirm the admission-stage versus C3 circuit_open mapping; clarify account-status answer_id semantics if necessary.
 - **Vlad:** coordinate review of the aligned contracts/flows, accepted Hanlin backup and final combined version.
 - **Team:** approve the same identified final versions. Production capacity and service targets remain unproven.
 

@@ -1,0 +1,95 @@
+{
+  "scope": "Synthetic test fixtures only; do not load at runtime.",
+  "review_status": "pending_independent_review",
+  "runtime_enabled": false,
+  "results_recorded": false,
+  "hash_definition": "SHA-256 of the exact UTF-8 section text bytes, without JSON syntax or an added newline.",
+  "versions": [
+    {
+      "source_id": "DOC-901",
+      "section_id": "s1",
+      "source_version": "1",
+      "text": "Collect the demo badge at Desk A.",
+      "sha256": "01078157f85532525f6adad359457582169ba059f8426e77372776e09c4ae07c"
+    },
+    {
+      "source_id": "DOC-901",
+      "section_id": "s1",
+      "source_version": "2",
+      "text": "Collect the demo badge at Desk B.",
+      "sha256": "83cc4b96ed06bf94c748c1dd6d18fa96b04a35a0146604ee3c2a205a428f7c16"
+    }
+  ],
+  "test_release_pin": {
+    "source_id": "DOC-901",
+    "section_id": "s1",
+    "source_version": "1",
+    "sha256": "01078157f85532525f6adad359457582169ba059f8426e77372776e09c4ae07c"
+  },
+  "question": "Where do I collect the demo badge?",
+  "expected_answer_when_allowed": "Collect the demo badge at Desk A.",
+  "cases": [
+    {
+      "case_id": "P01",
+      "setup": "Customer with an explicit customer-role grant; all prechecks pass.",
+      "expected_retrieval_version": "1",
+      "expected_exact_lookup_version": "1",
+      "expected_generation_calls": 1
+    },
+    {
+      "case_id": "P02",
+      "setup": "Agent with no matching role grant.",
+      "expected_retrieval_version": null,
+      "expected_exact_lookup_version": null,
+      "expected_generation_calls": 0
+    },
+    {
+      "case_id": "P03",
+      "setup": "Customer with an empty source grant list.",
+      "expected_retrieval_version": null,
+      "expected_exact_lookup_version": null,
+      "expected_generation_calls": 0
+    },
+    {
+      "case_id": "P04",
+      "setup": "Rerun retrieval and open the original citation after grant revocation.",
+      "expected_retrieval_version": null,
+      "expected_exact_lookup_version": null,
+      "expected_generation_calls": 0
+    },
+    {
+      "case_id": "V01",
+      "setup": "Both versions exist; only version 1 is pinned. All prechecks pass.",
+      "expected_retrieval_version": "1",
+      "expected_exact_lookup_version": "1",
+      "expected_generation_calls": 1
+    },
+    {
+      "case_id": "V02",
+      "setup": "Pinned version 1 is missing; version 2 still exists.",
+      "expected_retrieval_version": null,
+      "expected_exact_lookup_version": null,
+      "expected_generation_calls": 0
+    },
+    {
+      "case_id": "V03",
+      "setup": "The pinned source is retired.",
+      "expected_retrieval_version": null,
+      "expected_exact_lookup_version": null,
+      "expected_generation_calls": 0
+    },
+    {
+      "case_id": "V04",
+      "setup": "Version 1 text changes without updating its pinned hash.",
+      "expected_retrieval_version": null,
+      "expected_exact_lookup_version": null,
+      "expected_generation_calls": 0
+    }
+  ],
+  "assertions": [
+    "Excluded passages and citations never reach the provider.",
+    "Denied citation lookups return no source content.",
+    "Failed prechecks make zero provider calls.",
+    "Version 2 never substitutes for version 1."
+  ]
+}
