@@ -92,7 +92,7 @@ def _read_release(path):
         or manifest.get("runtime_enabled") is not True
     ):
         raise ValueError("The evidence manifest must be approved and enabled.")
-    return release
+    return release, manifest
 
 
 def _guide(path, source_id, version, digest):
@@ -185,7 +185,7 @@ def stored_guide(db, source_id, version):
 def import_citation_release(release_file, customer_sources):
     """Import the hashed guides in an approved fictional citation release."""
     try:
-        release = _read_release(release_file)
+        release, _ = _read_release(release_file)
         current, _, _ = parse_release(release)
         for source_id in customer_sources:
             if source_id not in current:
@@ -252,10 +252,12 @@ def init_app(app):
     )
     if path and app.config["CITATION_RELEASE"] is None:
         app.extensions.pop("citation_release_content", None)
+        app.extensions.pop("citation_release_manifest", None)
         try:
-            release = _read_release(Path(path))
+            release, manifest = _read_release(Path(path))
             guides = _verified_guides(Path(path), release)
             app.extensions["citation_release_content"] = guides
+            app.extensions["citation_release_manifest"] = manifest
             app.config["CITATION_RELEASE"] = release
         except (OSError, ValueError):
             # Keep the application available while source lookup fails closed.

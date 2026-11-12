@@ -5,6 +5,7 @@ import os
 import secrets
 import sqlite3
 import time
+from collections.abc import Callable
 from datetime import timedelta
 from pathlib import Path
 from typing import Protocol, cast
@@ -31,6 +32,7 @@ from . import (
     support,
 )
 from .errors import CONTRACT_VERSION, ApiError, error_response
+from .inquiry_types import InquiryServices
 
 
 class JsonSessionSerializer(Serializer):
@@ -64,7 +66,11 @@ def _stateless_health(application):
     return dispatch
 
 
-def create_app(test_config=None):
+def create_app(
+    test_config=None,
+    *,
+    inquiry_services_factory: Callable[[Flask], InquiryServices] | None = None,
+):
     default_instance = Path(__file__).resolve().parent.parent / "instance"
     instance = Path(
         os.environ.get("DESKGUIDE_INSTANCE_PATH", str(default_instance))
@@ -153,6 +159,11 @@ def create_app(test_config=None):
     db.init_app(app)
     accounts.init_app(app)
     citation_release.init_app(app)
+    if inquiry_services_factory is not None:
+        if app.extensions.get("citation_release_content"):
+            app.extensions["inquiry_services"] = inquiry_services_factory(app)
+        else:
+            app.logger.warning("Inquiry services require a verified citation release.")
     app.register_blueprint(auth.bp)
     inquiries.init_app(app)
     feedback.init_app(app)

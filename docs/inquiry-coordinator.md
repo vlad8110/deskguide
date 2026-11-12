@@ -12,6 +12,16 @@ The response uses contract version `0.3.3`: `inquiry_id`, nullable `answer_id`, 
 
 Register an implementation of [InquiryServices](../app/inquiry_types.py) at `app.extensions["inquiry_services"]`. There is no default provider or fictional answer service in the product application. Without configured services, the endpoint returns `temporarily_unavailable` with `service_unavailable`, null answer fields and empty sources.
 
+The Flask entry point can pass the adapter constructor as
+`create_app(inquiry_services_factory=build_inquiry_services)`. The constructor
+receives the Flask app after its reviewed citation release has loaded. Use
+`app.config["CITATION_RELEASE"]` for version pins,
+`app.extensions["citation_release_manifest"]` for the verified manifest, and
+`app.extensions["citation_release_content"]` for the verified guide contents.
+Retrieval must apply current grants and the active pins. Citation lookup
+continues to check current access on every open. Flask calls the constructor
+only when the release contains verified guide content.
+
 | Order | Internal method | Responsibility |
 | --- | --- | --- |
 | 1 | `retrieve(ctx, question, top_k=5, deadline_ms=...)` | Collins: enforce source access and approved-version selection; return permitted passages with their titles. |

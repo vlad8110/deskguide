@@ -3,6 +3,7 @@
 import hashlib
 import json
 import sqlite3
+from unittest.mock import Mock
 from uuid import UUID
 
 import pytest
@@ -11,6 +12,17 @@ from conftest import PASSWORD
 from app import create_app
 from app.citation_release import init_app as init_citation_release
 from app.db import get_db
+from app.inquiry_types import (
+    EvidenceExcerpt,
+    EvidenceExpectation,
+    EvidencePreparation,
+    GenerationResult,
+    InquiryServices,
+    Passage,
+    RetrievalResult,
+    SourceRef,
+    ValidationResult,
+)
 
 URL = "/v1/sources/DOC-003/sections/s2"
 
@@ -83,6 +95,89 @@ def released_sources(app, clock, tmp_path, monkeypatch):
             )
         db.execute("INSERT INTO document_role_grants VALUES ('DOC-003', 'customer')")
     return release_path
+
+
+@pytest.mark.parametrize("valid_release", [True, False])
+def test_inquiry_services_require_verified_release(
+    app, released_sources, valid_release, sign_in
+):
+    if not valid_release:
+        (released_sources.parent / "evidence_manifest.json").write_text("{}")
+
+    services = Mock(spec=InquiryServices)
+    factory = Mock(return_value=services)
+    restarted = create_app(
+        {
+            "TESTING": True,
+            "DATABASE": app.config["DATABASE"],
+            "SESSION_COOKIE_SECURE": False,
+        },
+        inquiry_services_factory=factory,
+    )
+
+    if valid_release:
+        factory.assert_called_once_with(restarted)
+        assert restarted.extensions["inquiry_services"] is services
+        assert restarted.extensions["citation_release_manifest"]["runtime_enabled"]
+        client = restarted.test_client()
+        assert sign_in(client).status_code == 200
+        ref = SourceRef("DOC-003", "s2", "3")
+        answer = "Text v3"
+        passage = Passage(ref, answer, "VPN Setup Guide", "Installing the client")
+        services.retrieve.return_value = RetrievalResult((passage,), "test-index")
+        services.prepare_evidence.side_effect = (
+            lambda ctx, inquiry_id, question, retrieved, **kwargs: EvidencePreparation(
+                "ready",
+                EvidenceExpectation(
+                    inquiry_id,
+                    "test-policy",
+                    "test-manifest",
+                    "vpn_setup",
+                    answer,
+                    (EvidenceExcerpt(ref, 0, len(answer), answer),),
+                ),
+            )
+        )
+        services.check_outbound.return_value = "approved"
+        services.generate.return_value = GenerationResult(
+            answer, (ref,), "test-adapter"
+        )
+        services.validate.return_value = ValidationResult("pass", (ref,))
+        headers = {"X-CSRF-Token": client.get("/v1/session").json["csrf_token"]}
+        response = client.post(
+            "/v1/inquiries",
+            json={
+                "requested_operation": "ask_question",
+                "question": "How do I set up the Campus VPN profile?",
+            },
+            headers=headers,
+        )
+        assert response.json["status"] == "answered"
+        assert response.json["sources"][0]["url"] == URL + "?version=3"
+        assert client.get(response.json["sources"][0]["url"]).json["text"] == answer
+        services.generate.assert_called_once()
+
+        services.generate.reset_mock()
+        services.retrieve.return_value = RetrievalResult((), "test-index")
+        services.prepare_evidence.side_effect = None
+        services.prepare_evidence.return_value = EvidencePreparation(
+            "insufficient_evidence"
+        )
+        response = client.post(
+            "/v1/inquiries",
+            json={
+                "requested_operation": "ask_question",
+                "question": "Which printer driver should I install?",
+            },
+            headers=headers,
+        )
+        assert response.json["status"] == "escalation_offered"
+        assert response.json["escalation_offered"] is True
+        services.generate.assert_not_called()
+    else:
+        factory.assert_not_called()
+        assert "inquiry_services" not in restarted.extensions
+        assert "citation_release_manifest" not in restarted.extensions
 
 
 def test_exact_and_default_citations_return_only_approved_content(
