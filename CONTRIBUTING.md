@@ -25,7 +25,7 @@ The coordinator reviews the weekly requirements early, helps divide tasks, colle
 
 Use a local clone for repository work. GitHub Desktop provides the Changes and History views, commits and explicit push controls. Fetch the current remote state before starting, review local changes and reconcile others' work before publishing.
 
-For the [Unit 3 architecture review](https://github.com/vlad8110/deskguide/blob/bf6e11dcf420f042c3384d5ae3cb3494d9e0d257/docs/unit-3/architecture-first-draft/README.md), the Google Doc and shared draw.io file are the editable review sources. Repository Markdown, draw.io and PNG files are snapshots. Reconcile shared edits and refresh the local snapshots before committing a revision. Use PNG previews during review; create the PDF for final submission.
+For the [Unit 3 architecture review](docs/unit-3/architecture-first-draft/README.md), the Google Doc and shared draw.io file are the editable review sources. Repository Markdown, draw.io and PNG files are snapshots. Reconcile shared edits and refresh the local snapshots before committing a revision. Use PNG previews during review; create the PDF for final submission.
 
 ## Development workflow
 

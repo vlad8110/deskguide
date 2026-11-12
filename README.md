@@ -28,7 +28,9 @@ Python and Flask; HTML, CSS, and JavaScript; SQLite; local document retrieval; o
 
 ## Design baseline
 
-The Unit 3 combined design is under review in [PR #15](https://github.com/vlad8110/deskguide/pull/15). Application integration uses the [C4 interface contracts](https://github.com/vlad8110/deskguide/blob/bf6e11dcf420f042c3384d5ae3cb3494d9e0d257/docs/unit-3/interface-contracts.md); the review documents remain on their separate branch. Vlad coordinates implementation through the [module handoff](docs/unit-5/module-handoff.md), with completed work recorded in [contributions](contributions.md).
+The [Unit 3 design hub](docs/unit-3/README.md) links to the combined architecture review. Application integration uses the [Unit 3 interface contracts](docs/unit-3/interface-contracts.md). Vlad coordinates implementation through the [module handoff](docs/unit-5/module-handoff.md), with completed work recorded in [contributions](contributions.md).
+
+Vlad's [architecture first draft](docs/unit-3/architecture-first-draft/README.md) is available for team review, with the editable Google Doc, shared draw.io diagram, PNG preview and Markdown copies. PDFs are reserved for final submission.
 
 ## Start here
 
@@ -233,6 +235,8 @@ sample_documents/   Fictional source material only
 ```
 
 Keep API keys, `.env` files, real workplace records, personal information, and live databases out of Git. Use `.env.example` only for placeholders.
+
+Work from a local clone using GitHub Desktop or your editor. Review local changes before committing and pushing; see the [collaboration guide](CONTRIBUTING.md). Shared Google Doc and diagram edits must be reconciled explicitly before updating their repository snapshots.
 
 ## Backlog and implementation tracking
 

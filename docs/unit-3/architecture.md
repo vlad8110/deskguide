@@ -1,42 +1,52 @@
 # Architecture — working design
 
 Lead: Vlad. Reviewer: David; Hanlin and Collins validate interfaces and AI boundaries.
-Status: initial component inventory, not an approved or tested implementation.
 
-## Component inventory to resolve
+Status: [November 2 proposed decisions](proposed-decisions.md) available for team review; responses due **November 3, 2026, at 10:00 a.m. Eastern**. Read the [review log](design-decisions-and-review-log.md). The [architecture review hub](architecture-first-draft/README.md) contains the November 2 written draft and corrected diagrams; final contract/team alignment remains pending.
 
-| Component | Responsibility | Boundary to specify |
+## Component inventory
+
+| Component | Responsibility | Contract or boundary |
 | --- | --- | --- |
-| Customer browser and agent console | Customer inquiry/citation display; authorized agent work | Public API and role enforcement |
-| Application/API | Validation, authorization and orchestration | Business services through stable contracts |
-| Retrieval and knowledge store | Retrieve permitted passages with resolvable IDs | Ingestion, retrieval, source access |
-| AI adapter | Provider-neutral generation with bounded failure handling | Permitted input, output, deadlines and quota behavior |
-| Escalation workflow | Save/acknowledge one handoff and expose agent processing | Safe retries, ownership and state changes |
-| Feedback/improvement workflow | Review interaction patterns and evaluate changes | Retention, access, versioned releases and rollback |
-| Customer-data adapter | Authorized minimum data from existing database | Read/write permissions, availability, consistency |
-| Persistence | Durable request/feedback and metadata storage | Transactions, identifiers and retention |
+| M1 Browser interfaces | Customer inquiries, source display, agent and administrator actions | C1/C2b/C4/C5/C6/C8/C9; server-side authorization |
+| M2 Application/access control | Validation, permissions, bounded admission and orchestration | C9 verified access context; cookie sessions and CSRF |
+| M3 Knowledge/retrieval | Approved source versions, retrieval and document administration | C2 retrieval/sources; C8 administration |
+| M4 AI adapter | Permitted model input, bounded generation and shared breaker | C3 generation; separate prototype/production breaker proposals; no internal access context or customer-database fields sent to the provider |
+| M5 Evidence/source validation | Pre-generation evidence readiness and inquiry-bound expectation; post-generation candidate, source/version/access and exact approved-answer checks | C10 prepare_evidence before C3 and validate before display; B12 manual evaluation remains offline |
+| M6 Support/agent workflow | Registered IDs, atomic save/replay, ownership and state transitions | C4/C5; acknowledgement only after durable commit |
+| M7 Customer-data adapter | Read-only authorized customer_id/account_status lookup | C7; deterministic account-status response without AI |
+| M8 Feedback/improvement | Inquiry-linked feedback, independent review, evaluated releases and rollback | C6; Vlad primary; Hanlin backup; non-author release permission; changes through M3/C8 or M4 |
+| M9 Persistence interfaces | Component-owned durable knowledge, support, feedback, sessions and breaker state | Shared PostgreSQL transactions, receipts and leases |
 
-## Diagram work
+See the [detailed responsibilities](architecture-first-draft/component-responsibilities.md) and [customer walkthroughs](architecture-first-draft/customer-question-walkthroughs.md). These are logical responsibilities, not nine separately deployed services.
 
-- [ ] Create editable UML or equivalent component diagram plus readable rendering under this directory.
-- [ ] Label system/trust boundaries and external AI/database services.
-- [ ] Trace normal answering, uncertain/unsupported answering, provider failure, escalation and feedback.
-- [ ] Give each interaction a matching contract ID from interface-contracts.md.
-- [ ] Add a legend and distinguish logical modules from separately deployed services.
+## Architecture diagrams
 
-## 10,000-concurrent-customer capacity design
+- [Component architecture PNG](architecture-first-draft/deskguide-unit-3-architecture.png)
+- [Proposed production deployment PNG](architecture-first-draft/deskguide-unit-3-production-deployment.png)
+- [Editable two-page draw.io source](architecture-first-draft/deskguide-unit-3-architecture.drawio)
 
-Concurrent customers are not automatically 10,000 simultaneous model requests. Define active sessions, request frequency, peak arrival rate, response time, and simultaneous in-flight work before sizing. Show the calculation and sensitivity to assumptions.
+The component view includes C1–C10 boundaries, registered submission receipts, runtime validation, customer-data isolation and approved improvement routes. The production view shows HTTPS ingress/load balancing, replicated modular Flask applications using production WSGI, shared PostgreSQL state and separate external AI/customer-database dependencies.
 
-- [ ] Define workload mix, payload sizes, sustained and burst rates, latency/error targets and test duration.
-- [ ] Decide application replication, session/state strategy and storage design.
-- [ ] Address AI provider quotas, queue bounds, backpressure, rate limits and controlled overload behavior.
-- [ ] Address connection limits, retrieval/index capacity, database contention and external dependencies.
-- [ ] Document recovery, observability and maintenance implications for junior developers.
-- [ ] Compare the bounded Flask/SQLite prototype with proposed production choices; justify changes.
+## Workload and service proposal
 
-Use verification-plan.md for planned load validation. No capacity result has been measured.
+Selected assumption: 10,000 active customer sessions, each generating one inquiry per minute on average, approximately 166.67 new inquiries per second. The worst-case AI planning scenario requires 10,000 model calls per minute. This assumption is separate from the assignment's concurrency requirement.
 
-## Backlog traceability and first decisions
+Proposed service level: at least 95% of all eligible inquiries receive a supported AI answer within 15 seconds. Eligible busy, timeout, invalid-answer and unnecessary-fallback outcomes count as misses. Apply a 20-second end-to-end deadline, with the provider limited to 12 seconds or the remaining budget minus the one-second fallback reserve, whichever is shorter. Use bounded admission without an AI waiting queue and separately bounded support admission.
 
-Start with [Vlad’s first architecture session](architect-first-session.md). Preserve B03 component boundaries, B04 contracts, B06 storage, B07 source resolution, B09 authorization and B11 duplicate-safe escalation/provider failures. Carry B13 feedback and B14 document/source versioning into the production design. [The integration map](../backlog/implementation-map.md) separates the prototype criteria from P01–P04 production additions. Proposed workload figures need review before they become design assumptions.
+The [workload document](architecture-first-draft/workload-assumptions.md) details the denominator, calculations, two-minute 2× load and separate 10,000-arrival/one-second burst. Provider capacity, resource sizing, payload/in-flight/support limits and executed load evidence remain pending. No production-capacity result has been measured.
+
+## Remaining review
+
+Respond in your existing issue or section PR by **Tuesday, November 3, 2026, at 10:00 a.m. Eastern**. The [complete proposal](proposed-decisions.md) supplies session/ID defaults, explicit account-status selection, release independence, retention, test labels and measurement rules.
+
+- Hanlin: C1–C10 schemas, session/identity details, submission-ID registration/expiry and ownership/version conflicts.
+- Collins: provider/model quota evidence, runtime evidence-support rules and shared-breaker counter/reset/write policy.
+- David: denominator-aware service-level tests, expired-ID/duplicate races, session/ownership isolation and breaker recovery across replicas.
+- Vlad: reconcile the architecture, contracts and rationale and coordinate all four reviews of one final version.
+
+The shared Google Doc and draw.io file remain the editable architecture sources. Local snapshots reflect the November 2 written source plus Hanlin's accepted backup role and the diagram-connection corrections. The shared files still require these corrections. Final agreement and submission remain pending.
+
+## Backlog traceability
+
+Preserve B03 component boundaries, B04 contracts, B06 storage, B07 source resolution, B09 authorization and B11 durable duplicate-safe escalation. B13 feedback and B14 document versioning remain later full-backlog work. Customer-data integration, detailed agent workflow and governed improvement are Unit 3 design additions. The [implementation map](../backlog/implementation-map.md) distinguishes prototype criteria from P01–P04 production additions. Automatic second-provider failover remains deferred; B17 remains consolidated into B11.

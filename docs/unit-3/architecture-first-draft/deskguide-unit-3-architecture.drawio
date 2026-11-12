@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" pages="2">
+  <diagram name="Component architecture" id="wWP11JurJD5BluBIdK9H">
+    <mxGraphModel dx="933" dy="1209" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1180" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fillColor=none;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="" vertex="1">
+          <mxGeometry height="590" width="910" x="10" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M2 | Application + access&lt;br&gt;Explicit routing / C9 access&lt;br&gt;Bind inquiry evidence before C3" vertex="1">
+          <mxGeometry height="80" width="230" x="350" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M1 | Browser interfaces&lt;div&gt;Customer / agent / administrator&lt;/div&gt;" vertex="1">
+          <mxGeometry height="65" width="230" x="350" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M3 | Knowledge + retrieval&lt;br&gt;Approved source versions&lt;br&gt;Reviewed evidence manifest" vertex="1">
+          <mxGeometry height="80" width="230" x="60" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M4 | AI provider adapter&lt;br&gt;C3 | Bounded calls / shared breaker&lt;br&gt;No automatic generation retry" vertex="1">
+          <mxGeometry height="80" width="230" x="640" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M5 | Evidence + source validation&lt;br&gt;1. prepare_evidence before C3&lt;br&gt;2. validate after C3 / before display" vertex="1">
+          <mxGeometry height="80" width="230" x="350" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M6 | Support + agent workflow&lt;br&gt;Registered ID / confirm / durable save&lt;br&gt;Owner + waiting_for_customer" vertex="1">
+          <mxGeometry height="80" width="230" x="60" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M7 | Customer-data adapter&lt;br&gt;Explicit account status via C1&lt;br&gt;customer_id / account_status" vertex="1">
+          <mxGeometry height="80" width="230" x="640" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M9 | Shared persistence interfaces&lt;br&gt;Knowledge / manifest / support&lt;br&gt;Sessions / receipts / breaker state" vertex="1">
+          <mxGeometry height="80" width="230" x="350" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fontSize=11;" value="M8 | Feedback + improvement&lt;br&gt;Independent review / evaluate / release&lt;br&gt;Vlad primary / Hanlin backup" vertex="1">
+          <mxGeometry height="65" width="230" x="350" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="External AI&lt;br&gt;provider" vertex="1">
+          <mxGeometry height="80" width="140" x="1010" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="Existing customer&lt;br&gt;database" vertex="1">
+          <mxGeometry height="80" width="140" x="1010" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="DeskGuide | Component Architecture&lt;br&gt;Vladimyr Merci · Proposed design · November 3, 2026" vertex="1">
+          <mxGeometry height="50" width="1140" x="10" y="15" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="PLANNING ASSUMPTION: 10,000 active customers × 1 inquiry/minute ≈ 167 inquiries/second; capacity untested." vertex="1">
+          <mxGeometry height="30" width="1140" x="10" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="M1–M9 are logical modules in one application.&lt;br&gt;Solid lines: requests/data. Dashed lines: approved improvements." vertex="1">
+          <mxGeometry height="45" width="1140" x="10" y="825" as="geometry" />
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-17" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-2" style="endArrow=classic;startArrow=classic;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-1" value="C1 inquiry / explicit account status&lt;br&gt;C2b sources · C9 sessions&lt;br&gt;C4/C5 support · C6 feedback&lt;br&gt;C8 document admin">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="620" y="230" as="sourcePoint" />
+            <mxPoint x="670" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-18" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-3" value="C2 / C8&lt;br&gt;Sources / admin">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="-30" y="-10" as="offset" />
+            <mxPoint x="620" y="230" as="sourcePoint" />
+            <mxPoint x="670" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-22" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-5" value="C3 | candidate / failure">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="910" y="240" as="sourcePoint" />
+            <mxPoint x="960" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-23" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-6" value="C10 | 1 prepare_evidence&lt;br&gt;2 validate before display">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="910" y="240" as="sourcePoint" />
+            <mxPoint x="960" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-26" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-7" value="C4 / C5&lt;br&gt;Support">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="890" y="340" as="sourcePoint" />
+            <mxPoint x="940" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-27" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-5" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-11" value="Eligible input only&lt;br&gt;Candidate / failure">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="890" y="340" as="sourcePoint" />
+            <mxPoint x="940" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-28" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-8" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-12" value="C7 | Read-only&lt;br&gt;No provider access">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="890" y="340" as="sourcePoint" />
+            <mxPoint x="940" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-29" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-7" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-9" value="Registered ID&lt;br&gt;Save / replay">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint y="-60" as="offset" />
+            <mxPoint x="890" y="340" as="sourcePoint" />
+            <mxPoint x="940" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-30" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-10" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-9" value="Feedback / versions">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="890" y="340" as="sourcePoint" />
+            <mxPoint x="940" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-31" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-3" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-9" value="Knowledge / source versions">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="890" y="340" as="sourcePoint" />
+            <mxPoint x="940" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-32" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-8" value="C7&lt;br/&gt;account status">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="890" y="340" as="sourcePoint" />
+            <mxPoint x="940" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-33" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;" target="hwXAEPP3mjso2QIhsSkL-10" value="C6&lt;br/&gt;feedback">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="890" y="340" as="sourcePoint" />
+            <mxPoint x="940" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hwXAEPP3mjso2QIhsSkL-34" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=0;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;" value="DeskGuide application boundary" vertex="1">
+          <mxGeometry height="20" width="230" x="50" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="approved-sources" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-10" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;dashed=1;exitX=0.5;exitY=1;entryX=0;entryY=0.5;" target="hwXAEPP3mjso2QIhsSkL-3" value="Approved sources">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="465" y="790" />
+              <mxPoint x="30" y="790" />
+              <mxPoint x="30" y="430" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="approved-configuration" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-10" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;dashed=1;exitX=1;exitY=0.8;entryX=0.5;entryY=1;" target="hwXAEPP3mjso2QIhsSkL-5" value="Approved configuration">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="890" y="760" />
+              <mxPoint x="890" y="500" />
+              <mxPoint x="755" y="500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="component-id-policy" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Identity / confirmed submissions (proposed)&lt;/b&gt;&lt;br&gt;Sessions: 30-min idle / 8-h maximum; role changes revoke.&lt;br&gt;Unused IDs: 30-min fixed expiry; max 3 across operations.&lt;br&gt;Fourth registration: 429; no eviction. Uncertain save: same ID.&lt;br&gt;Durable commit + receipt before success acknowledgement." vertex="1">
+          <mxGeometry height="125" width="560" x="10" y="895" as="geometry" />
+        </mxCell>
+        <mxCell id="component-release-policy" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Release / evidence controls (proposed)&lt;/b&gt;&lt;br&gt;Author cannot authorize own release; exact version + rollback.&lt;br&gt;Independent review and passed evaluation precede release.&lt;br&gt;Failed / unavailable support checking suppresses the answer.&lt;br&gt;Only confirmed support is saved; no automatic escalation." vertex="1">
+          <mxGeometry height="125" width="560" x="590" y="895" as="geometry" />
+        </mxCell>
+        <mxCell id="m2-session-state" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;exitX=0;exitY=0.375;entryX=0.15;entryY=1;" target="hwXAEPP3mjso2QIhsSkL-9" value="Sessions / accounts">
+          <mxGeometry relative="1" x="0.6" y="-9" as="geometry">
+            <Array as="points">
+              <mxPoint x="40" y="270" />
+              <mxPoint x="40" y="680" />
+              <mxPoint x="385" y="680" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m4-breaker-state" edge="1" parent="1" source="hwXAEPP3mjso2QIhsSkL-5" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;fontColor=#000000;strokeColor=#333333;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;exitX=0.75;exitY=1;entryX=0.83;entryY=0;" target="hwXAEPP3mjso2QIhsSkL-9" value="Breaker state">
+          <mxGeometry relative="1" y="-10" as="geometry">
+            <Array as="points">
+              <mxPoint x="812.5" y="525" />
+              <mxPoint x="540" y="525" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="component-evidence-contract" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;C10 | Evidence checks&lt;br&gt;C2 retrieval → prepare_evidence → [ready] C3 → validate → display.&lt;br&gt;M2 binds inquiry + reviewed policy/manifest + exact source spans before C3.&lt;br&gt;Failed/unavailable precheck: zero C3 calls; no automatic support save.&lt;br&gt;Controlled clarification, support option or unavailability on precheck failure.&lt;br&gt;Postcheck: 100% approved-answer match + all required refs; else suppress.&lt;/b&gt;" vertex="1">
+          <mxGeometry height="155" width="560" x="10" y="1045" as="geometry" />
+        </mxCell>
+        <mxCell id="component-boundaries" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Outbound / outcomes&lt;/b&gt;&lt;br&gt;Question + every passage must be eligible before C3.&lt;br&gt;Fictional prototype only; no customer/session fields to AI.&lt;br&gt;Account status: fixed answer + answer_id; zero model calls.&lt;br&gt;503 before admission; admitted C3 failure: 200 unavailable.&lt;br&gt;Hard deadline: 504; eligible no-answer outcomes are misses." vertex="1">
+          <mxGeometry height="155" width="560" x="590" y="1045" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="EKfMThlVabrlaAyRmL1L" name="Production deployment">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="deploy-title" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;fontSize=20;" value="DeskGuide | Proposed Production Deployment&lt;br&gt;Vladimyr Merci · Contract alignment · November 3, 2026" vertex="1">
+          <mxGeometry height="60" width="1140" x="10" y="15" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-browser" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;" value="Customer / agent / administrator browsers" vertex="1">
+          <mxGeometry height="70" width="340" x="420" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-ingress" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;" value="HTTPS ingress + load balancer" vertex="1">
+          <mxGeometry height="70" width="340" x="420" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="replica-back-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;fillColor=#F5F5F5;" value="" vertex="1">
+          <mxGeometry height="180" width="480" x="374" y="366" as="geometry" />
+        </mxCell>
+        <mxCell id="replica-back-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;fillColor=#FAFAFA;" value="" vertex="1">
+          <mxGeometry height="180" width="480" x="362" y="378" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-app" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;" value="Replicated modular Flask application&lt;br&gt;Production WSGI · logical modules M2–M9&lt;br&gt;M2: routing / C9 · M5: C10 evidence expectation&lt;br&gt;M4: bounded AI · M6: confirmed support" vertex="1">
+          <mxGeometry height="180" width="480" x="350" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-ai" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;" value="External AI provider&lt;br&gt;Exact model / capacity pending&lt;br&gt;Cohere first; compare Groq" vertex="1">
+          <mxGeometry height="100" width="220" x="930" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-customer-db" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;" value="Existing customer database&lt;br&gt;Explicit account status via M7&lt;br&gt;Read-only; no model call" vertex="1">
+          <mxGeometry height="100" width="220" x="30" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-postgres" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;shape=cylinder3;size=15;" value="Shared PostgreSQL&lt;br&gt;Accounts / sessions · requests / receipts&lt;br&gt;Knowledge / manifest · breaker epochs / leases" vertex="1">
+          <mxGeometry height="115" width="480" x="350" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-status" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=15;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;fontSize=12;strokeColor=none;" value="Replica count, database sizing, provider capacity and hosting remain subject to review." vertex="1">
+          <mxGeometry height="35" width="820" x="180" y="835" as="geometry" />
+        </mxCell>
+        <mxCell id="browser-ingress" edge="1" parent="1" source="deploy-browser" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;fontSize=13;" target="deploy-ingress" value="HTTPS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ingress-app" edge="1" parent="1" source="deploy-ingress" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;fontSize=13;" target="deploy-app" value="Admitted requests">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="app-provider" edge="1" parent="1" source="deploy-app" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;startArrow=classic;fontSize=13;" target="deploy-ai" value="M4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="app-customer" edge="1" parent="1" source="deploy-app" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;startArrow=classic;fontSize=13;" target="deploy-customer-db" value="M7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="app-state" edge="1" parent="1" source="deploy-app" style="endArrow=classic;html=1;rounded=0;fontFamily=Arial;fontSize=11;labelBackgroundColor=#FFFFFF;jumpStyle=arc;jumpSize=6;startArrow=classic;fontSize=13;" target="deploy-postgres" value="M9 | Shared durable state">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-shared-controls" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Shared identity / submission controls (proposed)&lt;/b&gt;&lt;br&gt;Sessions: 30-min idle / 8-h maximum.&lt;br&gt;Role changes revoke existing sessions.&lt;br&gt;Unused IDs: 30-min fixed expiry; max 3 per customer across operations.&lt;br&gt;Fourth registration: 429; never evict.&lt;br&gt;Uncertain save: retain original ID." vertex="1">
+          <mxGeometry height="190" width="340" x="30" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-timing" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Admission / deadlines (proposed)&lt;/b&gt;&lt;br&gt;No AI queue; shared aggregate admission.&lt;br&gt;20-s overall / provider ≤12 s / 1-s reserve.&lt;br&gt;Before admission: 503 + Retry-After.&lt;br&gt;Admitted C3 failure: controlled 200 unavailable.&lt;br&gt;Overall deadline: 504; no generation retry." vertex="1">
+          <mxGeometry height="190" width="340" x="810" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-breaker-policy" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Breaker coordination (proposed)&lt;/b&gt;&lt;br&gt;Prototype: 3 consecutive failures / 60 s; success resets.&lt;br&gt;Production: F/N ≥50% in 10 s; N ≥20 completed calls.&lt;br&gt;30-s cooldown / one shared trial / 20-s lease.&lt;br&gt;Unique completions + epoch guards; recover expired leases.&lt;br&gt;No provider-call DB lock; respect quota/reset disables." vertex="1">
+          <mxGeometry height="145" width="550" x="30" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-retention-policy" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Retention / recovery (proposed)&lt;/b&gt;&lt;br&gt;Inquiry metadata + feedback: 30 days; diagnostics: 7 days.&lt;br&gt;Support / receipts / minimal audit: open + 30 days resolved.&lt;br&gt;Release summaries: active / rollback version + 30 days retired.&lt;br&gt;Block at expiry; daily live purge within 24 h; backups: 7 days.&lt;br&gt;Reapply expiry / deletions before restored data is available." vertex="1">
+          <mxGeometry height="145" width="550" x="600" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-evidence-contract" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Evidence / outbound boundary&lt;/b&gt;&lt;br&gt;Inquiry-bound expectation retained inside the application.&lt;br&gt;Reviewed aliases, approved answers and exact source versions.&lt;br&gt;Only eligible questions/passages reach the external provider.&lt;br&gt;Missing/failed checks suppress output; manifest still pending.&lt;br&gt;Hanlin backup; non-author permission + evaluated version." vertex="1">
+          <mxGeometry height="150" width="550" x="30" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy-measurement" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Arial;fontSize=12;fontColor=#000000;strokeColor=#333333;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacing=10;" value="&lt;b&gt;Availability / answer quality&lt;/b&gt;&lt;br&gt;Well-formed completed provider response contributes to N.&lt;br&gt;C10 rejection adds no provider failure to F; remains an AI miss.&lt;br&gt;Pre-dispatch denials are not completed provider calls.&lt;br&gt;Epoch changes exclude stale state updates; no inquiry replay.&lt;br&gt;Provider quotas, sizing and measured capacity remain pending." vertex="1">
+          <mxGeometry height="150" width="550" x="600" y="1070" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
