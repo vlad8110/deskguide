@@ -152,6 +152,65 @@ def test_supported_inquiry_runs_ordered_gates_and_returns_versioned_citation(
         assert row["expires_at"] == clock[0] + 30 * 86400
 
 
+@pytest.fixture
+def historical_answer_citation(ask, services, released_sources):
+    ref = replace(REF, source_version="2")
+    excerpt = "Text v2"
+    passage = replace(services.retrieved.passages[0], ref=ref, text=excerpt)
+    services.retrieved = replace(services.retrieved, passages=(passage,))
+    services.candidate = replace(
+        services.candidate, candidate_answer=excerpt, cited_refs=(ref,)
+    )
+    services.validation = ValidationResult("pass", (ref,))
+    services.expected_change = lambda expected: replace(
+        expected,
+        approved_answer=excerpt,
+        required_excerpts=(EvidenceExcerpt(ref, 0, len(excerpt), excerpt),),
+    )
+
+    response = ask()
+    assert response.status_code == 200
+    assert response.json["status"] == "answered"
+    assert response.json["answer"] == excerpt
+    (citation,) = response.json["sources"]
+    assert citation["ref"] == asdict(ref)
+    return citation["url"]
+
+
+def test_answer_citation_opens_historical_version(client, historical_answer_citation):
+    assert historical_answer_citation == "/v1/sources/DOC-003/sections/s2?version=2"
+    response = client.get(historical_answer_citation)
+
+    assert response.status_code == 200
+    assert response.json["ref"] == asdict(replace(REF, source_version="2"))
+    assert response.json["text"] == "Text v2"
+    assert response.headers["Cache-Control"] == "no-store"
+
+
+def test_answer_citation_rechecks_access_after_revocation(
+    app, client, historical_answer_citation
+):
+    assert client.get(historical_answer_citation).status_code == 200
+
+    with app.app_context(), get_db() as db:
+        db.execute(
+            "DELETE FROM document_role_grants WHERE source_id = ? AND role = ?",
+            (REF.source_id, "customer"),
+        )
+
+    denied = client.get(historical_answer_citation)
+    missing = client.get(historical_answer_citation.replace(REF.source_id, "DOC-999"))
+
+    assert denied.status_code == missing.status_code == 404
+    denied_error = denied.json["error"]
+    missing_error = missing.json["error"]
+    denied_error.pop("correlation_id")
+    missing_error.pop("correlation_id")
+    assert denied_error == missing_error
+    assert denied_error["code"] == "NOT_FOUND"
+    assert "Text v2" not in denied.get_data(as_text=True)
+
+
 def test_forged_identity_is_ignored_and_generation_has_only_allowed_fields(
     ask, services
 ):

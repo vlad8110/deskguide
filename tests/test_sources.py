@@ -6,83 +6,12 @@ import sqlite3
 from uuid import UUID
 
 import pytest
-from conftest import PASSWORD
+from conftest import PASSWORD, write_json
 
 from app import create_app
-from app.citation_release import init_app as init_citation_release
 from app.db import get_db
 
 URL = "/v1/sources/DOC-003/sections/s2"
-
-
-def write_json(path, value):
-    content = json.dumps(value).encode()
-    path.write_bytes(content)
-    return hashlib.sha256(content).hexdigest()
-
-
-@pytest.fixture
-def released_sources(app, clock, tmp_path, monkeypatch):
-    manifest_hash = write_json(
-        tmp_path / "evidence_manifest.json",
-        {"review_status": "approved", "runtime_enabled": True},
-    )
-    pins = {}
-    for version in (1, 2, 3, 4):
-        digest = write_json(
-            tmp_path / f"DOC-003.v{version}.json",
-            {
-                "source_id": "DOC-003",
-                "source_version": str(version),
-                "title": "VPN Setup Guide",
-                "classification": "synthetic",
-                "review_status": "approved",
-                "sections": [
-                    {
-                        "section_id": "s1",
-                        "title": "Before starting",
-                        "text": "Use a demo account.",
-                    },
-                    {
-                        "section_id": "s2",
-                        "title": "Installing the client",
-                        "text": f"Text v{version}",
-                    },
-                ],
-            },
-        )
-        pins[version] = {"version": str(version), "sha256": digest}
-    release_path = tmp_path / "release.json"
-    write_json(
-        release_path,
-        {
-            "manifest_sha256": manifest_hash,
-            "current": {"DOC-003": pins[3]},
-            "historical": {"DOC-003": [pins[2]]},
-        },
-    )
-    monkeypatch.setenv("DESKGUIDE_CITATION_RELEASE", str(release_path))
-    init_citation_release(app)
-    with app.app_context(), get_db() as db:
-        db.execute(
-            "INSERT INTO documents (source_id, title, created_at) VALUES (?, ?, ?)",
-            ("DOC-003", "VPN Setup Guide", clock[0]),
-        )
-        for version in (1, 2, 3, 4):
-            db.execute(
-                "INSERT INTO document_versions VALUES (?, ?, ?, ?)",
-                ("DOC-003", version, pins[version]["sha256"], clock[0]),
-            )
-            db.execute(
-                "INSERT INTO document_sections VALUES (?, ?, ?, ?, ?)",
-                ("DOC-003", version, "s2", "Installing the client", f"Text v{version}"),
-            )
-            db.execute(
-                "INSERT INTO document_sections VALUES (?, ?, ?, ?, ?)",
-                ("DOC-003", version, "s1", "Before starting", "Use a demo account."),
-            )
-        db.execute("INSERT INTO document_role_grants VALUES ('DOC-003', 'customer')")
-    return release_path
 
 
 def test_exact_and_default_citations_return_only_approved_content(
