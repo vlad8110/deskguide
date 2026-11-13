@@ -41,6 +41,10 @@ async function sendSessionAction(path, body, authenticated) {
       body: JSON.stringify(body),
     });
     if (!response.ok) {
+      if (authenticated && response.status === 401) {
+        window.location.assign("/");
+        return;
+      }
       status.textContent = await sessionErrorMessage(response);
       return;
     }

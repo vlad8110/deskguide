@@ -1,11 +1,15 @@
 """Isolated application data, clocks, clients and authorization probes."""
 
+import hashlib
+import json
+
 import pytest
 from flask import jsonify
 from werkzeug.security import generate_password_hash
 
 from app import create_app
 from app.access import current_access, get_owned_support_request, require_roles
+from app.citation_release import init_app as init_citation_release
 from app.db import get_db, init_db
 
 PASSWORD = "Test-only-passphrase-12!"
@@ -115,3 +119,73 @@ def support_records(app, clock):
                         clock[0],
                     ),
                 )
+
+
+def write_json(path, value):
+    content = json.dumps(value).encode()
+    path.write_bytes(content)
+    return hashlib.sha256(content).hexdigest()
+
+
+@pytest.fixture
+def released_sources(app, clock, tmp_path, monkeypatch):
+    manifest_hash = write_json(
+        tmp_path / "evidence_manifest.json",
+        {"review_status": "approved", "runtime_enabled": True},
+    )
+    pins = {}
+    for version in (1, 2, 3, 4):
+        digest = write_json(
+            tmp_path / f"DOC-003.v{version}.json",
+            {
+                "source_id": "DOC-003",
+                "source_version": str(version),
+                "title": "VPN Setup Guide",
+                "classification": "synthetic",
+                "review_status": "approved",
+                "sections": [
+                    {
+                        "section_id": "s1",
+                        "title": "Before starting",
+                        "text": "Use a demo account.",
+                    },
+                    {
+                        "section_id": "s2",
+                        "title": "Installing the client",
+                        "text": f"Text v{version}",
+                    },
+                ],
+            },
+        )
+        pins[version] = {"version": str(version), "sha256": digest}
+    release_path = tmp_path / "release.json"
+    write_json(
+        release_path,
+        {
+            "manifest_sha256": manifest_hash,
+            "current": {"DOC-003": pins[3]},
+            "historical": {"DOC-003": [pins[2]]},
+        },
+    )
+    monkeypatch.setenv("DESKGUIDE_CITATION_RELEASE", str(release_path))
+    init_citation_release(app)
+    with app.app_context(), get_db() as db:
+        db.execute(
+            "INSERT INTO documents (source_id, title, created_at) VALUES (?, ?, ?)",
+            ("DOC-003", "VPN Setup Guide", clock[0]),
+        )
+        for version in (1, 2, 3, 4):
+            db.execute(
+                "INSERT INTO document_versions VALUES (?, ?, ?, ?)",
+                ("DOC-003", version, pins[version]["sha256"], clock[0]),
+            )
+            db.execute(
+                "INSERT INTO document_sections VALUES (?, ?, ?, ?, ?)",
+                ("DOC-003", version, "s2", "Installing the client", f"Text v{version}"),
+            )
+            db.execute(
+                "INSERT INTO document_sections VALUES (?, ?, ?, ?, ?)",
+                ("DOC-003", version, "s1", "Before starting", "Use a demo account."),
+            )
+        db.execute("INSERT INTO document_role_grants VALUES ('DOC-003', 'customer')")
+    return release_path
