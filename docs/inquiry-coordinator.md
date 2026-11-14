@@ -34,6 +34,27 @@ The coordinator checks expectation ownership, required excerpt ranges and text, 
 
 `GenerationPassage` omits source display titles; those are used only to format the returned citation.
 
+## Cohere alpha adapter
+
+[app/cohere_services.py](../app/cohere_services.py) implements the five methods for the alpha:
+
+- `retrieve` matches the question to a manifest alias (NFC, trimmed and collapsed whitespace, case and punctuation preserved) and returns that intent's sections at their active pins, only for sources the caller's role and customer grants currently allow.
+- `prepare_evidence` rechecks each required excerpt range and text against the retrieved section and fails closed on any mismatch.
+- `check_outbound` approves only unmodified sections from the active verified release.
+- `generate` makes one Cohere Chat v2 call (`command-r7b-12-2024`, temperature 0) with the question and passage text only, bounded by the supplied deadline with no retries. The model is told to copy one answering sentence word for word. Cohere's document citations, plus any supplied passage that contains the reply word for word, become the cited references.
+- `validate` requires the reply to equal the approved answer and to cite every required excerpt.
+
+Unlisted paraphrases and unsupported questions never reach Cohere; they offer support. A provider error returns `temporarily_unavailable`, and a reply that differs from the approved answer is withheld with `validation_failed`.
+
+Enable it at normal startup with a verified release:
+
+```bash
+DESKGUIDE_AI_PROVIDER=cohere COHERE_API_KEY=<key> \
+DESKGUIDE_CITATION_RELEASE=/path/to/release.json .venv/bin/python -m flask --app app run
+```
+
+`DESKGUIDE_COHERE_MODEL` overrides the model. Without a key, or without a verified release, questions stay `temporarily_unavailable`. Run `.venv/bin/python -m pytest -q tests/test_cohere_services.py` to test the twenty evaluation cases and failure paths against a stand-in for Cohere, with no network or key.
+
 ## C2b citation lookup
 
 `GET /v1/sources/DOC-003/sections/s2?version=3` returns `ref`, `document_title`, `section_title`, `text`, `correlation_id` and `contract_version` to a signed-in user with a current role grant. Omitting `version` uses the active pin. Explicit links resolve only the requested approved version. If a document has customer-specific grants, a customer also needs an individual grant. For a retired document, only explicit approved links can open until its configured cutoff. Missing, withdrawn, expired and inaccessible sources return the same 404. Responses use `Cache-Control: no-store`.

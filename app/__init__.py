@@ -159,6 +159,20 @@ def create_app(
     db.init_app(app)
     accounts.init_app(app)
     citation_release.init_app(app)
+    if (
+        inquiry_services_factory is None
+        and (
+            os.environ.get("DESKGUIDE_AI_PROVIDER")
+            or os.environ.get("AI_PROVIDER")
+            or ""
+        )
+        .strip()
+        .lower()
+        == "cohere"
+    ):
+        from .cohere_services import build_inquiry_services
+
+        inquiry_services_factory = build_inquiry_services
     if inquiry_services_factory is not None:
         if app.extensions.get("citation_release_content"):
             app.extensions["inquiry_services"] = inquiry_services_factory(app)
