@@ -1,5 +1,6 @@
 """C6a customer feedback for retained inquiries."""
 
+import sqlite3
 import unicodedata
 from uuid import UUID, uuid4
 
@@ -118,14 +119,33 @@ def submit():
     ), 201
 
 
+def purge_expired_inquiries():
+    with get_db() as connection:
+        return connection.execute(
+            "DELETE FROM inquiries WHERE expires_at<=?", (now(),)
+        ).rowcount
+
+
+def run_inquiry_cleanup(app, stop, logger):
+    """Catch up on startup, then purge daily while the worker is running."""
+    while not stop.is_set():
+        try:
+            with app.app_context():
+                removed = purge_expired_inquiries()
+        except sqlite3.Error:
+            logger.exception("Inquiry cleanup failed. Retrying in five minutes.")
+            delay = 5 * 60
+        else:
+            logger.info("Inquiry cleanup removed %d expired records.", removed)
+            delay = 24 * 60 * 60
+        stop.wait(delay)
+
+
 @click.command("cleanup-inquiries")
 @with_appcontext
 def cleanup_inquiries_command():
     """Remove expired inquiry metadata and its linked feedback."""
-    with get_db() as connection:
-        removed = connection.execute(
-            "DELETE FROM inquiries WHERE expires_at<=?", (now(),)
-        ).rowcount
+    removed = purge_expired_inquiries()
     click.echo(f"Removed {removed} expired inquiries and their linked feedback.")
 
 

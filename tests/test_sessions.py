@@ -39,6 +39,17 @@ def test_login_and_c9_response(client, sign_in, name, role):
     assert response.json["contract_version"] == "0.3.3"
 
 
+@pytest.mark.parametrize(
+    "username,password",
+    [("customer-\ud800", PASSWORD), ("customer-one", "invalid-\udfff-password")],
+)
+def test_login_rejects_unpaired_unicode_surrogates(client, sign_in, username, password):
+    response = sign_in(client, username, password)
+    assert response.status_code == 400
+    assert response.json["error"]["code"] == "VALIDATION_FAILED"
+    assert sign_in(client).status_code == 200
+
+
 def test_session_cookie_is_opaque_and_rotates(client, sign_in, app):
     client.get("/v1/session/login-token")
     before = cookie_value(client)

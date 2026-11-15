@@ -10,6 +10,7 @@ from uuid import uuid4
 from flask import Blueprint, current_app, g, jsonify, request
 
 from .access import current_access, require_roles
+from .citation_release import SECTION_ID, SOURCE_ID, source_version
 from .clock import now
 from .db import get_db
 from .errors import CONTRACT_VERSION, ApiError
@@ -19,6 +20,7 @@ from .inquiry_types import (
     GenerationPassage,
     GenerationRequest,
     GenerationResult,
+    Passage,
     RetrievalResult,
     SourceRef,
     ValidationResult,
@@ -159,12 +161,19 @@ def _valid_retrieval(result):
         return False
     refs = set()
     for p in result.passages:
-        if not isinstance(p.ref, SourceRef) or any(
-            not isinstance(v, str)
-            or not 1 <= len(v) <= 200
-            or any(unicodedata.category(c) in {"Cc", "Cs"} for c in v)
-            for v in (p.ref.source_id, p.ref.section_id, p.ref.source_version)
+        if (
+            not isinstance(p, Passage)
+            or not isinstance(p.ref, SourceRef)
+            or not isinstance(p.ref.source_id, str)
+            or not SOURCE_ID.fullmatch(p.ref.source_id)
+            or not isinstance(p.ref.section_id, str)
+            or not SECTION_ID.fullmatch(p.ref.section_id)
+            or not isinstance(p.ref.source_version, str)
         ):
+            return False
+        try:
+            source_version(p.ref.source_version)
+        except ValueError:
             return False
         if p.ref in refs or not isinstance(p.text, str) or not 1 <= len(p.text) <= 1500:
             return False

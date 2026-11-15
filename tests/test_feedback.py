@@ -1,9 +1,11 @@
 """C6a through the signed-in customer API and SQLite persistence."""
 
+import sqlite3
 from uuid import uuid4
 
 import pytest
 
+from app import feedback
 from app.db import get_db
 
 
@@ -175,3 +177,44 @@ def test_cleanup_purges_only_expired_inquiries_and_feedback(
         assert [row[0] for row in db.execute("SELECT inquiry_id FROM feedback")] == [
             long
         ]
+
+
+def test_scheduled_cleanup_catches_up_and_purges_at_the_next_daily_run(
+    app, clock, monkeypatch
+):
+    expired = add_inquiry(app, clock, expires_in=0)
+    next_day = add_inquiry(app, clock, expires_in=100)
+    retained = add_inquiry(app, clock, expires_in=2 * 86400)
+    purge = feedback.purge_expired_inquiries
+    waits = []
+    remaining = []
+
+    def fail_once():
+        if not waits:
+            raise sqlite3.OperationalError("temporary lock")
+        return purge()
+
+    class Schedule:
+        def is_set(self):
+            return len(waits) == 3
+
+        def wait(self, seconds):
+            waits.append(seconds)
+            with app.app_context():
+                remaining.append(
+                    {
+                        row[0]
+                        for row in get_db().execute("SELECT inquiry_id FROM inquiries")
+                    }
+                )
+            if seconds == 86400:
+                clock[0] += seconds
+
+    monkeypatch.setattr(feedback, "purge_expired_inquiries", fail_once)
+    feedback.run_inquiry_cleanup(app, Schedule(), app.logger)
+    assert waits == [300, 86400, 86400]
+    assert remaining == [
+        {expired, next_day, retained},
+        {next_day, retained},
+        {retained},
+    ]

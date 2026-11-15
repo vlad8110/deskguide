@@ -58,6 +58,7 @@ test("safe API error messages remain usable", async () => {
   ]);
   await page.send("/v1/session/login", {}, false);
   assert.equal(page.status.textContent, "Username or password is incorrect.");
+  assert.deepEqual(page.redirects, []);
 });
 
 test("malformed JSON errors do not expose parser messages", async () => {
@@ -103,6 +104,23 @@ test("successful logout uses the session token and redirects", async () => {
   assert.equal(page.calls[0].url, "/v1/session");
   assert.equal(page.calls[1].options.headers["X-CSRF-Token"], "test-token");
   assert.equal(page.calls[1].options.credentials, "same-origin");
+  assert.deepEqual(page.redirects, ["/"]);
+});
+
+test("logout redirects if the session expires before the POST", async () => {
+  const page = browser([
+    jsonResponse(200, { csrf_token: "test-token" }),
+    jsonResponse(401, { error: { message: "Please sign in." } }),
+  ]);
+
+  await page.send("/v1/session/logout", {}, true);
+
+  assert.deepEqual(page.calls.map(({ url }) => url), [
+    "/v1/session",
+    "/v1/session/logout",
+  ]);
+  assert.equal(page.calls[1].options.method, "POST");
+  assert.equal(page.calls[1].options.headers["X-CSRF-Token"], "test-token");
   assert.deepEqual(page.redirects, ["/"]);
 });
 

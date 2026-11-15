@@ -2,7 +2,7 @@
 
 DeskGuide is Team 4’s CMSC 495 capstone project: a browser application for customer-support questions using fictional workplace documents and links to supporting sources.
 
-**Status:** Flask/SQLite foundation, [C1 inquiry coordinator](docs/inquiry-coordinator.md), [C4 support backend](docs/support-backend.md) and [C5 agent workflow](docs/agent-support.md) implemented. The customer question and support screens, citation lookup and customer feedback submission are available. Live AI/retrieval adapters and the feedback review queue remain integration work. Run `migrate-db` on existing databases to apply schema version 4 before using this revision. Run `cleanup-inquiries` periodically to remove expired inquiry metadata and linked feedback.
+**Status:** Flask/SQLite foundation, [C1 inquiry coordinator](docs/inquiry-coordinator.md), [C4 support backend](docs/support-backend.md) and [C5 agent workflow](docs/agent-support.md) implemented. The customer question and support screens, citation lookup and customer feedback submission are available. Live AI/retrieval adapters and the feedback review queue remain integration work. Run `migrate-db` on existing databases to apply schema version 4 before using this revision. The Render Gunicorn worker purges expired inquiry metadata and linked feedback at startup and daily. The `cleanup-inquiries` command is available for manual runs.
 
 ## Team
 

@@ -192,6 +192,13 @@ def login():
         raise ApiError(
             400, "VALIDATION_FAILED", "Provide a valid username and password."
         )
+    try:
+        username.encode("utf-8")
+        password.encode("utf-8")
+    except UnicodeEncodeError:
+        raise ApiError(
+            400, "VALIDATION_FAILED", "Provide a valid username and password."
+        ) from None
     buckets = login_buckets(username)
     db = get_db()
     current = now()
