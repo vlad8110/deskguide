@@ -178,7 +178,11 @@ def test_campus_vpn_opens_doc003_s2_v3(ai_app, sign_in):
     assert body["sources"][0]["url"] == "/v1/sources/DOC-003/sections/s2?version=3"
 
 
-def test_provider_request_carries_no_identity_and_honors_deadline(ai_app, sign_in):
+def test_provider_request_carries_no_identity_and_honors_deadline(
+    ai_app, sign_in, monkeypatch
+):
+    monkeypatch.delenv("DESKGUIDE_COHERE_MODEL", raising=False)
+    monkeypatch.setenv("AI_MODEL", "unrelated-test-model")
     application, fake = ai_app()
     client = application.test_client()
     sign_in(client)
@@ -354,10 +358,15 @@ def test_revoked_grant_offers_support_without_provider_call(ai_app, sign_in, app
     assert fake.calls == []
 
 
-def test_missing_key_leaves_questions_unavailable(ai_app, sign_in, monkeypatch):
+@pytest.mark.parametrize("legacy_key", [None, "AI_API_KEY", "CO_API_KEY"])
+def test_missing_key_leaves_questions_unavailable(
+    ai_app, sign_in, monkeypatch, legacy_key
+):
     monkeypatch.delenv("COHERE_API_KEY")
     monkeypatch.delenv("CO_API_KEY", raising=False)
     monkeypatch.delenv("AI_API_KEY", raising=False)
+    if legacy_key:
+        monkeypatch.setenv(legacy_key, FAKE_KEY)
     application, fake = ai_app()
     assert application.extensions["inquiry_services"] is None
     client = application.test_client()
@@ -551,6 +560,64 @@ def test_truncated_reply_is_answered_end_to_end(ai_app, sign_in):
     body = _ask(client, "What should I do if my demo reset link expires?").json
     assert body["status"] == "answered"
     assert body["answer"].startswith("If your reset link has expired")
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        pytest.param(
+            "DELETE FROM document_role_grants WHERE source_id='DOC-003' "
+            "AND role='customer'",
+            id="role-grant",
+        ),
+        pytest.param(
+            "DELETE FROM document_customer_grants WHERE source_id='DOC-003' "
+            "AND customer_id='c1'",
+            id="customer-grant",
+        ),
+        pytest.param(
+            "UPDATE documents SET state='retired' WHERE source_id='DOC-003'",
+            id="retired",
+        ),
+        pytest.param(
+            "UPDATE document_sections SET content='New text.' "
+            "WHERE source_id='DOC-003' AND source_version=3 AND section_id='s2'",
+            id="changed-content",
+        ),
+    ],
+)
+def test_outbound_rechecks_sources_before_provider_call(
+    ai_app, sign_in, monkeypatch, change
+):
+    application, fake = ai_app()
+    with application.app_context(), get_db() as db:
+        db.executemany(
+            "INSERT INTO document_customer_grants VALUES ('DOC-003', ?)",
+            [("c1",), ("c2",)],
+        )
+    services = _services(application)
+    check = services.check_outbound
+    decisions = []
+
+    def check_after_change(ctx, question, retrieved, *, deadline_ms):
+        assert [passage.ref for passage in retrieved.passages] == [
+            SourceRef("DOC-003", "s2", "3")
+        ]
+        with get_db() as db:
+            db.execute(change)
+        decision = check(ctx, question, retrieved, deadline_ms=deadline_ms)
+        decisions.append(decision)
+        return decision
+
+    monkeypatch.setattr(services, "check_outbound", check_after_change)
+    client = application.test_client()
+    assert sign_in(client).status_code == 200
+    body = _ask(client, "How do I set up the Campus VPN profile?").json
+    assert decisions == ["denied"]
+    assert body["status"] == "escalation_offered"
+    assert body["suggested_reason"] == "insufficient_evidence"
+    assert body["answer"] is None and body["sources"] == []
+    assert fake.calls == []
 
 
 def test_access_revoked_during_generation_withholds_answer(ai_app, sign_in):

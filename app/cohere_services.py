@@ -395,7 +395,10 @@ class ReleaseInquiryServices:
                 return "denied"
             if pin[3].get(passage.ref.section_id, (None, None))[1] != passage.text:
                 return "denied"
-        return "approved" if retrieved.passages else "denied"
+        sources = {passage.ref.source_id for passage in retrieved.passages}
+        if not sources or self._permitted_sources(ctx, sources) != sources:
+            return "denied"
+        return "approved"
 
     def generate(self, request: GenerationRequest) -> GenerationResult:
         return self._generator.generate(request)
@@ -444,19 +447,11 @@ class ReleaseInquiryServices:
 
 def build_inquiry_services(app: Flask, *, transport: Transport | None = None):
     """Factory for create_app(); returns None (AI unavailable) without a key."""
-    api_key = (
-        os.environ.get("COHERE_API_KEY")
-        or os.environ.get("CO_API_KEY")
-        or os.environ.get("AI_API_KEY")
-    )
+    api_key = os.environ.get("COHERE_API_KEY")
     if not api_key:
         app.logger.warning("Cohere is not configured; questions stay unavailable.")
         return None
-    model = (
-        os.environ.get("DESKGUIDE_COHERE_MODEL")
-        or os.environ.get("AI_MODEL")
-        or DEFAULT_MODEL
-    )
+    model = os.environ.get("DESKGUIDE_COHERE_MODEL") or DEFAULT_MODEL
     kwargs = {"model": model}
     if transport is not None:
         kwargs["transport"] = transport
