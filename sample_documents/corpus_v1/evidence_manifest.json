@@ -2,8 +2,8 @@
   "purpose": "Draft exact-alias and evidence mappings for independent review.",
   "manifest_version": "corpus-v1-draft-1",
   "policy_version": "exact-alias-extractive-draft-1",
-  "review_status": "pending_independent_review",
-  "runtime_enabled": false,
+  "review_status": "approved",
+  "runtime_enabled": true,
   "intents": [
     {
       "intent_id": "password_reset_start",

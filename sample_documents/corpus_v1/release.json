@@ -1,0 +1,19 @@
+{
+  "manifest_sha256": "25d64501cb02d80a0ca284d0801cb6ff6dc9a1e6b0b681593fe64f6882a34caa",
+  "current": {
+    "DOC-001": {
+      "version": "1",
+      "sha256": "34b5bb6b59206ec68274207e6ba9019566959405182c77de64eda78f7a330d87"
+    },
+    "DOC-002": {
+      "version": "1",
+      "sha256": "415de8a84f73f305e0038916dc941735b09727e8b2c8e64780d0aa4c9939eb11"
+    },
+    "DOC-003": {
+      "version": "3",
+      "sha256": "5702cc11b9dd463ad26a7d5d59cc42927efd4bf5c438d19ae8fb623a49af78bd"
+    }
+  },
+  "historical": {},
+  "retired_until": {}
+}

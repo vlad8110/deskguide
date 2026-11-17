@@ -1,7 +1,7 @@
-# DeskGuide fictional corpus — draft 1
+# DeskGuide fictional corpus — Unit 5 release candidate
 
-Owner: Collins Amponsah.
-Status: pending independent review by David; not approved for runtime use.
+Owner of source material: Collins Amponsah.
+Status: **proposed approved-byte candidate in draft PR; not independently authorized for deployment**. The implementation's approval metadata is a prerequisite for runtime import, not evidence that release authority has signed off. See [UNIT5-RELEASE-CHECKLIST.md](UNIT5-RELEASE-CHECKLIST.md) and [release.json](release.json) for the proposed exact versions, new file hashes, default-deny/customer-grant procedure, and remaining independent sign-off and live-test steps. Sections below retain the historical draft-design notes from PR #21; where their status differs, use the candidate checklist.
 
 ## Contents
 
