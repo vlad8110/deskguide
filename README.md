@@ -2,7 +2,7 @@
 
 DeskGuide is Team 4’s CMSC 495 capstone project: a browser application for customer-support questions using fictional workplace documents and links to supporting sources.
 
-**Unit 5 alpha:** Use the [tested revision `c34f414`](https://github.com/vlad8110/deskguide/tree/c34f414b2d235e32b50cdb094cd702fc7c1f8d6d) for grading. Start with [Run locally](#run-locally), then follow [Run the AI demo](#run-the-ai-demo) if you have an authorized Cohere evaluation key. [Project checks passed](https://github.com/vlad8110/deskguide/actions/runs/44179913048) for this revision. [Render](https://deskguide.onrender.com/) serves the same revision. The live Cohere test was performed locally with fictional data.
+**Unit 5 alpha:** Use the [tested revision `c34f414`](https://github.com/vlad8110/deskguide/tree/c34f414b2d235e32b50cdb094cd702fc7c1f8d6d) for grading. Start with [Run locally](#run-locally), then follow [Run the AI demo](#run-the-ai-demo) if you have an authorized Cohere evaluation key. [Project checks passed](https://github.com/vlad8110/deskguide/actions/runs/44179913048) for this revision. The [November 17 Render deployment](https://dashboard.render.com/web/srv-dbplie0u01pc73dnfrt0/deploys/dep-dbuceig8v5cc738mh3jg) recorded `c34f414` going live. See the [local Cohere acceptance record](#local-cohere-acceptance-record) for the live provider results.
 
 The alpha includes the customer question and support screens, [inquiry coordination](docs/inquiry-coordinator.md), [support persistence](docs/support-backend.md), the [agent workflow](docs/agent-support.md), version-pinned citations, and customer feedback submission. The feedback review queue remains future work. Run `migrate-db` on an existing database to apply schema version 4. The Render Gunicorn worker purges expired inquiry metadata and linked feedback at startup and daily. For manual use, run `cleanup-inquiries`.
 
@@ -228,9 +228,20 @@ COHERE_API_KEY=
 Enter your authorized evaluation key on the last line in your local file. Keep it out of Git and browser settings. Restart Flask from the repository root and sign in as `customer-demo`. In **Ask a question**, submit:
 
 - **How do I set up the Campus VPN profile?** The answer’s citation should open DOC-003, section s2, version 3.
-- **Which printer driver should I install?** DeskGuide should offer a support request. The project checks verify that this fallback makes no provider call.
+- **Which printer driver should I install?** DeskGuide should offer a support request. The offline regression tests use a simulated provider and assert zero calls for this question. The live acceptance run measured the outgoing calls separately.
 
 [The recorded release decision](https://github.com/vlad8110/deskguide/issues/4#issuecomment-6961363565) lists the exact guide and manifest hashes.
+
+## Local Cohere acceptance record
+
+On November 17, 2026, between 4:21 and 4:24 p.m. Eastern, the team ran the cases below through a local Flask test client with fictional accounts and disposable SQLite. The combined PR #33 and #34 source tree matched [alpha revision `c34f414`](https://github.com/vlad8110/deskguide/tree/c34f414b2d235e32b50cdb094cd702fc7c1f8d6d). SQLite contained exactly the three pinned guide versions and three customer-role grants, with no individual grants. The live configuration used Cohere Chat v2, model `command-r7b-12-2024`, and a server-side evaluation key.
+
+| Case | Observed result | Outgoing Cohere calls |
+| --- | --- | ---: |
+| Q08 Campus VPN profile | Answer returned. Opening the citation for DOC-003, section s2, version 3 returned HTTP 200. | 1 successful |
+| Q18 Printer driver | DeskGuide offered a support request. | 0 |
+
+The test counted calls at the provider transport. To repeat it, use the pinned revision and [AI demo setup](#run-the-ai-demo) with disposable data, submit the two cases, and record provider transport counts for each. [The GitHub project checks](https://github.com/vlad8110/deskguide/actions/runs/44179913048) ran offline. The [Cohere regression tests](tests/test_cohere_services.py) use a simulated provider. The live results above apply to the local run. Render deployment and health were verified separately.
 
 ## Where work belongs
 
