@@ -44,8 +44,7 @@ def test_exact_unit5_three_guide_release_and_evidence():
         ids = [s["section_id"] for s in guide["sections"]]
         assert len(ids) == len(set(ids))
         guides[source_id] = {
-            section["section_id"]: section["text"]
-            for section in guide["sections"]
+            section["section_id"]: section["text"] for section in guide["sections"]
         }
 
     aliases = set()
@@ -64,13 +63,15 @@ def test_exact_unit5_three_guide_release_and_evidence():
             content = unicodedata.normalize(
                 "NFC", guides[ref["source_id"]][ref["section_id"]]
             )
-            assert content[excerpt["start"]: excerpt["end"]] == excerpt["text"]
+            assert content[excerpt["start"] : excerpt["end"]] == excerpt["text"]
         assert intent["approved_answer"]
 
     assert len(aliases) == 8
     assert vpn is not None
     assert vpn["required_excerpts"][0]["ref"] == {
-        "source_id": "DOC-003", "section_id": "s2", "source_version": "3"
+        "source_id": "DOC-003",
+        "section_id": "s2",
+        "source_version": "3",
     }
     assert PRINTER_QUESTION not in aliases
 
