@@ -12,6 +12,16 @@ The response uses contract version `0.3.3`: `inquiry_id`, nullable `answer_id`, 
 
 Register an implementation of [InquiryServices](../app/inquiry_types.py) at `app.extensions["inquiry_services"]`. There is no default provider or fictional answer service in the product application. Without configured services, the endpoint returns `temporarily_unavailable` with `service_unavailable`, null answer fields and empty sources.
 
+The Flask entry point can pass the adapter constructor as
+`create_app(inquiry_services_factory=build_inquiry_services)`. The constructor
+receives the Flask app after its reviewed citation release has loaded. Use
+`app.config["CITATION_RELEASE"]` for version pins,
+`app.extensions["citation_release_manifest"]` for the verified manifest, and
+`app.extensions["citation_release_content"]` for the verified guide contents.
+Retrieval must apply current grants and the active pins. Citation lookup
+continues to check current access on every open. Flask calls the constructor
+only when the release contains verified guide content.
+
 | Order | Internal method | Responsibility |
 | --- | --- | --- |
 | 1 | `retrieve(ctx, question, top_k=5, deadline_ms=...)` | Collins: enforce source access and approved-version selection; return permitted passages with their titles. |
@@ -23,6 +33,29 @@ Register an implementation of [InquiryServices](../app/inquiry_types.py) at `app
 The coordinator checks expectation ownership, required excerpt ranges and text, cited-reference membership/coverage, and normalized equality to the preselected answer. Preparation must finish before generation. The original expectation is retained for the same inquiry. Missing checks, invalid output and dependency failures suppress the answer. Nothing retries generation or automatically creates support records.
 
 `GenerationPassage` omits source display titles; those are used only to format the returned citation.
+
+## Cohere alpha adapter
+
+[app/cohere_services.py](../app/cohere_services.py) implements the five methods for the alpha:
+
+- `retrieve` matches the question to a manifest alias (NFC, trimmed and collapsed whitespace, case and punctuation preserved) and returns that intent's sections at their active pins, only for sources the caller's role and customer grants currently allow.
+- `prepare_evidence` rechecks each required excerpt range and text against the retrieved section and fails closed on any mismatch.
+- `check_outbound` verifies the passage against the active release and rechecks current grants, document state, and stored guide content before the provider call.
+- `generate` makes one Cohere Chat v2 call (`command-r7b-12-2024`, temperature 0) with the question and passage text only, bounded by the supplied deadline with no retries. The model is told to copy one answering sentence word for word. Cohere's document citations, plus any supplied passage that contains the reply word for word, become the cited references.
+- `validate` requires the reply to equal the approved answer and to cite every required excerpt.
+
+Unlisted paraphrases and unsupported questions never reach Cohere; they offer support. A provider error returns `temporarily_unavailable`, and a reply that differs from the approved answer is withheld with `validation_failed`.
+
+The outbound check uses the source state at the time of the check. Validation checks access again before displaying a response. A revocation after outbound approval can still race with the network send, and it cannot recall a request already sent to Cohere.
+
+Enable it at normal startup with a verified release:
+
+```bash
+DESKGUIDE_AI_PROVIDER=cohere COHERE_API_KEY=<key> \
+DESKGUIDE_CITATION_RELEASE=/path/to/release.json .venv/bin/python -m flask --app app run
+```
+
+Set the server-side Cohere key as `COHERE_API_KEY`. Set `DESKGUIDE_COHERE_MODEL` to override the default model. Without a Cohere key or verified release, questions stay `temporarily_unavailable`. Run `.venv/bin/python -m pytest -q tests/test_cohere_services.py` to test the twenty evaluation cases and failure paths with a stand-in for Cohere.
 
 ## C2b citation lookup
 
