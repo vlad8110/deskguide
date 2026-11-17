@@ -2,7 +2,9 @@
 
 DeskGuide is Team 4’s CMSC 495 capstone project: a browser application for customer-support questions using fictional workplace documents and links to supporting sources.
 
-**Status:** Flask/SQLite foundation, [C1 inquiry coordinator](docs/inquiry-coordinator.md), [C4 support backend](docs/support-backend.md) and [C5 agent workflow](docs/agent-support.md) implemented. The customer question and support screens, citation lookup and customer feedback submission are available. Live AI/retrieval adapters and the feedback review queue remain integration work. Run `migrate-db` on existing databases to apply schema version 4 before using this revision. The Render Gunicorn worker purges expired inquiry metadata and linked feedback at startup and daily. The `cleanup-inquiries` command is available for manual runs.
+**Unit 5 alpha:** Use the [tested revision `c34f414`](https://github.com/vlad8110/deskguide/tree/c34f414b2d235e32b50cdb094cd702fc7c1f8d6d) for grading. Start with [Run locally](#run-locally), then follow [Run the AI demo](#run-the-ai-demo) if you have an authorized Cohere evaluation key. [Project checks passed](https://github.com/vlad8110/deskguide/actions/runs/44179913048) for this revision. [Render](https://deskguide.onrender.com/) serves the same revision. The live Cohere test was performed locally with fictional data.
+
+The alpha includes the customer question and support screens, [inquiry coordination](docs/inquiry-coordinator.md), [support persistence](docs/support-backend.md), the [agent workflow](docs/agent-support.md), version-pinned citations, and customer feedback submission. The feedback review queue remains future work. Run `migrate-db` on an existing database to apply schema version 4. The Render Gunicorn worker purges expired inquiry metadata and linked feedback at startup and daily. For manual use, run `cleanup-inquiries`.
 
 ## Team
 
@@ -13,7 +15,7 @@ DeskGuide is Team 4’s CMSC 495 capstone project: a browser application for cus
 | Collins Amponsah | Integration Lead | AI flow and integration strategy |
 | David Warren | Solutions Engineer | Testing, security validation, and integration troubleshooting |
 
-## Proposed scope
+## Alpha scope
 
 - Questions answered from retrieved fictional document passages with source links.
 - An explicit insufficient-evidence response and saved support-request fallback.
@@ -22,9 +24,9 @@ DeskGuide is Team 4’s CMSC 495 capstone project: a browser application for cus
 
 Real company integrations, password resets, autonomous actions, and custom model training are outside the prototype scope.
 
-## Proposed tools
+## Tools
 
-Python and Flask; HTML, CSS, and JavaScript; SQLite; local document retrieval; one AI answer-generation provider selected after evaluation. No AI provider or paid service has been activated.
+Python, Flask, HTML, CSS, JavaScript, and SQLite. The alpha retrieves passages from three pinned fictional guides and uses Cohere for supported questions when configured.
 
 ## Design baseline
 
@@ -51,32 +53,21 @@ Each teammate runs a separate copy on their own computer. The code comes from Gi
 
 - Install **Python 3.13** from [Python downloads](https://www.python.org/downloads/). The development baseline in `.python-version` is 3.13.18. Use the standard Python 3.13 build for your operating system.
 - Install [GitHub Desktop](https://desktop.github.com/download/) for cloning, branch selection and team changes, or install [Git](https://git-scm.com/downloads) for the terminal option.
-- Use Cursor or another editor. You do not need a separate SQL server: Python includes SQLite support. No AI-provider account or API key is required to run the current sign-in foundation.
+- Use Cursor or another editor. You do not need a separate SQL server: Python includes SQLite support. No provider account or API key is needed for sign-in, the support workflow, or offline tests.
 
 On Windows, use **PowerShell** for the Windows commands below. On macOS/Linux, use a terminal. Run one command at a time from the project folder.
 
-### 2. Download the implementation branch
+### 2. Check out the tested alpha
 
-Open the [Flask foundation branch](https://github.com/vlad8110/deskguide/tree/feat/flask-foundation) and select `feat/flask-foundation` when cloning or switching branches. The branch is under team review; `main` may contain an earlier project version.
-
-**Recommended for team collaboration — GitHub Desktop:**
-
-1. On the repository page, choose **Code → Open with GitHub Desktop** and select a local destination.
-2. In GitHub Desktop, use **Current Branch** to select the shared implementation branch. A clone initially opens the default branch, which may contain an earlier project version.
-3. Open that local repository folder in Cursor. In Cursor, open a terminal at the repository root: the folder containing `README.md`, `requirements-dev.txt` and `app/`.
-
-**Terminal alternative:**
+Clone the repository. The instructions below pin the exact Unit 5 revision used for grading and live evaluation.
 
 ```sh
-git clone --branch feat/flask-foundation https://github.com/vlad8110/deskguide.git
+git clone https://github.com/vlad8110/deskguide.git
 cd deskguide
+git checkout --detach c34f414b2d235e32b50cdb094cd702fc7c1f8d6d
 ```
 
-If Vlad shares a different branch name, use that name after `--branch`.
-
-**Download-only alternative:** select the same implementation branch on GitHub, choose **Code → Download ZIP**, extract the archive, then open the extracted folder in Cursor. ZIP downloads can run the app, but do not include Git history or a connected clone for normal team collaboration.
-
-Before installing, confirm that `app/__init__.py`, `app/schema.sql`, `.env.example` and `requirements-dev.txt` exist in the folder. If any are missing, check the branch and folder location.
+For a download without Git, use the [source ZIP for this commit](https://github.com/vlad8110/deskguide/archive/c34f414b2d235e32b50cdb094cd702fc7c1f8d6d.zip). Run the commands below from the extracted folder. For ongoing development, use the `main` branch and create a feature branch for changes.
 
 ### 3. Create your Python environment and local settings
 
@@ -108,7 +99,7 @@ Copy `.env.example` only on first setup. If `.env` already exists, keep your set
 DESKGUIDE_LOCAL_HTTP=1
 ```
 
-This enables the local HTTP preview on localhost/loopback. Keep the AI settings empty for the current foundation. `.env`, `.venv` and database files are ignored by Git; do not upload them or copy another person's environment/database.
+This enables the local HTTP preview on localhost/loopback. For support-only use, leave the AI settings empty. `.env`, `.venv` and database files are ignored by Git; do not upload them or copy another person's environment/database.
 
 ### 4. Initialize your database and create test accounts
 
@@ -177,7 +168,7 @@ Successful login shows `Welcome, <username>`, the application role and a **Sign 
 
 Press **Ctrl+C** in the server terminal to stop it. To return later, open the repository folder and rerun only the start command; keep your `.env` and existing database/accounts. The server uses `--no-reload`, so restart it after Python code changes. `127.0.0.1` refers to the computer opening the link; it is not a shared team website.
 
-### 6. Run the foundation checks
+### 6. Run the offline checks
 
 Use a second terminal at the repository root, or stop the server first. An activated environment is not required.
 
@@ -204,7 +195,7 @@ Tests create isolated temporary databases and fictional accounts. They do not us
 | `127.0.0.1 refused to connect` | Start the Flask command and leave its terminal open. Check that the browser uses the same port. |
 | Port 5055 is already in use | Use the already-running DeskGuide instance, or change `--port 5055` to `--port 5056` and open `http://127.0.0.1:5056/`. |
 | `No module named flask` or `pytest` | Install `requirements-dev.txt` using the `.venv` Python command for your operating system. Use that same interpreter to start/test. |
-| Missing `app/` files or Flask cannot import `app` | Select the implementation branch and run commands from the folder containing `app/` and this README. |
+| Missing `app/` files or Flask cannot import `app` | Check out the tested alpha and run the commands from the folder containing `app/` and this README. |
 | Setup is incomplete or tables are missing | Use `init-db` for a new database; coordinate `migrate-db` and a verified backup for an existing older version. A newer database needs matching application code. |
 | `Accounts already exist` during `seed-demo` | Skip seeding. Sign in with existing credentials or use `create-user`/`set-password`; retain the existing database. |
 | Password rejected during account creation | Choose 12–128 characters and confirm the same value at the hidden prompt. |
@@ -215,6 +206,31 @@ Tests create isolated temporary databases and fictional accounts. They do not us
 When reporting a setup problem, include your operating system, Python version, selected branch, command used and the error message. Omit passwords, `.env` contents and API keys. Use the [module handoff](docs/unit-5/module-handoff.md) for your assigned implementation and completion checks.
 
 Setup references: [GitHub cloning](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository), [Python virtual environments](https://docs.python.org/3.13/library/venv.html), [Flask installation](https://flask.palletsprojects.com/en/stable/installation/).
+
+## Run the AI demo
+
+Start from a fresh local demo database with the fictional accounts from step 4. Follow the [release checklist](sample_documents/corpus_v1/UNIT5-RELEASE-CHECKLIST.md) if using an existing database. It describes the exact guide versions and how to audit existing grants before import.
+
+Import the pinned release using the virtual environment’s Python. This grants the customer role access to DOC-001 v1, DOC-002 v1, and DOC-003 v3.
+
+```sh
+.venv/bin/python -m flask --app app import-citation-release sample_documents/corpus_v1/release.json --grant-customer DOC-001 --grant-customer DOC-002 --grant-customer DOC-003
+```
+
+On Windows, use `.\.venv\Scripts\python.exe` in place of `.venv/bin/python`. Set these entries in the ignored local `.env`:
+
+```dotenv
+DESKGUIDE_AI_PROVIDER=cohere
+DESKGUIDE_CITATION_RELEASE=sample_documents/corpus_v1/release.json
+COHERE_API_KEY=
+```
+
+Enter your authorized evaluation key on the last line in your local file. Keep it out of Git and browser settings. Restart Flask from the repository root and sign in as `customer-demo`. In **Ask a question**, submit:
+
+- **How do I set up the Campus VPN profile?** The answer’s citation should open DOC-003, section s2, version 3.
+- **Which printer driver should I install?** DeskGuide should offer a support request. The project checks verify that this fallback makes no provider call.
+
+[The recorded release decision](https://github.com/vlad8110/deskguide/issues/4#issuecomment-6961363565) lists the exact guide and manifest hashes.
 
 ## Where work belongs
 
