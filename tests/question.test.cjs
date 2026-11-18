@@ -512,7 +512,10 @@ async function openPage(routes, { support = true, extra = {} } = {}) {
     elements["#support-done"].hidden = true;
   }
   const page = load(routes, elements, extra);
-  if (support) vm.runInContext(read("support.js"), page.ctx, { filename: "support.js" });
+  if (support) {
+    vm.runInContext(read("request.js"), page.ctx, { filename: "request.js" });
+    vm.runInContext(read("support.js"), page.ctx, { filename: "support.js" });
+  }
   const el = (id) => elements[`#ask-${id}`];
   const fire = async (node, type, event = { preventDefault() {} }) => {
     await Promise.all((node.handlers[type] ?? []).map((fn) => fn(event)));
@@ -918,7 +921,7 @@ test("home.html carries every element the question screen uses and no HTML lengt
 });
 
 test("question.js shares no global names with the other screens", () => {
-  const others = ["support.js", "agent.js", "conversation.js"].map((name) => read(name));
+  const others = ["request.js", "support.js", "agent.js", "conversation.js"].map((name) => read(name));
   const names = [...questionSource.matchAll(/^(?:async )?(?:function|const) ([A-Za-z_]\w*)/gm)].map(
     (m) => m[1],
   );

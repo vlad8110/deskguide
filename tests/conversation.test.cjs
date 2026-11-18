@@ -113,6 +113,7 @@ function load(routes, elements = null) {
     },
   };
   vm.createContext(context);
+  vm.runInContext(read("request.js"), context, { filename: "request.js" });
   vm.runInContext(conversationSource, context, { filename: "conversation.js" });
   return { ctx: context, calls, listeners, keys: () => calls.map((c) => c.key) };
 }
