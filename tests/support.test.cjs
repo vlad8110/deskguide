@@ -96,6 +96,8 @@ function load(routes, elements = null) {
       return response;
     },
   };
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "../app/static/request.js"), "utf8"),
+    context, { filename: "request.js" });
   vm.runInNewContext(source, context, { filename: "support.js" });
   return { ctx: context, calls, events, keys: () => calls.map((c) => c.key) };
 }

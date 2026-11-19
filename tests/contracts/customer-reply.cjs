@@ -34,6 +34,7 @@ async function main() {
   const context = vm.createContext({
     fetch: transport, TypeError, document: { querySelector: () => null },
   });
+  vm.runInContext(fs.readFileSync(path.join(__dirname, "../../app/static/request.js"), "utf8"), context);
   vm.runInContext(fs.readFileSync(path.join(__dirname, "../../app/static/conversation.js"), "utf8"), context);
   const loaded = await context.convLoadDetail(context.convApi, config.requestId);
   if (config.omit === "detail") {

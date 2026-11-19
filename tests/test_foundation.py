@@ -113,6 +113,11 @@ def test_home_and_browser_assets(client, sign_in):
     assert "frame-ancestors 'none'" in response.headers["Content-Security-Policy"]
     assert client.get("/static/workspace.js").status_code == 200
     assert client.get("/static/workspace.css").status_code == 200
+    html = response.get_data(as_text=True)
+    shared = html.index('src="/static/request.js"')
+    for consumer in ("support.js", "conversation.js"):
+        assert shared < html.index(f'src="/static/{consumer}"')
+    assert client.get("/static/request.js").status_code == 200
     sign_in(client)
     assert b"Welcome, customer-one" in client.get("/").data
 
