@@ -1,4 +1,4 @@
-/* Shared same-origin JSON requests for support and conversation screens. */
+/* Shared JSON requests and timestamp validation for support and conversation screens. */
 
 "use strict";
 
@@ -71,4 +71,23 @@ async function apiRequest(method, path, body) {
   } catch (error) {
     return requestFailure(error instanceof TypeError, sent);
   }
+}
+
+const TIMESTAMP_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,6})?Z$/;
+
+/* Contract Timestamp: ISO 8601 UTC, and a real calendar date and time. */
+function validTimestamp(value) {
+  if (typeof value !== "string") return false;
+  const match = TIMESTAMP_PATTERN.exec(value);
+  if (!match) return false;
+  const [year, month, day, hour, minute, second] = match.slice(1).map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day &&
+    date.getUTCHours() === hour &&
+    date.getUTCMinutes() === minute &&
+    date.getUTCSeconds() === second
+  );
 }

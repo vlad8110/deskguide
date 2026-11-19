@@ -373,11 +373,20 @@ test("registration responses with invalid values send nothing", async () => {
 
 test("the timestamp check accepts ISO UTC and rejects anything else", () => {
   const { ctx } = load({});
-  for (const ok of ["2026-11-08T00:00:00Z", "2026-02-28T23:59:59Z", "2026-11-08T00:00:00.5Z"])
+  for (const ok of [
+    "2026-11-08T00:00:00Z",
+    "2026-02-28T23:59:59Z",
+    "2026-11-08T00:00:00.5Z",
+    "2028-02-29T12:00:00Z",
+    "2000-02-29T12:00:00Z",
+    "2026-11-08T00:00:00.123456Z",
+  ])
     assert.equal(ctx.validTimestamp(ok), true, ok);
   for (const bad of [
     "", "x", null, undefined, 5, "2026-11-08", "2026-11-08T00:00:00", "2026-13-01T00:00:00Z",
     "2026-02-30T00:00:00Z", "2026-11-08T24:00:00Z", "2026-11-08T00:60:00Z", "2026-11-08T00:00:00+00:00",
+    "2026-02-29T12:00:00Z", "1900-02-29T12:00:00Z", "2026-11-08T00:00:60Z",
+    "2026-00-08T00:00:00Z", "2026-11-00T00:00:00Z", "2026-11-08T00:00:00.1234567Z",
   ])
     assert.equal(ctx.validTimestamp(bad), false, String(bad));
 });
