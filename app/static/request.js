@@ -73,12 +73,12 @@ async function apiRequest(method, path, body) {
   }
 }
 
-const TIMESTAMP_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,6})?Z$/;
+const REQUEST_TIMESTAMP_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,6})?Z$/;
 
 /* Contract Timestamp: ISO 8601 UTC, and a real calendar date and time. */
 function validTimestamp(value) {
   if (typeof value !== "string") return false;
-  const match = TIMESTAMP_PATTERN.exec(value);
+  const match = REQUEST_TIMESTAMP_PATTERN.exec(value);
   if (!match) return false;
   const [year, month, day, hour, minute, second] = match.slice(1).map(Number);
   const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));

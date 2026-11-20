@@ -192,6 +192,7 @@ test("detail keeps only visible fields and rejects anything the customer must no
     detail(1, "in_review", 4, [message(1, "resolution_note", "internal")]),
     detail(1, "in_review", 4, [message(1, "customer_reply", 5)]),
     detail(1, "in_review", 4, [{ ...message(1, "customer_reply", "x"), message_id: "nope" }]),
+    detail(1, "in_review", 4, [{ ...message(1, "customer_reply", "x"), created_at: "2026-02-30T00:00:00Z" }]),
     detail(1, "in_review", 4, [], { messages: undefined }),
     detail(1, "in_review", 4, [], { note: undefined }),
     detail(1, "in_review", 4, [], { created_at: "yesterday" }),
@@ -267,6 +268,7 @@ test("a malformed registration never produces a send", async () => {
     registration(1, 4, { submission_id: "nope" }),
     registration(1, 4, { registration_state: "completed" }),
     registration(1, 4, { version: 0 }),
+    registration(1, 4, { expires_at: "2026-02-30T00:00:00Z" }),
   ]) {
     const page = load({ [REG(1)]: [reply(201, bad)] });
     const state = newState(1);
@@ -403,6 +405,8 @@ test("status answers about the wrong operation or request keep the reply locked"
     status(1, false, { created_at: TIME }),
     status(1, false, { registration_state: "completed" }),
     status(1, true, { version: null }),
+    status(1, true, { created_at: "2026-02-30T00:00:00Z" }),
+    status(1, false, { expires_at: "2026-02-30T00:00:00Z" }),
   ]) {
     const page = load({
       [REG(1)]: [reply(201, registration(1, 4))],
