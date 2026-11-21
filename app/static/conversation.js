@@ -16,7 +16,6 @@ const CONV_MESSAGE_LABELS = { customer_reply: "You", message_to_customer: "Suppo
 const CONV_STATES = ["queued", "assigned", "in_review", "waiting_for_customer", "resolved"];
 const CONV_CONTROL_CHARACTERS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/;
 const CONV_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-const CONV_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,6})?Z$/;
 // Codes the server only returns when it knows nothing was saved.
 const CONV_RETRYABLE_CODES = [
   "RATE_LIMITED",
@@ -35,23 +34,6 @@ function convFormatWait(seconds) {
   if (seconds < 5400) return `about ${Math.ceil(seconds / 60)} minutes`;
   const hours = Math.ceil(seconds / 3600);
   return `about ${hours} ${hours === 1 ? "hour" : "hours"}`;
-}
-
-/* Contract Timestamp: ISO 8601 UTC, and a real calendar date and time. */
-function convValidTimestamp(value) {
-  if (typeof value !== "string") return false;
-  const match = CONV_TIMESTAMP.exec(value);
-  if (!match) return false;
-  const [year, month, day, hour, minute, second] = match.slice(1).map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
-  return (
-    date.getUTCFullYear() === year &&
-    date.getUTCMonth() === month - 1 &&
-    date.getUTCDate() === day &&
-    date.getUTCHours() === hour &&
-    date.getUTCMinutes() === minute &&
-    date.getUTCSeconds() === second
-  );
 }
 
 function convValidUuid(value) {
@@ -101,7 +83,7 @@ function convValidSummary(item) {
     convValidUuid(item.request_id) &&
     CONV_STATES.includes(item.state) &&
     convValidVersion(item.version) &&
-    convValidTimestamp(item.created_at)
+    validTimestamp(item.created_at)
   );
 }
 
@@ -112,7 +94,7 @@ function convValidMessage(message) {
     convValidUuid(message.message_id) &&
     Object.hasOwn(CONV_MESSAGE_LABELS, message.kind) &&
     typeof message.content === "string" &&
-    convValidTimestamp(message.created_at) &&
+    validTimestamp(message.created_at) &&
     (message.version === null || convValidVersion(message.version))
   );
 }
@@ -127,7 +109,7 @@ function convValidDetail(result, requestId) {
     !convValidVersion(data.version) ||
     typeof data.content !== "string" ||
     !(data.note === null || typeof data.note === "string") ||
-    !convValidTimestamp(data.created_at) ||
+    !validTimestamp(data.created_at) ||
     !Array.isArray(data.messages) ||
     !data.messages.every(convValidMessage)
   )
@@ -199,7 +181,7 @@ function convValidRegistration(result, requestId) {
     convValidUuid(data.submission_id) &&
     data.operation === "reply" &&
     data.registration_state === "unused" &&
-    convValidTimestamp(data.expires_at) &&
+    validTimestamp(data.expires_at) &&
     data.request_id === requestId &&
     CONV_STATES.includes(data.state) &&
     convValidVersion(data.version)
@@ -236,13 +218,13 @@ function convValidReplyStatus(result, state) {
   if (data.saved)
     return (
       data.registration_state === "completed" &&
-      convValidTimestamp(data.created_at) &&
+      validTimestamp(data.created_at) &&
       data.expires_at === null
     );
   return (
     data.registration_state !== "completed" &&
     data.created_at === null &&
-    convValidTimestamp(data.expires_at)
+    validTimestamp(data.expires_at)
   );
 }
 

@@ -6,7 +6,6 @@ const SUPPORT_CONTROL_CHARACTERS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007
 const SUPPORT_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const SUPPORT_REQUEST_STATES = ["queued", "assigned", "in_review", "waiting_for_customer", "resolved"];
 const SUPPORT_REGISTRATION_STATES = ["unused", "completed", "expired"];
-const SUPPORT_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,6})?Z$/;
 const SUPPORT_SAVED_TEXT = "Your request has been saved.";
 // Codes the server only returns when it knows nothing was saved.
 const SUPPORT_RETRYABLE_CODES = [
@@ -50,23 +49,6 @@ function buildSupportPayload(contentText, noteText) {
   const payload = { reason: "human_requested", content };
   if (note) payload.note = note;
   return { payload };
-}
-
-/* Contract Timestamp: ISO 8601 UTC, and a real calendar date and time. */
-function validTimestamp(value) {
-  if (typeof value !== "string") return false;
-  const match = SUPPORT_TIMESTAMP.exec(value);
-  if (!match) return false;
-  const [year, month, day, hour, minute, second] = match.slice(1).map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
-  return (
-    date.getUTCFullYear() === year &&
-    date.getUTCMonth() === month - 1 &&
-    date.getUTCDate() === day &&
-    date.getUTCHours() === hour &&
-    date.getUTCMinutes() === minute &&
-    date.getUTCSeconds() === second
-  );
 }
 
 function validUuid(value) {
